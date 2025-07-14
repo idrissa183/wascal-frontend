@@ -18,5 +18,8 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()]
-  }
+  },
+  site: 'https://idrissa183.github.io',
+  base: '/wascal_frontend',
+  outDir: './dist'
 });
