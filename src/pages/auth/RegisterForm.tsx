@@ -270,14 +270,14 @@ export default function RegisterForm() {
             >
               {t.terms}{" "}
               <a
-                href="/terms"
+                href="https://doc-hosting.flycricket.io/la-cause-rurale-terms-of-use/78422ce1-34a2-4405-80b7-512c558512f7/terms"
                 className="text-primary-600 hover:text-primary-500 dark:text-primary-400"
               >
                 {t.termsLink}
               </a>{" "}
               {t.and}{" "}
               <a
-                href="/privacy"
+                href="https://doc-hosting.flycricket.io/la-cause-rurale-privacy-policy/d328883c-83a8-477a-a5fc-1a27aec79002/privacy"
                 className="text-primary-600 hover:text-primary-500 dark:text-primary-400"
               >
                 {t.privacyLink}
