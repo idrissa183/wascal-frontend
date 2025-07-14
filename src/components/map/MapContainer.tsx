@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { useLanguage } from '../../hooks/useLanguage';
+import React, { useEffect, useRef } from "react";
+import { useLanguage } from "../../hooks/useLanguage";
 
 export default function MapContainer() {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -7,15 +7,15 @@ export default function MapContainer() {
 
   const translations = {
     fr: {
-      loading: 'Chargement de la carte...',
-      mapNotAvailable: 'Carte non disponible',
-      searchPlaceholder: 'Rechercher un lieu...'
+      loading: "Chargement de la carte...",
+      mapNotAvailable: "Carte non disponible",
+      searchPlaceholder: "Rechercher un lieu...",
     },
     en: {
-      loading: 'Loading map...',
-      mapNotAvailable: 'Map not available',
-      searchPlaceholder: 'Search for a location...'
-    }
+      loading: "Loading map...",
+      mapNotAvailable: "Map not available",
+      searchPlaceholder: "Search for a location...",
+    },
   };
 
   const t = translations[language];
@@ -25,7 +25,7 @@ export default function MapContainer() {
     // This is a placeholder for the actual map implementation
     if (mapRef.current) {
       // Map initialization code will go here
-      console.log('Map container ready for OpenLayers initialization');
+      console.log("Map container ready for OpenLayers initialization");
     }
   }, []);
 
@@ -45,22 +45,44 @@ export default function MapContainer() {
       {/* Map Controls */}
       <div className="absolute top-4 right-4 z-10 space-y-2">
         <button className="p-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
-          <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          <span className="sr-only">btn</span>
+          <svg
+            className="w-5 h-5 text-gray-600 dark:text-gray-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            />
           </svg>
         </button>
         <button className="p-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600">
-          <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+          <span className="sr-only">btn</span>
+          <svg
+            className="w-5 h-5 text-gray-600 dark:text-gray-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M20 12H4"
+            />
           </svg>
         </button>
       </div>
 
       {/* Map Container */}
-      <div 
+      <div
         ref={mapRef}
         className="w-full h-full"
-        style={{ minHeight: '500px' }}
+        style={{ minHeight: "500px" }}
       >
         {/* Placeholder content */}
         <div className="flex items-center justify-center h-full">
@@ -75,23 +97,35 @@ export default function MapContainer() {
       <div className="absolute bottom-4 left-4 z-10">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 max-w-xs">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            {language === 'fr' ? 'Couches de données' : 'Data Layers'}
+            {language === "fr" ? "Couches de données" : "Data Layers"}
           </h4>
           <div className="space-y-2">
             <label className="flex items-center">
-              <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" defaultChecked />
-              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">NDVI</span>
-            </label>
-            <label className="flex items-center">
-              <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+              <input
+                type="checkbox"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                defaultChecked
+              />
               <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                {language === 'fr' ? 'Température' : 'Temperature'}
+                NDVI
               </span>
             </label>
             <label className="flex items-center">
-              <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+              <input
+                type="checkbox"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
               <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                {language === 'fr' ? 'Précipitations' : 'Precipitation'}
+                {language === "fr" ? "Température" : "Temperature"}
+              </span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                {language === "fr" ? "Précipitations" : "Precipitation"}
               </span>
             </label>
           </div>
