@@ -1,17 +1,18 @@
-FROM node:lts AS base
+FROM node:18-alpine AS builder
+
 WORKDIR /app
 
-FROM base AS deps
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-FROM base AS build
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM nginx:stable-alpine AS deploy
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
+FROM nginx:alpine AS production
 
-EXPOSE 8080
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
