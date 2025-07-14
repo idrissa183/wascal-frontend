@@ -13,7 +13,7 @@ import RegisterForm from "./RegisterForm";
       <div>
         <div class="flex justify-center">
           <div
-            class="h-12 w-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center"
+            class="h-12 w-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center shadow-lg"
           >
             <span class="text-white font-bold text-lg">EW</span>
           </div>
@@ -21,23 +21,17 @@ import RegisterForm from "./RegisterForm";
         <h2
           class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white"
         >
-          Créer votre compte
+          <span class="fr-text">Créer votre compte</span>
+          <span class="en-text hidden">Create your account</span>
         </h2>
-        <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-          Ou{" "}
-          <a
-            href="/auth/login"
-            class="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400"
-          >
-            connectez-vous à votre compte existant
-          </a>
-        </p>
       </div>
 
       <div class="mt-8 space-y-6">
         <SocialButtons client:load />
 
-        <FormDivider client:load/>
+        <div class="py-2">
+          <FormDivider client:load />
+        </div>
 
         <RegisterForm client:load />
       </div>

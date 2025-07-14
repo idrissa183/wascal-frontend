@@ -38,6 +38,10 @@ export default function RegisterForm() {
       privacyLink: "politique de confidentialité",
       register: "Créer mon compte",
       registering: "Création en cours...",
+      showPassword: "Afficher le mot de passe",
+      hidePassword: "Masquer le mot de passe",
+      noRegister: "Vous avez déjà un compte ?",
+      loginHere: "Se connecter ici",
     },
     en: {
       firstName: "First name",
@@ -56,6 +60,10 @@ export default function RegisterForm() {
       privacyLink: "privacy policy",
       register: "Create account",
       registering: "Creating account...",
+      showPassword: "Show password",
+      hidePassword: "Hide password",
+      noRegister: "Already have an account ?",
+      loginHere: "Sign in here",
     },
   };
 
@@ -93,7 +101,7 @@ export default function RegisterForm() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="firstName"
@@ -186,30 +194,33 @@ export default function RegisterForm() {
             >
               {t.password}
             </label>
-            <div className="mt-1 relative">
-              <Field
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                placeholder={t.passwordPlaceholder}
-                className={`appearance-none relative block w-full px-3 py-2 pr-10 border ${
-                  errors.password && touched.password
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-gray-300 dark:border-gray-600 focus:ring-primary-500 focus:border-primary-500"
-                } placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:z-10 sm:text-sm dark:bg-gray-800`}
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <EyeIcon className="h-5 w-5 text-gray-400" />
-                )}
-              </button>
+            <div className="mt-1">
+              <div className="relative">
+                <Field
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder={t.passwordPlaceholder}
+                  className={`appearance-none relative block w-full px-3 py-2 pr-10 border ${
+                    errors.password && touched.password
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 dark:border-gray-600 focus:ring-primary-500 focus:border-primary-500"
+                  } placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:z-10 sm:text-sm dark:bg-gray-800`}
+                />
+                <button
+                  type="button"
+                  className="cursor-pointer absolute top-1/2 right-3 -translate-y-1/2 flex items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? t.hidePassword : t.showPassword}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               <ErrorMessage
                 name="password"
                 component="p"
@@ -225,30 +236,35 @@ export default function RegisterForm() {
             >
               {t.confirmPassword}
             </label>
-            <div className="mt-1 relative">
-              <Field
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                autoComplete="new-password"
-                placeholder={t.confirmPasswordPlaceholder}
-                className={`appearance-none relative block w-full px-3 py-2 pr-10 border ${
-                  errors.confirmPassword && touched.confirmPassword
-                    ? "border-red-500 focus:ring-red-500 focus:border-red-500"
-                    : "border-gray-300 dark:border-gray-600 focus:ring-primary-500 focus:border-primary-500"
-                } placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:z-10 sm:text-sm dark:bg-gray-800`}
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-                ) : (
-                  <EyeIcon className="h-5 w-5 text-gray-400" />
-                )}
-              </button>
+            <div className="mt-1">
+              <div className="relative">
+                <Field
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  placeholder={t.confirmPasswordPlaceholder}
+                  className={`appearance-none relative block w-full px-3 py-2 pr-10 border ${
+                    errors.confirmPassword && touched.confirmPassword
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 dark:border-gray-600 focus:ring-primary-500 focus:border-primary-500"
+                  } placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:z-10 sm:text-sm dark:bg-gray-800`}
+                />
+                <button
+                  type="button"
+                  className="cursor-pointer absolute top-1/2 right-3 -translate-y-1/2 flex items-center justify-center w-5 h-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={
+                    showConfirmPassword ? t.hidePassword : t.showPassword
+                  }
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  ) : (
+                    <EyeIcon className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               <ErrorMessage
                 name="confirmPassword"
                 component="p"
@@ -257,36 +273,42 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          <div className="flex items-center">
-            <Field
-              id="terms"
-              name="terms"
-              type="checkbox"
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label
-              htmlFor="terms"
-              className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
-            >
-              {t.terms}{" "}
-              <a
-                href="https://doc-hosting.flycricket.io/la-cause-rurale-terms-of-use/78422ce1-34a2-4405-80b7-512c558512f7/terms"
-                className="text-primary-600 hover:text-primary-500 dark:text-primary-400"
+          <div>
+            <div className="flex items-start">
+              <Field
+                id="terms"
+                name="terms"
+                type="checkbox"
+                className="h-4 w-4 mt-1 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+              />
+              <label
+                htmlFor="terms"
+                className="ml-3 block text-sm text-gray-900 dark:text-gray-300 leading-relaxed"
               >
-                {t.termsLink}
-              </a>{" "}
-              {t.and}{" "}
-              <a
-                href="https://doc-hosting.flycricket.io/la-cause-rurale-privacy-policy/d328883c-83a8-477a-a5fc-1a27aec79002/privacy"
-                className="text-primary-600 hover:text-primary-500 dark:text-primary-400"
-              >
-                {t.privacyLink}
-              </a>
-            </label>
+                {t.terms}{" "}
+                <a
+                  href="https://doc-hosting.flycricket.io/la-cause-rurale-terms-of-use/78422ce1-34a2-4405-80b7-512c558512f7/terms"
+                  className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t.termsLink}
+                </a>{" "}
+                {t.and}{" "}
+                <a
+                  href="https://doc-hosting.flycricket.io/la-cause-rurale-privacy-policy/d328883c-83a8-477a-a5fc-1a27aec79002/privacy"
+                  className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t.privacyLink}
+                </a>
+              </label>
+            </div>
             <ErrorMessage
               name="terms"
               component="p"
-              className="ml-2 text-sm text-red-600 dark:text-red-400"
+              className="mt-1 text-sm text-red-600 dark:text-red-400"
             />
           </div>
 
@@ -294,10 +316,19 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? t.registering : t.register}
             </button>
+          </div>
+          <div className="text-sm font-medium text-start text-gray-500 dark:text-gray-400">
+            {t.noRegister}{" "}
+            <a
+              href="/auth/login"
+              className="text-primary-700 hover:underline dark:text-primary-500"
+            >
+              {t.loginHere}
+            </a>
           </div>
         </Form>
       )}
