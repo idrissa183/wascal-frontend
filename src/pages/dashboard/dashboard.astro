@@ -1,13 +1,15 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import MainLayout from "../components/include/MainLayout";
-import DashboardStats from "../components/dashboard/DashboardStats";
-import RecentActivity from "../components/dashboard/RecentActivity";
-import MapContainer from "../components/map/MapContainer";
+import DashboardStats from "../../components/dashboard/DashboardStats";
+import RecentActivity from "../../components/dashboard/RecentActivity";
+import Base from "../../components/layout/Base";
+import MapContainer from "../../components/map/MapContainer";
+import Layout from "../../layouts/Layout.astro";
+
+
 ---
 
 <Layout>
-  <MainLayout client:load>
+  <Base client:load>
     <div class="space-y-6">
       {/* Page Header */}
       <div class="flex items-center justify-between">
@@ -94,5 +96,5 @@ import MapContainer from "../components/map/MapContainer";
         </div>
       </div>
     </div>
-  </MainLayout>
+  </Base>
 </Layout>

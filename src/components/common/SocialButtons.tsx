@@ -1,7 +1,7 @@
 import React from "react";
 import { useLanguage } from "../../hooks/useLanguage";
 
-export default function AuthButtons() {
+export default function SocialButtons() {
   const { language } = useLanguage();
 
   const translations = {

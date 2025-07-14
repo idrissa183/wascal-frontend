@@ -1,6 +1,6 @@
 ---
+import SocialButtons from "../../components/common/SocialButtons";
 import Layout from "../../layouts/Layout.astro";
-import AuthButtons from "../../components/auth/AuthButtons";
 ---
 
 <Layout>
@@ -33,7 +33,7 @@ import AuthButtons from "../../components/auth/AuthButtons";
       </div>
 
       <div class="mt-8 space-y-8">
-        <AuthButtons client:load />
+        <SocialButtons client:load />
 
         <div class="relative mt-4">
           <div class="absolute inset-0 flex items-center">
