@@ -20,6 +20,6 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
   site: 'https://idrissa183.github.io',
-  base: '/ecowatch.com',
+  // base: '/ecowatch.com',
   outDir: './dist'
 });
