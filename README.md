@@ -1,52 +1,40 @@
-# Astro Starter Kit: Basics
+# EcoWatch Frontend
 
-```sh
-npm create astro@latest -- --template basics
-```
+EcoWatch is a web interface for monitoring environmental and climatic data. It is built with [Astro](https://astro.build) and React and communicates with the EcoWatch backend API.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/basics)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/basics/devcontainer.json)
+## Setup
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+1. Install dependencies:
 
-![just-the-basics](https://github.com/withastro/astro/assets/2244813/a0a5533c-a856-4198-8470-2d67b1d7c554)
+   ```bash
+   npm install
+   ```
 
-## 🚀 Project Structure
+2. Copy the example environment file and adjust the values for your installation:
 
-Inside of your Astro project, you'll see the following folders and files:
+   ```bash
+   cp .env.example .env
+   ```
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+   The `.env` file provides Vite variables such as `VITE_API_BASE_URL`, OAuth credentials and other runtime configuration.
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+3. Start the development server:
 
-## 🧞 Commands
+## Common Commands
 
-All commands are run from the root of the project, from a terminal:
+| Command              | Description                           |
+| -------------------- | ------------------------------------- |
+| `npm run dev`        | Start the local development server    |
+| `npm run build`      | Build the production site into `dist` |
+| `npm run preview`    | Preview the built site locally        |
+| `npm run lint`       | Run ESLint checks                     |
+| `npm run lint:fix`   | Fix lint issues automatically         |
+| `npm run type-check` | Run TypeScript type checking          |
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Environment
 
-## 👀 Want to learn more?
+Vite automatically loads variables from `.env` during development and build. See `.env.example` for all available options.
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Docker
+
+The repository includes a `Dockerfile` and `docker-compose.yml` for running the application in containers alongside the backend and database.

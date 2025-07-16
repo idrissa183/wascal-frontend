@@ -1,25 +1,21 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 
-import react from '@astrojs/react';
+import react from "@astrojs/react";
 
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from "@tailwindcss/vite";
 
 // https://astro.build/config
 export default defineConfig({
-  // server: {
-  //   port: 3000,
-  // },
-
   devToolbar: {
     enabled: false,
   },
   integrations: [react()],
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
   },
-  site: 'https://idrissa183.github.io',
+  site: "https://idrissa183.github.io",
   // base: '/ecowatch.com',
-  outDir: './dist'
+  outDir: "./dist",
 });
