@@ -17,36 +17,3 @@ import Layout from "../../layouts/Layout.astro";
     root.render(createElement(LoginPage));
   }
 </script>
-
-<!-- ---
-import FormDivider from "../../components/common/FormDivider";
-import SocialButtons from "../../components/common/SocialButtons";
-import BaseAuth from "../../components/layout/BaseAuth";
-import Layout from "../../layouts/Layout.astro";
-import LoginForm from "./LoginForm";
----
-
-<Layout>
-  <BaseAuth client:load>
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2
-          class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white"
-        >
-          <span class="fr-text">Connexion à votre compte</span>
-          <span class="en-text hidden">Sign in to your account</span>
-        </h2>
-      </div>
-
-      <div class="mt-8 space-y-6">
-        <SocialButtons client:load />
-
-        <div class="py-2">
-          <FormDivider client:load />
-        </div>
-
-        <LoginForm client:load />
-      </div>
-    </div>
-  </BaseAuth>
-</Layout> -->

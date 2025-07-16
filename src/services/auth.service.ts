@@ -1,4 +1,3 @@
-// src/services/auth.service.ts
 import { API_BASE_URL } from "../constants";
 import type {
   AuthResponse,

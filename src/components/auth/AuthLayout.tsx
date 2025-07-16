@@ -38,7 +38,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           <select
             value={language}
             onChange={(e) => setLanguage(e.target.value as "fr" | "en")}
-            className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+            className="appearance-none text-gray-800 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
           >
             <option value="fr">Français</option>
             <option value="en">English</option>
@@ -53,7 +53,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             onChange={(e) =>
               setTheme(e.target.value as "light" | "dark" | "system")
             }
-            className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+            className="appearance-none text-gray-800 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>

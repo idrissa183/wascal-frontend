@@ -1,4 +1,3 @@
-// src/lib/validation.ts
 import { z } from "zod";
 
 // Schéma pour la connexion

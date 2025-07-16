@@ -1,4 +1,3 @@
-// src/middleware/auth.ts
 import { authService } from "../services/auth.service";
 
 export class AuthGuard {
