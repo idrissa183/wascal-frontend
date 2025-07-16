@@ -1,20 +1,203 @@
 ---
 import "../styles/global.css";
+
+export interface Props {
+  title?: string;
+  description?: string;
+  requireAuth?: boolean;
+  requireGuest?: boolean;
+}
+
+const {
+  title = "EcoWatch - Surveillance Environnementale",
+  description = "Plateforme de surveillance environnementale et climatique basée sur Google Earth Engine",
+  requireAuth = false,
+  requireGuest = false,
+} = Astro.props;
 ---
 
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>EcoWatch</title>
-    <meta
-      name="description"
-      content="Plateforme de surveillance environnementale et climatique basée sur Google Earth Engine"
-    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={Astro.url} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+
+    <!-- Preconnect to important domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#4f46e5" />
   </head>
   <body>
-    <slot />
+    <div id="app">
+      <slot />
+    </div>
+
+    <!-- Script d'initialisation globale de l'authentification -->
+    <script>
+      import { initGlobalAuth } from "../utils/globalAuthInit";
+      import { AuthGuard } from "../middleware/auth";
+
+      // Initialiser l'authentification globalement
+      (async () => {
+        try {
+          await initGlobalAuth();
+
+          // Vérifications spécifiques à la page
+          const requireAuth = document.body.dataset.requireAuth === "true";
+          const requireGuest = document.body.dataset.requireGuest === "true";
+
+          const authGuard = AuthGuard.getInstance();
+
+          if (requireAuth) {
+            const hasAccess = await authGuard.requireAuth();
+            if (!hasAccess) {
+              return; // L'utilisateur sera redirigé
+            }
+          }
+
+          if (requireGuest) {
+            authGuard.requireGuest();
+          }
+        } catch (error) {
+          console.error("Failed to initialize auth:", error);
+
+          // En cas d'erreur et si l'auth est requise, rediriger
+          if (document.body.dataset.requireAuth === "true") {
+            window.location.href = "/auth/login";
+          }
+        }
+      })();
+    </script>
+
+    <!-- Script pour définir les attributs data sur body -->
+    <script define:vars={{ requireAuth, requireGuest }}>
+      if (requireAuth) {
+        document.body.dataset.requireAuth = "true";
+      }
+      if (requireGuest) {
+        document.body.dataset.requireGuest = "true";
+      }
+    </script>
+
+    <!-- Service Worker pour les notifications push (optionnel) -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((registration) => {
+              console.log("SW registered: ", registration);
+            })
+            .catch((registrationError) => {
+              console.log("SW registration failed: ", registrationError);
+            });
+        });
+      }
+    </script>
+
+    <!-- Script pour gérer les erreurs globales -->
+    <script>
+      window.addEventListener("error", (event) => {
+        console.error("Global error:", event.error);
+
+        // Optionnel: Envoyer les erreurs à un service de monitoring
+        // sendErrorToMonitoring(event.error);
+      });
+
+      window.addEventListener("unhandledrejection", (event) => {
+        console.error("Unhandled promise rejection:", event.reason);
+
+        // Optionnel: Envoyer les erreurs à un service de monitoring
+        // sendErrorToMonitoring(event.reason);
+      });
+    </script>
   </body>
 </html>
+
+<style is:global>
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background-color: #fafafa;
+    color: #171717;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  .dark body {
+    background-color: #0a0a0a;
+    color: #fafafa;
+  }
+
+  #app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Focus styles pour l'accessibilité */
+  *:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+  }
+
+  /* Smooth transitions pour le theme switcher */
+  * {
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
+  }
+
+  /* Loading spinner global */
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-gray-300 border-t-primary-600;
+  }
+
+  /* Styles pour les notifications toast */
+  .toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Responsive font scaling */
+  @media (max-width: 640px) {
+    html {
+      font-size: 14px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    html {
+      font-size: 16px;
+    }
+  }
+</style>

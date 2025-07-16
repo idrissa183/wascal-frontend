@@ -1,0 +1,20 @@
+---
+// src/pages/auth/callback/github.astro
+import Layout from "../../../layouts/Layout.astro";
+---
+
+<Layout title="GitHub OAuth - EcoWatch">
+  <div id="oauth-callback-root"></div>
+</Layout>
+
+<script>
+  import { AuthCallbackClient } from "../../../components/auth/AuthCallbackClient";
+  import { createRoot } from "react-dom/client";
+  import { createElement } from "react";
+
+  const container = document.getElementById("oauth-callback-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(createElement(AuthCallbackClient));
+  }
+</script>

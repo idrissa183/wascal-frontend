@@ -115,11 +115,69 @@
     "reset_password_subtitle": "Entrez votre nouveau mot de passe",
     "reset_password_success": "Votre mot de passe a été réinitialisé.",
     "verify_email_title": "Vérification de l'email",
-    "verify_email_success": "Votre email a été vérifié.",
-    "verify_email_error": "La vérification a échoué.",
-    "go_to_login": "Aller à la connexion"
+    "verify_email_subtitle": "Vérification de votre adresse email en cours",
+    "verify_email_success": "Votre email a été vérifié avec succès.",
+    "verify_email_error": "La vérification a échoué. Le lien est peut-être expiré.",
+    "verification_required": "Vérification requise",
+    "verification_required_subtitle": "Veuillez vérifier votre email avant de continuer",
+    "check_inbox": "Vérifiez votre boîte de réception pour le lien de vérification",
+    "resend_verification": "Renvoyer le lien de vérification",
+    "go_to_login": "Aller à la connexion",
+    "processing_login": "Traitement de la connexion...",
+    "please_wait": "Veuillez patienter pendant que nous vous connectons.",
+    "login_success": "Connexion réussie !",
+    "login_failed": "Échec de la connexion",
+    "redirecting": "Redirection en cours...",
+    "oauth_error": "Erreur lors de l'authentification OAuth",
+    "session_expired": "Votre session a expiré",
+    "session_expired_message": "Veuillez vous reconnecter pour continuer",
+    "unauthorized_access": "Accès non autorisé",
+    "unauthorized_message": "Vous devez être connecté pour accéder à cette page",
+    "account_created": "Compte créé avec succès",
+    "account_created_subtitle": "Un email de vérification vous a été envoyé",
+    "password_strength": {
+      "very_weak": "Très faible",
+      "weak": "Faible",
+      "fair": "Moyen",
+      "good": "Bon",
+      "strong": "Fort"
+    },
+    "oauth": {
+      "continue_with_google": "Continuer avec Google",
+      "continue_with_github": "Continuer avec GitHub",
+      "login_with_google": "Se connecter avec Google",
+      "login_with_github": "Se connecter avec GitHub",
+      "signup_with_google": "S'inscrire avec Google",
+      "signup_with_github": "S'inscrire avec GitHub"
+    }
   },
   "user": {
-    "email_already_exists": "Cet email existe déjà"
+    "email_already_exists": "Cet email existe déjà",
+    "account_not_found": "Compte non trouvé",
+    "account_disabled": "Compte désactivé",
+    "email_not_verified": "Email non vérifié",
+    "profile_updated": "Profil mis à jour avec succès",
+    "password_changed": "Mot de passe modifié avec succès"
+  },
+  "validation": {
+    "email_required": "Email requis",
+    "email_invalid": "Format d'email invalide",
+    "password_required": "Mot de passe requis",
+    "password_min_length": "Le mot de passe doit contenir au moins 8 caractères",
+    "password_uppercase": "Le mot de passe doit contenir au moins une majuscule",
+    "password_lowercase": "Le mot de passe doit contenir au moins une minuscule",
+    "password_number": "Le mot de passe doit contenir au moins un chiffre",
+    "password_special": "Le mot de passe doit contenir au moins un caractère spécial",
+    "passwords_match": "Les mots de passe ne correspondent pas",
+    "firstname_required": "Prénom requis",
+    "lastname_required": "Nom requis",
+    "terms_required": "Vous devez accepter les conditions d'utilisation"
+  },
+  "errors": {
+    "network_error": "Erreur de connexion réseau",
+    "server_error": "Erreur serveur",
+    "unknown_error": "Erreur inconnue",
+    "rate_limit_exceeded": "Trop de tentatives. Veuillez réessayer plus tard.",
+    "maintenance_mode": "Service en maintenance"
   }
 }

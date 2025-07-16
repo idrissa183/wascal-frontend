@@ -63,12 +63,13 @@ export const PUBLIC_ROUTES = [
   "/auth/forgot-password",
   "/auth/reset-password",
   "/auth/verify-email",
-  "/auth/callback",
+  "/auth/callback/*", // Toutes les routes de callback OAuth
 ] as const;
 
 // Routes protégées (nécessitent une authentification)
 export const PROTECTED_ROUTES = [
   "/dashboard",
+  "/dashboard/*",
   "/map",
   "/analytics",
   "/monitoring",
@@ -77,6 +78,15 @@ export const PROTECTED_ROUTES = [
   "/reports",
   "/settings",
   "/profile",
+  "/admin/*",
+] as const;
+
+// Routes qui nécessitent d'être déconnecté
+export const GUEST_ONLY_ROUTES = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/reset-password",
 ] as const;
 
 // Messages d'erreur par défaut
@@ -87,6 +97,8 @@ export const ERROR_MESSAGES = {
   NOT_FOUND: "Ressource non trouvée",
   SERVER_ERROR: "Erreur serveur interne",
   VALIDATION_ERROR: "Erreur de validation",
+  SESSION_EXPIRED: "Session expirée",
+  OAUTH_ERROR: "Erreur d'authentification OAuth",
 } as const;
 
 // Configuration des notifications
@@ -116,4 +128,30 @@ export const PASSWORD_REQUIREMENTS = {
 export const FILE_CONFIG = {
   MAX_SIZE: 10 * 1024 * 1024, // 10 MB
   ALLOWED_TYPES: ["image/jpeg", "image/png", "image/gif", "application/pdf"],
+} as const;
+
+// Configuration OAuth
+export const OAUTH_CONFIG = {
+  PROVIDERS: {
+    GOOGLE: "google",
+    GITHUB: "github",
+  },
+  CALLBACK_ROUTES: {
+    GOOGLE: "/auth/callback/google",
+    GITHUB: "/auth/callback/github",
+  },
+  SCOPES: {
+    GOOGLE: ["openid", "email", "profile"],
+    GITHUB: ["user:email"],
+  },
+} as const;
+
+// Storage keys
+export const STORAGE_KEYS = {
+  AUTH_TOKEN: "ecowatch_auth_token",
+  REFRESH_TOKEN: "ecowatch_refresh_token",
+  USER_DATA: "ecowatch_user_data",
+  LANGUAGE: "ecowatch_language",
+  THEME: "ecowatch_theme",
+  OAUTH_STATE: "ecowatch_oauth_state",
 } as const;

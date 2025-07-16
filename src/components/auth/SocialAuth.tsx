@@ -1,74 +1,103 @@
 // src/components/auth/SocialAuth.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { useTranslations } from "../../hooks/useTranslations";
-import { API_BASE_URL } from "../../constants";
+import { authService } from "../../services/auth.service";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { Alert } from "../ui/Alert";
 
 interface SocialAuthProps {
   mode?: "login" | "register";
+  onError?: (error: string) => void;
 }
 
-export const SocialAuth: React.FC<SocialAuthProps> = ({ mode = "login" }) => {
+export const SocialAuth: React.FC<SocialAuthProps> = ({
+  mode = "login",
+  onError,
+}) => {
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const t = useTranslations();
 
-  const handleGoogleAuth = async () => {
+  const handleOAuthLogin = async (provider: "google" | "github") => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/auth/oauth/google/login`
-      );
-      const data = await response.json();
+      setLoadingProvider(provider);
+      setError(null);
 
-      if (data.auth_url) {
-        window.location.href = data.auth_url;
+      const authUrl = await authService.initiateOAuthLogin(provider);
+
+      if (authUrl) {
+        // Rediriger vers l'URL d'authentification OAuth
+        window.location.href = authUrl;
+      } else {
+        throw new Error(`Failed to get ${provider} authentication URL`);
       }
     } catch (error) {
-      console.error("Google auth error:", error);
-    }
-  };
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : `${provider} authentication failed`;
 
-  const handleGithubAuth = async () => {
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/auth/oauth/github/login`
-      );
-      const data = await response.json();
-
-      if (data.auth_url) {
-        window.location.href = data.auth_url;
-      }
-    } catch (error) {
-      console.error("GitHub auth error:", error);
+      setError(errorMessage);
+      onError?.(errorMessage);
+      console.error(`${provider} OAuth error:`, error);
+    } finally {
+      setLoadingProvider(null);
     }
   };
 
   const isRegisterMode = mode === "register";
 
+  const getButtonText = (provider: "google" | "github") => {
+    if (isRegisterMode) {
+      return provider === "google"
+        ? t.auth?.oauth?.signup_with_google || "S'inscrire avec Google"
+        : t.auth?.oauth?.signup_with_github || "S'inscrire avec GitHub";
+    } else {
+      return provider === "google"
+        ? t.auth?.oauth?.login_with_google || "Se connecter avec Google"
+        : t.auth?.oauth?.login_with_github || "Se connecter avec GitHub";
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 gap-3">
+    <div className="space-y-3">
+      {error && (
+        <Alert variant="destructive" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
       <Button
         type="button"
         variant="outline"
-        onClick={handleGoogleAuth}
-        className="w-full cursor-pointer"
+        onClick={() => handleOAuthLogin("google")}
+        disabled={loadingProvider !== null}
+        className="w-full"
       >
-        <FcGoogle className="h5 w-5 mr-2" />
-        {isRegisterMode
-          ? t.signupWithGoogle || "S'inscrire avec Google"
-          : t.loginWithGoogle || "Se connecter avec Google"}
+        {loadingProvider === "google" ? (
+          <LoadingSpinner size="sm" className="mr-2" />
+        ) : (
+          <FcGoogle className="h-5 w-5 mr-2" />
+        )}
+        {getButtonText("google")}
       </Button>
 
       <Button
         type="button"
         variant="outline"
-        onClick={handleGithubAuth}
-        className="w-full cursor-pointer"
+        onClick={() => handleOAuthLogin("github")}
+        disabled={loadingProvider !== null}
+        className="w-full"
       >
-        <FaGithub className="h5 w-5 mr-2" />
-        {isRegisterMode
-          ? t.signupWithGithub || "S'inscrire avec GitHub"
-          : t.loginWithGithub || "Se connecter avec GitHub"}
+        {loadingProvider === "github" ? (
+          <LoadingSpinner size="sm" className="mr-2" />
+        ) : (
+          <FaGithub className="h-5 w-5 mr-2" />
+        )}
+        {getButtonText("github")}
       </Button>
     </div>
   );

@@ -115,11 +115,69 @@
     "reset_password_subtitle": "Enter your new password",
     "reset_password_success": "Your password has been reset.",
     "verify_email_title": "Verify email",
-    "verify_email_success": "Your email has been verified.",
-    "verify_email_error": "Verification failed.",
-    "go_to_login": "Go to login"
+    "verify_email_subtitle": "Verifying your email address",
+    "verify_email_success": "Your email has been verified successfully.",
+    "verify_email_error": "Verification failed. The link may have expired.",
+    "verification_required": "Verification required",
+    "verification_required_subtitle": "Please verify your email before continuing",
+    "check_inbox": "Check your inbox for the verification link",
+    "resend_verification": "Resend verification link",
+    "go_to_login": "Go to login",
+    "processing_login": "Processing login...",
+    "please_wait": "Please wait while we sign you in.",
+    "login_success": "Login successful!",
+    "login_failed": "Login failed",
+    "redirecting": "Redirecting...",
+    "oauth_error": "OAuth authentication error",
+    "session_expired": "Your session has expired",
+    "session_expired_message": "Please sign in again to continue",
+    "unauthorized_access": "Unauthorized access",
+    "unauthorized_message": "You must be signed in to access this page",
+    "account_created": "Account created successfully",
+    "account_created_subtitle": "A verification email has been sent to you",
+    "password_strength": {
+      "very_weak": "Very weak",
+      "weak": "Weak",
+      "fair": "Fair",
+      "good": "Good",
+      "strong": "Strong"
+    },
+    "oauth": {
+      "continue_with_google": "Continue with Google",
+      "continue_with_github": "Continue with GitHub",
+      "login_with_google": "Sign in with Google",
+      "login_with_github": "Sign in with GitHub",
+      "signup_with_google": "Sign up with Google",
+      "signup_with_github": "Sign up with GitHub"
+    }
   },
   "user": {
-    "email_already_exists": "Email already exists"
+    "email_already_exists": "Email already exists",
+    "account_not_found": "Account not found",
+    "account_disabled": "Account disabled",
+    "email_not_verified": "Email not verified",
+    "profile_updated": "Profile updated successfully",
+    "password_changed": "Password changed successfully"
+  },
+  "validation": {
+    "email_required": "Email required",
+    "email_invalid": "Invalid email format",
+    "password_required": "Password required",
+    "password_min_length": "Password must be at least 8 characters",
+    "password_uppercase": "Password must contain at least one uppercase letter",
+    "password_lowercase": "Password must contain at least one lowercase letter",
+    "password_number": "Password must contain at least one number",
+    "password_special": "Password must contain at least one special character",
+    "passwords_match": "Passwords do not match",
+    "firstname_required": "First name required",
+    "lastname_required": "Last name required",
+    "terms_required": "You must accept the terms of service"
+  },
+  "errors": {
+    "network_error": "Network connection error",
+    "server_error": "Server error",
+    "unknown_error": "Unknown error",
+    "rate_limit_exceeded": "Too many attempts. Please try again later.",
+    "maintenance_mode": "Service under maintenance"
   }
 }
