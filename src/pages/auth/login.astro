@@ -1,4 +1,24 @@
 ---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Connexion - EcoWatch">
+  <div id="login-root"></div>
+</Layout>
+
+<script>
+  import { LoginPage } from "../../components/auth/LoginPage";
+  import { createRoot } from "react-dom/client";
+  import { createElement } from "react";
+
+  const container = document.getElementById("login-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(createElement(LoginPage));
+  }
+</script>
+
+<!-- ---
 import FormDivider from "../../components/common/FormDivider";
 import SocialButtons from "../../components/common/SocialButtons";
 import BaseAuth from "../../components/layout/BaseAuth";
@@ -10,13 +30,6 @@ import LoginForm from "./LoginForm";
   <BaseAuth client:load>
     <div class="max-w-md w-full space-y-8">
       <div>
-        <!-- <div class="flex justify-center">
-          <div
-            class="h-12 w-12 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center shadow-lg"
-          >
-            <span class="text-white font-bold text-lg">EW</span>
-          </div>
-        </div> -->
         <h2
           class="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white"
         >
@@ -36,4 +49,4 @@ import LoginForm from "./LoginForm";
       </div>
     </div>
   </BaseAuth>
-</Layout>
+</Layout> -->
