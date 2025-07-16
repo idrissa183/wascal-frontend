@@ -1,0 +1,19 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Verify Email - EcoWatch">
+  <div id="verify-email-root"></div>
+</Layout>
+
+<script>
+  import { VerifyEmailPage } from "../../components/auth/VerifyEmailPage";
+  import { createRoot } from "react-dom/client";
+  import { createElement } from "react";
+
+  const container = document.getElementById("verify-email-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(createElement(VerifyEmailPage));
+  }
+</script>

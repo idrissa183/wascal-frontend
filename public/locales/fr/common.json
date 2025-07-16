@@ -90,5 +90,36 @@
   "about": "À propos",
   "documentation": "Documentation",
   "support": "Support",
-  "version": "Version"
+  "version": "Version",
+  "register_subtitle": "Créez votre compte pour commencer",
+  "phone": "Téléphone",
+  "phonePlaceholder": "+226 XX XX XX XX",
+  "optional": "optionnel",
+  "auth": {
+    "login_title": "Connexion à votre compte",
+    "login_subtitle": "Connectez-vous pour accéder à votre tableau de bord",
+    "register_title": "Créer votre compte",
+    "register_subtitle": "Rejoignez-nous pour surveiller l'environnement",
+    "invalid_credentials": "Identifiants invalides",
+    "email_sent_title": "Email envoyé",
+    "check_email": "Vérifiez votre boîte de réception",
+    "password_reset_sent": "Un lien de réinitialisation a été envoyé à",
+    "email_not_received": "Vous ne recevez pas l'email ? Vérifiez vos spams ou ressayez.",
+    "back_to_login": "Retour à la connexion",
+    "try_another_email": "Essayer avec un autre email",
+    "forgot_password_title": "Mot de passe oublié",
+    "forgot_password_subtitle": "Entrez votre email pour recevoir un lien de réinitialisation",
+    "sending": "Envoi en cours...",
+    "send_reset_link": "Envoyer le lien de réinitialisation",
+    "reset_password_title": "Réinitialiser le mot de passe",
+    "reset_password_subtitle": "Entrez votre nouveau mot de passe",
+    "reset_password_success": "Votre mot de passe a été réinitialisé.",
+    "verify_email_title": "Vérification de l'email",
+    "verify_email_success": "Votre email a été vérifié.",
+    "verify_email_error": "La vérification a échoué.",
+    "go_to_login": "Aller à la connexion"
+  },
+  "user": {
+    "email_already_exists": "Cet email existe déjà"
+  }
 }
