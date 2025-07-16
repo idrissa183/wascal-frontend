@@ -4,6 +4,7 @@ import { registerSchema } from "../../schemas/authSchema";
 import { useAuthStore } from "../../stores/authStore";
 import { useLanguage } from "../../hooks/useLanguage";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface RegisterFormValues {
   firstName: string;
@@ -20,54 +21,8 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
-  const translations = {
-    fr: {
-      firstName: "Prénom(s)",
-      firstNamePlaceholder: "John",
-      lastName: "Nom",
-      lastNamePlaceholder: "Doe",
-      email: "Email",
-      emailPlaceholder: "votre@email.com",
-      password: "Mot de passe",
-      passwordPlaceholder: "Votre mot de passe",
-      confirmPassword: "Confirmer le mot de passe",
-      confirmPasswordPlaceholder: "Confirmez votre mot de passe",
-      terms: "J'accepte les",
-      termsLink: "conditions d'utilisation",
-      and: "et la",
-      privacyLink: "politique de confidentialité",
-      register: "Créer mon compte",
-      registering: "Création en cours...",
-      showPassword: "Afficher le mot de passe",
-      hidePassword: "Masquer le mot de passe",
-      noRegister: "Vous avez déjà un compte ?",
-      loginHere: "Se connecter ici",
-    },
-    en: {
-      firstName: "First name",
-      firstNamePlaceholder: "John",
-      lastName: "Last name",
-      lastNamePlaceholder: "Doe",
-      email: "Email",
-      emailPlaceholder: "your@email.com",
-      password: "Password",
-      passwordPlaceholder: "Your password",
-      confirmPassword: "Confirm password",
-      confirmPasswordPlaceholder: "Confirm your password",
-      terms: "I accept the",
-      termsLink: "terms of service",
-      and: "and",
-      privacyLink: "privacy policy",
-      register: "Create account",
-      registering: "Creating account...",
-      showPassword: "Show password",
-      hidePassword: "Hide password",
-      noRegister: "Already have an account ?",
-      loginHere: "Sign in here",
-    },
-  };
+  const t = useTranslations();
 
-  const t = translations[language];
   const initialValues: RegisterFormValues = {
     firstName: "",
     lastName: "",
@@ -92,8 +47,10 @@ export default function RegisterForm() {
       initialValues={initialValues}
       validationSchema={registerSchema}
       onSubmit={handleSubmit}
+      validateOnChange={true}
+      validateOnBlur={true}
     >
-      {({ errors, touched }) => (
+      {({ errors, touched, isValid, dirty }) => (
         <Form className="space-y-6">
           {error && (
             <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-4">
@@ -305,17 +262,23 @@ export default function RegisterForm() {
                 </a>
               </label>
             </div>
-            <ErrorMessage
+            {/* On affiche l'erreur seulement si le champ a été "touché" */}
+            {/* {touched.terms && errors.terms && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                {errors.terms}
+              </p>
+            )} */}
+            {/* <ErrorMessage
               name="terms"
               component="p"
               className="mt-1 text-sm text-red-600 dark:text-red-400"
-            />
+            /> */}
           </div>
 
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={!dirty || !isValid || isLoading}
               className="cursor-pointer group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? t.registering : t.register}

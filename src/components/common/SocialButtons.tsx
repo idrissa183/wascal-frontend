@@ -2,30 +2,10 @@ import React from "react";
 import { useLanguage } from "../../hooks/useLanguage";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+import { useTranslations } from "../../hooks/useTranslations";
 
 export default function SocialButtons() {
-  const { language } = useLanguage();
-
-  const translations = {
-    fr: {
-      loginWithGoogle: "Se connecter avec Google",
-      loginWithGithub: "Se connecter avec GitHub",
-      signupWithGoogle: "S'inscrire avec Google",
-      signupWithGithub: "S'inscrire avec GitHub",
-      or: "ou",
-      continueWith: "Continuer avec",
-    },
-    en: {
-      loginWithGoogle: "Sign in with Google",
-      loginWithGithub: "Sign in with GitHub",
-      signupWithGoogle: "Sign up with Google",
-      signupWithGithub: "Sign up with GitHub",
-      or: "or",
-      continueWith: "Continue with",
-    },
-  };
-
-  const t = translations[language];
+  const t = useTranslations();
 
   const handleGoogleAuth = () => {
     // Implement Google OAuth

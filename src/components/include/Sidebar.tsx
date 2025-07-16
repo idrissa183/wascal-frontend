@@ -17,6 +17,7 @@ import {
   GlobeAltIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,62 +25,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { language } = useLanguage();
-
-  const translations = {
-    fr: {
-      dashboard: "Tableau de bord",
-      map: "Carte interactive",
-      analytics: "Analyses",
-      weather: "Météo",
-      predictions: "Prédictions",
-      alerts: "Alertes",
-      settings: "Paramètres",
-      reports: "Rapports",
-      users: "Utilisateurs",
-      help: "Aide",
-      aiAssistant: "Assistant IA",
-      calendar: "Calendrier",
-      projects: "Projets",
-      monitoring: "Surveillance",
-      overview: "Aperçu",
-      dataLayers: "Couches de données",
-      climate: "Climat",
-      vegetation: "Végétation",
-      temperature: "Température",
-      precipitation: "Précipitations",
-      tools: "Outils",
-      export: "Export",
-      history: "Historique",
-    },
-    en: {
-      dashboard: "Dashboard",
-      map: "Interactive Map",
-      analytics: "Analytics",
-      weather: "Weather",
-      predictions: "Predictions",
-      alerts: "Alerts",
-      settings: "Settings",
-      reports: "Reports",
-      users: "Users",
-      help: "Help",
-      aiAssistant: "AI Assistant",
-      calendar: "Calendar",
-      projects: "Projects",
-      monitoring: "Monitoring",
-      overview: "Overview",
-      dataLayers: "Data Layers",
-      climate: "Climate",
-      vegetation: "Vegetation",
-      temperature: "Temperature",
-      precipitation: "Precipitation",
-      tools: "Tools",
-      export: "Export",
-      history: "History",
-    },
-  };
-
-  const t = translations[language];
+  const t = useTranslations();
 
   const menuItems = [
     { icon: HomeIcon, label: t.dashboard, href: "/dashboard", active: true },

@@ -3,7 +3,7 @@ import * as Yup from "yup";
 export const loginSchema = Yup.object({
   email: Yup.string().email("Email invalide").required("L'email est requis"),
   password: Yup.string()
-    .min(6, "Le mot de passe doit contenir au moins 8 caractères")
+    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .required("Le mot de passe est requis"),
 });
 
@@ -18,8 +18,8 @@ export const registerSchema = Yup.object({
   password: Yup.string()
     .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial"
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,
+      "Doit contenir min. 8 caractères, une majuscule, une minuscule, un chiffre et un symbole."
     )
     .required("Le mot de passe est requis"),
   confirmPassword: Yup.string()
@@ -36,10 +36,9 @@ export const forgotPasswordSchema = Yup.object({
 
 export const resetPasswordSchema = Yup.object({
   password: Yup.string()
-    .min(8, "Le mot de passe doit contenir au moins 8 caractères")
     .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      "Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial"
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,
+      "Doit contenir min. 8 caractères, une majuscule, une minuscule, un chiffre et un symbole."
     )
     .required("Le mot de passe est requis"),
   confirmPassword: Yup.string()

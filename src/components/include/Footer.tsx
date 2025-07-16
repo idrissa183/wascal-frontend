@@ -1,34 +1,12 @@
 import React from "react";
 import { useLanguage } from "../../hooks/useLanguage";
 import { APP_NAME, APP_VERSION } from "../../constants";
+import { useTranslations } from "../../hooks/useTranslations";
 
 export default function Footer() {
   const { language } = useLanguage();
 
-  const translations = {
-    fr: {
-      rights: "Tous droits réservés",
-      privacy: "Politique de confidentialité",
-      terms: "Conditions d'utilisation",
-      contact: "Contact",
-      about: "À propos",
-      documentation: "Documentation",
-      support: "Support",
-      version: "Version",
-    },
-    en: {
-      rights: "All rights reserved",
-      privacy: "Privacy Policy",
-      terms: "Terms of Service",
-      contact: "Contact",
-      about: "About",
-      documentation: "Documentation",
-      support: "Support",
-      version: "Version",
-    },
-  };
-
-  const t = translations[language];
+  const t = useTranslations();
 
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">

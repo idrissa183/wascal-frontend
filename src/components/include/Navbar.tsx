@@ -12,6 +12,7 @@ import {
   Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 import { APP_NAME } from "../../constants";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -24,41 +25,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
-
-  const translations = {
-    fr: {
-      notifications: "Notifications",
-      settings: "Paramètres",
-      profile: "Profil",
-      logout: "Déconnexion",
-      login: "Connexion",
-      register: "Inscription",
-      theme: "Thème",
-      language: "Langue",
-      light: "Clair",
-      dark: "Sombre",
-      system: "Système",
-      french: "Français",
-      english: "English",
-    },
-    en: {
-      notifications: "Notifications",
-      settings: "Settings",
-      profile: "Profile",
-      logout: "Logout",
-      login: "Login",
-      register: "Register",
-      theme: "Theme",
-      language: "Language",
-      light: "Light",
-      dark: "Dark",
-      system: "System",
-      french: "Français",
-      english: "English",
-    },
-  };
-
-  const t = translations[language];
+  const t = useTranslations();
 
   const themeIcons = {
     light: SunIcon,

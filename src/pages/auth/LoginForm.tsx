@@ -4,6 +4,7 @@ import { loginSchema } from "../../schemas/authSchema";
 import { useAuthStore } from "../../stores/authStore";
 import { useLanguage } from "../../hooks/useLanguage";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface LoginFormValues {
   email: string;
@@ -12,42 +13,10 @@ interface LoginFormValues {
 }
 
 export default function LoginForm() {
-  const { language } = useLanguage();
   const { login, isLoading, error, clearError } = useAuthStore();
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const translations = {
-    fr: {
-      email: "Email",
-      emailPlaceholder: "votre@email.com",
-      password: "Mot de passe",
-      passwordPlaceholder: "Votre mot de passe",
-      rememberMe: "Se souvenir de moi",
-      forgotPassword: "Mot de passe oublié ?",
-      login: "Se connecter",
-      loggingIn: "Connexion en cours...",
-      showPassword: "Afficher le mot de passe",
-      hidePassword: "Masquer le mot de passe",
-      noAccount: "Vous n'avez pas encore de compte ?",
-      registerHere: "Inscrivez-vous ici",
-    },
-    en: {
-      email: "Email",
-      emailPlaceholder: "your@email.com",
-      password: "Password",
-      passwordPlaceholder: "Your password",
-      rememberMe: "Remember me",
-      forgotPassword: "Forgot password ?",
-      login: "Sign in",
-      loggingIn: "Signing in...",
-      showPassword: "Show password",
-      hidePassword: "Hide password",
-      noAccount: "Don't have an account yet ?",
-      registerHere: "Sign up here",
-    },
-  };
-
-  const t = translations[language];
+  const t = useTranslations();
 
   const initialValues: LoginFormValues = {
     email: "",

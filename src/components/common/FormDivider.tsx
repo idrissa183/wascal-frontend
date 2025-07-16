@@ -1,18 +1,7 @@
-import { useLanguage } from "../../hooks/useLanguage";
+import { useTranslations } from "../../hooks/useTranslations";
 
 export default function FormDivider() {
-  const { language } = useLanguage();
-
-  const translations = {
-    fr: {
-      orContinueWith: "Ou continuer avec",
-    },
-    en: {
-      orContinueWith: "Or continue with",
-    },
-  };
-
-  const t = translations[language];
+  const t = useTranslations();
 
   return (
     <div className="relative">

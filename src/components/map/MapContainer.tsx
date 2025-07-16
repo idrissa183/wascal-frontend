@@ -1,24 +1,12 @@
 import React, { useEffect, useRef } from "react";
 import { useLanguage } from "../../hooks/useLanguage";
+import { useTranslations } from "../../hooks/useTranslations";
 
 export default function MapContainer() {
   const mapRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
 
-  const translations = {
-    fr: {
-      loading: "Chargement de la carte...",
-      mapNotAvailable: "Carte non disponible",
-      searchPlaceholder: "Rechercher un lieu...",
-    },
-    en: {
-      loading: "Loading map...",
-      mapNotAvailable: "Map not available",
-      searchPlaceholder: "Search for a location...",
-    },
-  };
-
-  const t = translations[language];
+  const t = useTranslations();
 
   useEffect(() => {
     // Initialize OpenLayers map here
@@ -81,8 +69,7 @@ export default function MapContainer() {
       {/* Map Container */}
       <div
         ref={mapRef}
-        className="w-full h-full"
-        style={{ minHeight: "500px" }}
+        className="w-full h-full min-h-[500px]"
       >
         {/* Placeholder content */}
         <div className="flex items-center justify-center h-full">
