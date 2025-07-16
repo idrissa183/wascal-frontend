@@ -189,6 +189,6 @@ export const withAuthGuard = <P extends object>(
       return null;
     }
 
-    return <WrappedComponent {...props} />;
+    return React.createElement(WrappedComponent, props);
   };
 };

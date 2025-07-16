@@ -4,7 +4,6 @@ import { APP_NAME, APP_VERSION } from "../../constants";
 import { useTranslations } from "../../hooks/useTranslations";
 
 export default function Footer() {
-  const { language } = useLanguage();
 
   const t = useTranslations();
 
@@ -24,9 +23,7 @@ export default function Footer() {
                 </span>
               </div>
               <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-                {language === "fr"
-                  ? "Plateforme de surveillance environnementale et climatique basée sur Google Earth Engine pour l'analyse et la prédiction des données géospatiales."
-                  : "Environmental and climate monitoring platform based on Google Earth Engine for geospatial data analysis and prediction."}
+                {t.platformDescription}
               </p>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <span>
@@ -38,7 +35,7 @@ export default function Footer() {
             {/* Quick Links */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
-                {language === "fr" ? "Liens rapides" : "Quick Links"}
+                {t.quickLinks}
               </h3>
               <ul className="space-y-2">
                 <li>
@@ -79,7 +76,7 @@ export default function Footer() {
             {/* Legal */}
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
-                {language === "fr" ? "Légal" : "Legal"}
+                {t.legal}
               </h3>
               <ul className="space-y-2">
                 <li>
@@ -110,10 +107,7 @@ export default function Footer() {
               </p>
               <div className="flex items-center space-x-4 mt-4 md:mt-0">
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  {language === "fr" ? "Développé avec" : "Built with"} ❤️{" "}
-                  {language === "fr"
-                    ? "pour l'environnement"
-                    : "for the environment"}
+                  {t.builtWith} ❤️ {t.forEnvironment}
                 </span>
               </div>
             </div>

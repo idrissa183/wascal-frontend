@@ -63,7 +63,7 @@ export class RouteProtection {
     await this.checkRouteAccess(currentPath);
   }
 
-  private async checkRouteAccess(path: string): Promise<void> {
+  public async checkRouteAccess(path: string): Promise<void> {
     try {
       // Vérifier si c'est une route protégée
       if (this.isProtectedRoute(path)) {

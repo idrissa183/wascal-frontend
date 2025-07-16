@@ -9,8 +9,6 @@ import {
 import { useTranslations } from "../../hooks/useTranslations";
 
 export default function DashboardStats() {
-  const { language } = useLanguage();
-
   const t = useTranslations();
 
   const stats = [
@@ -87,7 +85,7 @@ export default function DashboardStats() {
                   {stat.change}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                  {language === "fr" ? "vs mois dernier" : "vs last month"}
+                  {t.vsLastMonth}
                 </span>
               </div>
             </div>

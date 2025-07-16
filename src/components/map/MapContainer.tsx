@@ -4,7 +4,6 @@ import { useTranslations } from "../../hooks/useTranslations";
 
 export default function MapContainer() {
   const mapRef = useRef<HTMLDivElement>(null);
-  const { language } = useLanguage();
 
   const t = useTranslations();
 
@@ -67,10 +66,7 @@ export default function MapContainer() {
       </div>
 
       {/* Map Container */}
-      <div
-        ref={mapRef}
-        className="w-full h-full min-h-[500px]"
-      >
+      <div ref={mapRef} className="w-full h-full min-h-[500px]">
         {/* Placeholder content */}
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
@@ -84,7 +80,7 @@ export default function MapContainer() {
       <div className="absolute bottom-4 left-4 z-10">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 max-w-xs">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            {language === "fr" ? "Couches de données" : "Data Layers"}
+            {t.dataLayers}
           </h4>
           <div className="space-y-2">
             <label className="flex items-center">
@@ -103,7 +99,7 @@ export default function MapContainer() {
                 className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                {language === "fr" ? "Température" : "Temperature"}
+                {t.temperature}
               </span>
             </label>
             <label className="flex items-center">
@@ -112,7 +108,7 @@ export default function MapContainer() {
                 className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
               />
               <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                {language === "fr" ? "Précipitations" : "Precipitation"}
+                {t.precipitation}
               </span>
             </label>
           </div>
