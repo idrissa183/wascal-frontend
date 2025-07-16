@@ -99,7 +99,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
       </div>
 
       {error && (
-        <Alert variant="error" onClose={clearError}>
+        <Alert variant="destructive" onClose={clearError}>
           {error}
         </Alert>
       )}

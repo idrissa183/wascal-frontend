@@ -3,8 +3,8 @@ import { useLanguage } from "./useLanguage";
 
 export function useTranslations() {
   const { language } = useLanguage();
-  const [translations, setTranslations] = useState<Record<string, string>>({});
-
+  const [translations, setTranslations] = useState<Record<string, any>>({});
+  
   useEffect(() => {
     fetch(`/locales/${language}/common.json`)
       .then((res) => res.json())
