@@ -29,6 +29,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
     dark: MoonIcon,
     system: ComputerDesktopIcon,
   };
+
+  const toggleLanguage = () => {
+    const newLang = language === "fr" ? "en" : "fr";
+    setLanguage(newLang);
+  };
+
   const t = useTranslations();
 
   return (
@@ -36,17 +42,19 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
       {/* Header avec contrôles */}
       <div className="absolute top-4 right-4 flex items-center space-x-2">
         {/* Sélecteur de langue */}
-        <div className="relative">
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value as "fr" | "en")}
-            className="appearance-none text-gray-800 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
-          >
-            <option value="fr">Français</option>
-            <option value="en">English</option>
-          </select>
-          <LanguageIcon className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        </div>
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          className="flex h-[38px] items-center space-x-1.5 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-900"
+          aria-label={t.toggleLanguage || "Changer de langue"}
+        >
+          <LanguageIcon className="h-5 w-5" />
+          {language === "fr" && (
+            <span className="rounded bg-blue-100 dark:bg-blue-500/20 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:text-blue-300">
+              fr
+            </span>
+          )}
+        </button>
 
         {/* Sélecteur de thème */}
         <div className="relative">
@@ -57,9 +65,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             }
             className="appearance-none text-gray-800 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
           >
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="system">System</option>
+            <option value="light">{t.light}</option>
+            <option value="dark">{t.dark}</option>
+            <option value="system">{t.system}</option>
           </select>
           <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
             {React.createElement(themeIcons[theme], {

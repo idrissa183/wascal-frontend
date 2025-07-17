@@ -33,6 +33,10 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
     system: ComputerDesktopIcon,
   };
 
+  const toggleLanguage = () => {
+    const newLang = language === "fr" ? "en" : "fr";
+    setLanguage(newLang);
+  };
   const ThemeIcon = themeIcons[theme];
 
   return (
