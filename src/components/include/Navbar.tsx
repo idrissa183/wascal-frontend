@@ -14,6 +14,7 @@ import {
 import { APP_NAME } from "../../constants";
 import { useTranslations } from "../../hooks/useTranslations";
 import { Tooltip } from "../ui/Tooltip";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -24,7 +25,14 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
   const { language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { logout } = useAuthStore();
   const t = useTranslations();
+
+  const handleLogout = async () => {
+    setShowUserMenu(false);
+    await logout();
+    window.location.href = "/auth/login";
+  };
 
   const themeIcons = {
     light: SunIcon,
@@ -137,12 +145,12 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
                       {t.settings}
                     </a>
                     <hr className="my-1 border-gray-200 dark:border-gray-600" />
-                    <a
-                      href="/auth/login"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
                     >
                       {t.logout}
-                    </a>
+                    </button>
                   </div>
                 </div>
               )}

@@ -96,8 +96,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const getInitials = (user: User | null) => {
     if (user?.firstname && user?.lastname) {
-      return `${user.firstname.charAt(0)}${user.lastname.charAt(0)}`.toUpperCase();
-    } else if (user?.email) {
+      return `${user.firstname.charAt(0)}${user.lastname.charAt(
+        0
+      )}`.toUpperCase();
+    }
+    if (user?.firstname) {
+      return user.firstname.charAt(0).toUpperCase();
+    }
+    if (user?.lastname) {
+      return user.lastname.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
       return user.email.charAt(0).toUpperCase();
     }
   };
@@ -129,19 +138,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* User info at bottom */}
           <div className="absolute bottom-4 left-3 right-3">
-            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">{getInitials(user)}</span>
+                <div className="w-9 h-9 bg-primary-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-sm font-medium">
+                    {getInitials(user)}
+                  </span>
                 </div>
-                <div className="ml-3">
-                  {user?.firstname && user?.lastname && (
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {user.firstname} {user.lastname}
+                <div className="ml-3 space-y-0.5">
+                  {(user?.firstname || user?.lastname) && (
+                    <p className="text-sm font-medium text-gray-900 dark:text-white leading-none">
+                      {`${user?.firstname ?? ""} ${
+                        user?.lastname ?? ""
+                      }`.trim()}
                     </p>
                   )}
                   {user?.email && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
                       {user.email}
                     </p>
                   )}
