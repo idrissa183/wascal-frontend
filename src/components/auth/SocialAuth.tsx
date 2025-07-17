@@ -1,8 +1,7 @@
-// src/components/auth/SocialAuth.tsx
+// src/components/auth/SocialAuth.tsx - Version corrigée
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { useTranslations } from "../../hooks/useTranslations";
-import { authService } from "../../services/auth.service";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
@@ -26,23 +25,48 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
       setLoadingProvider(provider);
       setError(null);
 
-      const authUrl = await authService.initiateOAuthLogin(provider);
-
-      if (authUrl) {
-        // Rediriger vers l'URL d'authentification OAuth
-        window.location.href = authUrl;
-      } else {
-        throw new Error(`Failed to get ${provider} authentication URL`);
+      // Sauvegarder l'URL de retour
+      const currentUrl = window.location.pathname + window.location.search;
+      if (currentUrl !== "/auth/login" && currentUrl !== "/auth/register") {
+        sessionStorage.setItem("oauth_return_url", currentUrl);
       }
+
+      // Appeler l'API backend pour obtenir l'URL d'autorisation
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/auth/oauth/${provider}/login`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.detail ||
+            `Erreur lors de l'initiation de l'authentification ${provider}`
+        );
+      }
+
+      const data = await response.json();
+
+      if (!data.auth_url) {
+        throw new Error(`URL d'authentification ${provider} non disponible`);
+      }
+
+      // Rediriger vers l'URL d'autorisation OAuth
+      window.location.href = data.auth_url;
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : `${provider} authentication failed`;
+          : `Erreur d'authentification ${provider}`;
 
+      console.error(`${provider} OAuth error:`, error);
       setError(errorMessage);
       onError?.(errorMessage);
-      console.error(`${provider} OAuth error:`, error);
     } finally {
       setLoadingProvider(null);
     }
@@ -99,6 +123,23 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         )}
         {getButtonText("github")}
       </Button>
+
+      {/* Instructions pour l'utilisateur */}
+      <div className="text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          En vous connectant, vous acceptez nos{" "}
+          <a href="/terms" className="text-primary-600 hover:text-primary-500">
+            conditions d'utilisation
+          </a>{" "}
+          et notre{" "}
+          <a
+            href="/privacy"
+            className="text-primary-600 hover:text-primary-500"
+          >
+            politique de confidentialité
+          </a>
+        </p>
+      </div>
     </div>
   );
 };

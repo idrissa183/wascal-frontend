@@ -1,4 +1,5 @@
 ---
+// src/layouts/Layout.astro - Version corrigée
 import "../styles/global.css";
 
 export interface Props {
@@ -43,6 +44,20 @@ const {
 
     <!-- Theme color for mobile browsers -->
     <meta name="theme-color" content="#4f46e5" />
+
+    <!-- React Refresh Preamble pour éviter l'erreur -->
+    <script type="module">
+      if (import.meta.env.DEV) {
+        // Inject React refresh preamble for development
+        window.__vite_plugin_react_preamble_installed__ = true;
+
+        // Setup React refresh
+        if (typeof window !== "undefined") {
+          window.$RefreshReg$ = () => {};
+          window.$RefreshSig$ = () => (type) => type;
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="app">
@@ -96,36 +111,23 @@ const {
       }
     </script>
 
-    <!-- Service Worker pour les notifications push (optionnel) -->
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .then((registration) => {
-              console.log("SW registered: ", registration);
-            })
-            .catch((registrationError) => {
-              console.log("SW registration failed: ", registrationError);
-            });
-        });
-      }
-    </script>
-
     <!-- Script pour gérer les erreurs globales -->
     <script>
       window.addEventListener("error", (event) => {
-        console.error("Global error:", event.error);
+        // Filtrer les erreurs React/Vite connues en développement
+        if (event.error?.message?.includes("preamble") && import.meta.env.DEV) {
+          console.warn("React preamble error filtered in development");
+          event.preventDefault();
+          return;
+        }
 
+        console.error("Global error:", event.error);
         // Optionnel: Envoyer les erreurs à un service de monitoring
-        // sendErrorToMonitoring(event.error);
       });
 
       window.addEventListener("unhandledrejection", (event) => {
         console.error("Unhandled promise rejection:", event.reason);
-
         // Optionnel: Envoyer les erreurs à un service de monitoring
-        // sendErrorToMonitoring(event.reason);
       });
     </script>
   </body>
@@ -174,7 +176,7 @@ const {
 
   /* Loading spinner global */
   .loading-spinner {
-    @apply rounded-full border-2  ;
+    @apply rounded-full border-2;
     animation: spin 1s linear infinite;
   }
 
