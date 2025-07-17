@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { APP_NAME } from "../../constants";
 import { useTranslations } from "../../hooks/useTranslations";
+import { Tooltip } from "../ui/Tooltip";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -23,8 +24,6 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
   const { language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showThemeMenu, setShowThemeMenu] = useState(false);
-  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const t = useTranslations();
 
   const themeIcons = {
@@ -36,6 +35,11 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
   const toggleLanguage = () => {
     const newLang = language === "fr" ? "en" : "fr";
     setLanguage(newLang);
+  };
+  const toggleTheme = () => {
+    const order = ["light", "dark", "system"] as const;
+    const next = order[(order.indexOf(theme) + 1) % order.length];
+    setTheme(next);
   };
   const ThemeIcon = themeIcons[theme];
 
@@ -73,75 +77,32 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
               </div>
             </div>
 
-            {/* Theme Selector */}
-            <div className="relative">
+            {/* Theme Switch */}
+            <Tooltip content={t.theme}>
               <button
-                onClick={() => setShowThemeMenu(!showThemeMenu)}
+                onClick={toggleTheme}
                 className="p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
               >
                 <span className="sr-only">btn theme</span>
                 <ThemeIcon className="w-5 h-5" />
               </button>
-              {showThemeMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg dark:bg-gray-700 z-50">
-                  <div className="py-1">
-                    {(["light", "dark", "system"] as const).map(
-                      (themeOption) => {
-                        const Icon = themeIcons[themeOption];
-                        return (
-                          <button
-                            key={themeOption}
-                            onClick={() => {
-                              setTheme(themeOption);
-                              setShowThemeMenu(false);
-                            }}
-                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                          >
-                            <Icon className="w-4 h-4 mr-3" />
-                            {t[themeOption]}
-                          </button>
-                        );
-                      }
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            </Tooltip>
 
-            {/* Language Selector */}
-            <div className="relative">
+            {/* Language Switch */}
+            <Tooltip content={t.language}>
               <button
-                onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                className="p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                onClick={toggleLanguage}
+                className="flex items-center space-x-1 p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
               >
                 <span className="sr-only">btn language</span>
                 <LanguageIcon className="w-5 h-5" />
+                {language === "fr" && (
+                  <span className="rounded bg-blue-100 dark:bg-blue-500/20 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:text-blue-300">
+                    fr
+                  </span>
+                )}
               </button>
-              {showLanguageMenu && (
-                <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg dark:bg-gray-700 z-50">
-                  <div className="py-1">
-                    <button
-                      onClick={() => {
-                        setLanguage("fr");
-                        setShowLanguageMenu(false);
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                    >
-                      {t.french}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setLanguage("en");
-                        setShowLanguageMenu(false);
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
-                    >
-                      {t.english}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            </Tooltip>
 
             {/* Notifications */}
             <button className="p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 relative">

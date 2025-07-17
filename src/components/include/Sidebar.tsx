@@ -18,6 +18,8 @@ import {
   EyeIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslations } from "../../hooks/useTranslations";
+import { useAuthStore } from "../../stores/useAuthStore";
+import type { User } from "../../types/auth";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -26,6 +28,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations();
+  const { user, getCurrentUser, isLoading, error } = useAuthStore();
 
   const menuItems = [
     { icon: HomeIcon, label: t.dashboard, href: "/dashboard", active: true },
@@ -91,6 +94,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     </div>
   );
 
+  const getInitials = (user: User | null) => {
+    if (user?.firstname && user?.lastname) {
+      return `${user.firstname.charAt(0)}${user.lastname.charAt(0)}`.toUpperCase();
+    } else if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+  };
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -121,15 +132,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">JD</span>
+                  <span className="text-white text-sm font-medium">{getInitials(user)}</span>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    John Doe
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    john@example.com
-                  </p>
+                  {user?.firstname && user?.lastname && (
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {user.firstname} {user.lastname}
+                    </p>
+                  )}
+                  {user?.email && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {user.email}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
