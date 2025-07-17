@@ -18,6 +18,8 @@
   "terms": "I accept the",
   "termsLink": "terms of service",
   "and": "and",
+  "andOur": "and our",
+  "connectingAgree": "By logging in, you accept our",
   "privacyLink": "privacy policy",
   "register": "Create account",
   "registering": "Creating account...",
@@ -110,6 +112,7 @@
   "oauthGithubPageTitle": "GitHub OAuth - EcoWatch",
   "dashboardPageTitle": "Dashboard - EcoWatch",
   "auth": {
+    "login": "Sign in",
     "login_title": "Sign in to your account",
     "login_subtitle": "Sign in to access your dashboard",
     "register_title": "Create your account",

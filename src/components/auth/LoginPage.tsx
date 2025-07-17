@@ -3,8 +3,10 @@ import { AuthLayout } from "./AuthLayout";
 import { LoginForm } from "./LoginForm";
 import { useTranslations } from "../../hooks/useTranslations";
 import { SocialAuth } from "./SocialAuth";
+import { Alert } from "../ui/Alert";
 
 export const LoginPage: React.FC = () => {
+  const [globalError, setGlobalError] = useState<string | null>(null);
   const t = useTranslations();
 
   const handleLoginSuccess = () => {
@@ -14,6 +16,14 @@ export const LoginPage: React.FC = () => {
 
   const handleSwitchToRegister = () => {
     window.location.href = "/auth/register";
+  };
+
+  const handleSetError = (error: string) => {
+    setGlobalError(error);
+  };
+
+  const clearGlobalError = () => {
+    setGlobalError(null);
   };
 
   return (
@@ -28,6 +38,9 @@ export const LoginPage: React.FC = () => {
         <LoginForm
           onSuccess={handleLoginSuccess}
           onSwitchToRegister={handleSwitchToRegister}
+          globalError={globalError}
+          onClearGlobalError={clearGlobalError}
+          onSetGlobalError={handleSetError}
         />
 
         <div className="relative">
@@ -41,7 +54,7 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <SocialAuth />
+        <SocialAuth onError={handleSetError} />
       </div>
     </AuthLayout>
   );

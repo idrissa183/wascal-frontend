@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
@@ -7,17 +7,23 @@ import { useTranslations } from "../../hooks/useTranslations";
 import { loginSchema, type LoginFormData } from "../../lib/validation";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
-import { Alert } from "../ui/Alert";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { Alert } from "../ui/Alert";
 
 interface LoginFormProps {
   onSuccess?: () => void;
   onSwitchToRegister?: () => void;
+  globalError: string | null;
+  onClearGlobalError: () => void;
+  onSetGlobalError: (error: string) => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({
   onSuccess,
   onSwitchToRegister,
+  globalError,
+  onClearGlobalError,
+  onSetGlobalError,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoading, error, clearError } = useAuthStore();
@@ -33,13 +39,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     mode: "onChange",
   });
 
+  // Propager les erreurs du store vers le parent
+  useEffect(() => {
+    if (error) {
+      onSetGlobalError(error);
+      clearError(); // Nettoyer l'erreur du store
+    }
+  }, [error, onSetGlobalError, clearError]);
+
   const onSubmit = async (data: LoginFormData) => {
-    clearError();
+    onClearGlobalError(); // Effacer les erreurs précédentes
     try {
       await login(data);
       onSuccess?.();
     } catch (error) {
-      // L'erreur est déjà gérée dans le store
+      // L'erreur sera automatiquement propagée via useEffect
       if (error instanceof Error) {
         if (error.message.includes("invalid_credentials")) {
           setError("email", {
@@ -64,9 +78,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive" onClose={clearError}>
-          {error}
+      {/* Affichage des erreurs globales ici */}
+      {globalError && (
+        <Alert variant="destructive" onClose={onClearGlobalError}>
+          {globalError}
         </Alert>
       )}
 

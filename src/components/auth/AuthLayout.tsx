@@ -8,6 +8,7 @@ import {
   MoonIcon,
   ComputerDesktopIcon,
 } from "@heroicons/react/24/outline";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
     dark: MoonIcon,
     system: ComputerDesktopIcon,
   };
+  const t = useTranslations();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -102,20 +104,20 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
       {/* Footer */}
       <div className="mt-8 text-center">
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} {APP_NAME}. Tous droits réservés.
+          © {new Date().getFullYear()} {APP_NAME}. {t.rights}.
         </p>
         <div className="mt-2 space-x-4">
           <a
             href="https://doc-hosting.flycricket.io/la-cause-rurale-privacy-policy/d328883c-83a8-477a-a5fc-1a27aec79002/privacy"
             className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
-            Politique de confidentialité
+            {t.privacy}
           </a>
           <a
             href="https://doc-hosting.flycricket.io/la-cause-rurale-terms-of-use/78422ce1-34a2-4405-80b7-512c558512f7/terms"
             className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
-            Conditions d'utilisation
+            {t.termsText}
           </a>
         </div>
       </div>

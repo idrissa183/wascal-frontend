@@ -4,12 +4,11 @@ import { useTranslations } from "../../hooks/useTranslations";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
-import { Alert } from "../ui/Alert";
 import { getApiBaseUrl } from "../../constants";
 
 interface SocialAuthProps {
   mode?: "login" | "register";
-  onError?: (error: string) => void;
+  onError?: (error: string) => void; // Callback pour propager l'erreur vers le parent
 }
 
 export const SocialAuth: React.FC<SocialAuthProps> = ({
@@ -17,16 +16,14 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
   onError,
 }) => {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const t = useTranslations();
 
   const handleOAuthLogin = async (provider: "google" | "github") => {
     try {
       setLoadingProvider(provider);
-      setError(null);
 
       const apiBaseUrl = getApiBaseUrl();
-      console.log("API Base URL:", apiBaseUrl); // Debug log
+      // console.log("API Base URL:", apiBaseUrl); // Debug log
 
       // Sauvegarder l'URL de retour
       const currentUrl = window.location.pathname + window.location.search;
@@ -49,6 +46,7 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.detail ||
+            t.errors.server_error ||
             `Erreur lors de l'initiation de l'authentification ${provider}`
         );
       }
@@ -65,10 +63,11 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
       const errorMessage =
         error instanceof Error
           ? error.message
-          : `Erreur d'authentification ${provider}`;
+          : t.errors.unknown_error || `Erreur d'authentification ${provider}`;
 
-      console.error(`${provider} OAuth error:`, error);
-      setError(errorMessage);
+      // console.error(`${provider} OAuth error:`, error);
+
+      // Propager l'erreur vers le composant parent au lieu de l'afficher localement
       onError?.(errorMessage);
     } finally {
       setLoadingProvider(null);
@@ -91,12 +90,6 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
   return (
     <div className="space-y-3">
-      {error && (
-        <Alert variant="destructive" onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
       <Button
         type="button"
         variant="outline"
@@ -130,16 +123,19 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
       {/* Instructions pour l'utilisateur */}
       <div className="text-center">
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          En vous connectant, vous acceptez nos{" "}
-          <a href="/terms" className="text-primary-600 hover:text-primary-500">
-            conditions d'utilisation
-          </a>{" "}
-          et notre{" "}
+          {t.connectingAgree}{" "}
           <a
-            href="/privacy"
+            href="https://doc-hosting.flycricket.io/la-cause-rurale-terms-of-use/78422ce1-34a2-4405-80b7-512c558512f7/terms"
             className="text-primary-600 hover:text-primary-500"
           >
-            politique de confidentialité
+            {t.termsLink}
+          </a>{" "}
+          {t.andOur}{" "}
+          <a
+            href="https://doc-hosting.flycricket.io/la-cause-rurale-privacy-policy/d328883c-83a8-477a-a5fc-1a27aec79002/privacy"
+            className="text-primary-600 hover:text-primary-500"
+          >
+            {t.privacyLink}
           </a>
         </p>
       </div>

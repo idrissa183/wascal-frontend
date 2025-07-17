@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
@@ -7,17 +7,23 @@ import { useTranslations } from "../../hooks/useTranslations";
 import { registerSchema, type RegisterFormData } from "../../lib/validation";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
-import { Alert } from "../ui/Alert";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { Alert } from "../ui/Alert";
 
 interface RegisterFormProps {
   onSuccess?: () => void;
   onSwitchToLogin?: () => void;
+  globalError: string | null;
+  onClearGlobalError: () => void;
+  onSetGlobalError: (error: string) => void;
 }
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({
   onSuccess,
   onSwitchToLogin,
+  globalError,
+  onClearGlobalError,
+  onSetGlobalError,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -42,13 +48,21 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
   const watchPassword = watch("password");
 
+  // Propager les erreurs du store vers le parent
+  useEffect(() => {
+    if (error) {
+      onSetGlobalError(error);
+      clearError();
+    }
+  }, [error, onSetGlobalError, clearError]);
+
   const onSubmit = async (data: RegisterFormData) => {
     clearError();
     try {
       await registerUser(data);
       onSuccess?.();
     } catch (error) {
-      // L'erreur est déjà gérée dans le store
+      // L'erreur sera automatiquement propagée via useEffect
       if (error instanceof Error) {
         if (error.message.includes("email_already_exists")) {
           setError("email", {
@@ -98,9 +112,10 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive" onClose={clearError}>
-          {error}
+      {/* Affichage des erreurs globales ici */}
+      {globalError && (
+        <Alert variant="destructive" onClose={onClearGlobalError}>
+          {globalError}
         </Alert>
       )}
 
@@ -275,7 +290,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             >
               {t.terms || "I accept the"}{" "}
               <a
-                href="/terms"
+                href="https://doc-hosting.flycricket.io/la-cause-rurale-terms-of-use/78422ce1-34a2-4405-80b7-512c558512f7/terms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
@@ -284,7 +299,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
               </a>{" "}
               {t.and || "and"}{" "}
               <a
-                href="/privacy"
+                href="https://doc-hosting.flycricket.io/la-cause-rurale-privacy-policy/d328883c-83a8-477a-a5fc-1a27aec79002/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
