@@ -1,4 +1,3 @@
-// src/components/auth/AuthCallbackClient.tsx - Version corrigée
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useTranslations } from "../../hooks/useTranslations";
@@ -6,6 +5,7 @@ import { AuthLayout } from "./AuthLayout";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
+import { getApiBaseUrl } from "../../constants"; // Import ajouté
 
 export const AuthCallbackClient: React.FC = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
@@ -27,6 +27,14 @@ export const AuthCallbackClient: React.FC = () => {
         const userId = urlParams.get("user_id");
         const error = urlParams.get("error");
         const provider = window.location.pathname.split("/").pop(); // google ou github
+
+        console.log("OAuth callback parameters:", {
+          accessToken: accessToken ? "present" : "missing",
+          refreshToken: refreshToken ? "present" : "missing",
+          userId,
+          error,
+          provider,
+        });
 
         // Vérifier s'il y a une erreur OAuth
         if (error) {
@@ -58,9 +66,13 @@ export const AuthCallbackClient: React.FC = () => {
         localStorage.setItem("access_token", accessToken);
         localStorage.setItem("refresh_token", refreshToken);
 
+        // Récupérer l'URL de base de l'API correctement
+        const apiBaseUrl = getApiBaseUrl();
+        console.log("Using API Base URL:", apiBaseUrl); // Debug log
+
         // Récupérer les informations utilisateur avec le token
         const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/auth/me`,
+          `${apiBaseUrl}/api/auth/me`, // Utilisation de getApiBaseUrl()
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -69,13 +81,18 @@ export const AuthCallbackClient: React.FC = () => {
           }
         );
 
+        console.log("User info response status:", response.status);
+
         if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
           throw new Error(
-            "Impossible de récupérer les informations utilisateur"
+            errorData.detail ||
+              "Impossible de récupérer les informations utilisateur"
           );
         }
 
         const userData = await response.json();
+        console.log("User data received:", userData);
 
         // Mettre à jour le store
         setUser(userData);
