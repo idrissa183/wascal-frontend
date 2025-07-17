@@ -192,7 +192,7 @@ export const ForgotPasswordPage: React.FC = () => {
         </form>
 
         {/* Aide supplémentaire */}
-        <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        {/* <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
             Besoin d'aide ?
           </h4>
@@ -201,7 +201,7 @@ export const ForgotPasswordPage: React.FC = () => {
             <li>• Vérifiez que votre email est correctement écrit</li>
             <li>• Contactez le support si le problème persiste</li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </AuthLayout>
   );

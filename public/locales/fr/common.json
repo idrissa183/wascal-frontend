@@ -159,6 +159,13 @@
       "good": "Bon",
       "strong": "Fort"
     },
+    "password_security": {
+      "title": "Conseils pour un mot de passe sécurisé :",
+      "use_at_least_8_characters": "Utilisez au moins 8 caractères",
+      "mix_upper_lower_numbers_symbols": "Mélangez majuscules, minuscules, chiffres et symboles",
+      "avoid_common_words": "Évitez les mots courants ou informations personnelles",
+      "unique_password": "N'utilisez pas ce mot de passe ailleurs"
+    },
     "oauth": {
       "continue_with_google": "Continuer avec Google",
       "continue_with_github": "Continuer avec GitHub",

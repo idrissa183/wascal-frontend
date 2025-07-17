@@ -159,6 +159,13 @@
       "good": "Good",
       "strong": "Strong"
     },
+    "password_security": {
+      "title": "Tips for a secure password:",
+      "use_at_least_8_characters": "Use at least 8 characters",
+      "mix_upper_lower_numbers_symbols": "Mix uppercase, lowercase, numbers and symbols",
+      "avoid_common_words": "Avoid common words or personal information",
+      "unique_password": "Do not reuse this password elsewhere"
+    },
     "oauth": {
       "continue_with_google": "Continue with Google",
       "continue_with_github": "Continue with GitHub",

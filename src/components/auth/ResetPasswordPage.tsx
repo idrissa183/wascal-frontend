@@ -355,7 +355,7 @@ export const ResetPasswordPage: React.FC = () => {
         </form>
 
         {/* Conseils de sécurité */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        {/* <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
             Conseils pour un mot de passe sécurisé :
           </h4>
@@ -365,7 +365,7 @@ export const ResetPasswordPage: React.FC = () => {
             <li>• Évitez les mots courants ou informations personnelles</li>
             <li>• N'utilisez pas ce mot de passe ailleurs</li>
           </ul>
-        </div>
+        </div> */}
       </div>
     </AuthLayout>
   );
