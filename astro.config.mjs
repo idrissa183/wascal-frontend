@@ -29,6 +29,15 @@ export default defineConfig({
         overlay: false, // Désactive l'overlay d'erreur pour éviter les conflits
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          entryFileNames: "_astro/[name].[hash].js",
+          chunkFileNames: "_astro/[name].[hash].js",
+          assetFileNames: "_astro/[name].[hash][extname]",
+        },
+      },
+    },
   },
   site: "https://idrissa183.github.io",
   // base: '/ecowatch.com',
@@ -40,12 +49,5 @@ export default defineConfig({
   // Configuration de build pour éviter les erreurs
   build: {
     assets: "_astro",
-    rollupOptions: {
-      output: {
-        entryFileNames: "_astro/[name].[hash].js",
-        chunkFileNames: "_astro/[name].[hash].js",
-        assetFileNames: "_astro/[name].[hash][extname]",
-      },
-    },
   },
 });
