@@ -146,14 +146,20 @@ export const OAUTH_CONFIG = {
   PROVIDERS: {
     GOOGLE: "google",
     GITHUB: "github",
+    FACEBOOK: "facebook",
+    LINKEDIN: "linkedin",
   },
   CALLBACK_ROUTES: {
     GOOGLE: "/auth/callback/google",
     GITHUB: "/auth/callback/github",
+    FACEBOOK: "/auth/callback/facebook",
+    LINKEDIN: "/auth/callback/linkedin",
   },
   SCOPES: {
     GOOGLE: ["openid", "email", "profile"],
     GITHUB: ["user:email"],
+    FACEBOOK: ["email", "public_profile"],
+    LINKEDIN: ["r_liteprofile", "r_emailaddress"],
   },
 } as const;
 

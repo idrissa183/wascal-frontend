@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { useTranslations } from "../../hooks/useTranslations";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
+import { FaGithub, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { getApiBaseUrl } from "../../constants";
 
@@ -18,7 +18,9 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const t = useTranslations();
 
-  const handleOAuthLogin = async (provider: "google" | "github") => {
+  const handleOAuthLogin = async (
+    provider: "google" | "github" | "facebook" | "linkedin"
+  ) => {
     try {
       setLoadingProvider(provider);
 
@@ -76,15 +78,60 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
   const isRegisterMode = mode === "register";
 
-  const getButtonText = (provider: "google" | "github") => {
+  const getButtonText = (
+    provider: "google" | "github" | "facebook" | "linkedin"
+  ) => {
     if (isRegisterMode) {
-      return provider === "google"
-        ? t.auth?.oauth?.signup_with_google || "S'inscrire avec Google"
-        : t.auth?.oauth?.signup_with_github || "S'inscrire avec GitHub";
+      switch (provider) {
+        case "google":
+          return t.auth?.oauth?.signup_with_google || "S'inscrire avec Google";
+        case "github":
+          return t.auth?.oauth?.signup_with_github || "S'inscrire avec GitHub";
+        case "facebook":
+          return (
+            t.auth?.oauth?.signup_with_facebook || "S'inscrire avec Facebook"
+          );
+        case "linkedin":
+          return (
+            t.auth?.oauth?.signup_with_linkedin || "S'inscrire avec LinkedIn"
+          );
+        default:
+          return `S'inscrire avec ${provider}`;
+      }
     } else {
-      return provider === "google"
-        ? t.auth?.oauth?.login_with_google || "Se connecter avec Google"
-        : t.auth?.oauth?.login_with_github || "Se connecter avec GitHub";
+      switch (provider) {
+        case "google":
+          return t.auth?.oauth?.login_with_google || "Se connecter avec Google";
+        case "github":
+          return t.auth?.oauth?.login_with_github || "Se connecter avec GitHub";
+        case "facebook":
+          return (
+            t.auth?.oauth?.login_with_facebook || "Se connecter avec Facebook"
+          );
+        case "linkedin":
+          return (
+            t.auth?.oauth?.login_with_linkedin || "Se connecter avec LinkedIn"
+          );
+        default:
+          return `Se connecter avec ${provider}`;
+      }
+    }
+  };
+
+  const getProviderIcon = (
+    provider: "google" | "github" | "facebook" | "linkedin"
+  ) => {
+    switch (provider) {
+      case "google":
+        return <FcGoogle className="h-5 w-5 mr-2" />;
+      case "github":
+        return <FaGithub className="h-5 w-5 mr-2" />;
+      case "facebook":
+        return <FaFacebook className="h-5 w-5 mr-2 text-blue-600" />;
+      case "linkedin":
+        return <FaLinkedin className="h-5 w-5 mr-2 text-blue-700" />;
+      default:
+        return null;
     }
   };
 
@@ -100,7 +147,7 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         {loadingProvider === "google" ? (
           <LoadingSpinner size="sm" className="mr-2" />
         ) : (
-          <FcGoogle className="h-5 w-5 mr-2" />
+          getProviderIcon("google")
         )}
         {getButtonText("google")}
       </Button>
@@ -115,9 +162,39 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         {loadingProvider === "github" ? (
           <LoadingSpinner size="sm" className="mr-2" />
         ) : (
-          <FaGithub className="h-5 w-5 mr-2" />
+          getProviderIcon("github")
         )}
         {getButtonText("github")}
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => handleOAuthLogin("facebook")}
+        disabled={loadingProvider !== null}
+        className="w-full"
+      >
+        {loadingProvider === "facebook" ? (
+          <LoadingSpinner size="sm" className="mr-2" />
+        ) : (
+          getProviderIcon("facebook")
+        )}
+        {getButtonText("facebook")}
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => handleOAuthLogin("linkedin")}
+        disabled={loadingProvider !== null}
+        className="w-full"
+      >
+        {loadingProvider === "linkedin" ? (
+          <LoadingSpinner size="sm" className="mr-2" />
+        ) : (
+          getProviderIcon("linkedin")
+        )}
+        {getButtonText("linkedin")}
       </Button>
 
       {/* Instructions pour l'utilisateur */}

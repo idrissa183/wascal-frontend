@@ -162,10 +162,16 @@
     "oauth": {
       "continue_with_google": "Continue with Google",
       "continue_with_github": "Continue with GitHub",
+      "continue_with_facebook": "Continue with Facebook",
+      "continue_with_linkedin": "Continue with LinkedIn",
       "login_with_google": "Sign in with Google",
       "login_with_github": "Sign in with GitHub",
+      "login_with_facebook": "Sign in with Facebook",
+      "login_with_linkedin": "Sign in with LinkedIn",
       "signup_with_google": "Sign up with Google",
-      "signup_with_github": "Sign up with GitHub"
+      "signup_with_github": "Sign up with GitHub",
+      "signup_with_facebook": "Sign up with Facebook",
+      "signup_with_linkedin": "Sign up with LinkedIn"
     }
   },
   "user": {
