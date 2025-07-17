@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "../constants";
+import { getApiBaseUrl } from "../constants";
 import type {
   AuthResponse,
   LoginRequest,
@@ -7,13 +7,18 @@ import type {
 } from "../types/auth";
 
 class AuthService {
-  private baseUrl = API_BASE_URL;
+  private get baseUrl() {
+    return getApiBaseUrl();
+  }
+
   private tokenKey = "access_token";
   private refreshTokenKey = "refresh_token";
   private userKey = "user_data";
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     try {
+      console.log("Using API Base URL:", this.baseUrl); // Debug log
+
       const response = await fetch(`${this.baseUrl}/api/auth/login`, {
         method: "POST",
         headers: {

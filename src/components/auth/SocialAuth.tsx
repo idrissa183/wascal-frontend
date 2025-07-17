@@ -1,4 +1,3 @@
-// src/components/auth/SocialAuth.tsx - Version corrigée
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { useTranslations } from "../../hooks/useTranslations";
@@ -6,6 +5,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
+import { getApiBaseUrl } from "../../constants";
 
 interface SocialAuthProps {
   mode?: "login" | "register";
@@ -25,6 +25,9 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
       setLoadingProvider(provider);
       setError(null);
 
+      const apiBaseUrl = getApiBaseUrl();
+      console.log("API Base URL:", apiBaseUrl); // Debug log
+
       // Sauvegarder l'URL de retour
       const currentUrl = window.location.pathname + window.location.search;
       if (currentUrl !== "/auth/login" && currentUrl !== "/auth/register") {
@@ -33,7 +36,7 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
       // Appeler l'API backend pour obtenir l'URL d'autorisation
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/auth/oauth/${provider}/login`,
+        `${apiBaseUrl}/api/auth/oauth/${provider}/login`,
         {
           method: "GET",
           headers: {

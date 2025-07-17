@@ -1,13 +1,24 @@
-// src/constants/index.ts
+// src/constants/index.ts - Version corrigée
 export const APP_NAME = "EcoWatch";
 export const APP_VERSION = "1.0.0";
 
-// Configuration de l'API
+// Configuration de l'API avec fallback
 export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.MODE === "production"
-    ? "https://api.ecowatch.com"
-    : "http://localhost:8000");
+  (typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:8000"
+    : "https://api.ecowatch.com");
+
+// Fonction pour obtenir l'URL de base de l'API
+export const getApiBaseUrl = (): string => {
+  // En mode développement
+  if (import.meta.env.DEV) {
+    return import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  }
+
+  // En production
+  return import.meta.env.VITE_API_BASE_URL || "https://api.ecowatch.com";
+};
 
 // Langues supportées
 export const SUPPORTED_LANGUAGES = ["fr", "en"] as const;
