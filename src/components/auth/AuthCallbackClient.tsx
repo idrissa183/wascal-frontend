@@ -28,13 +28,13 @@ export const AuthCallbackClient: React.FC = () => {
         const error = urlParams.get("error");
         const provider = window.location.pathname.split("/").pop(); // google ou github
 
-        console.log("OAuth callback parameters:", {
-          accessToken: accessToken ? "present" : "missing",
-          refreshToken: refreshToken ? "present" : "missing",
-          userId,
-          error,
-          provider,
-        });
+        // console.log("OAuth callback parameters:", {
+        //   accessToken: accessToken ? "present" : "missing",
+        //   refreshToken: refreshToken ? "present" : "missing",
+        //   userId,
+        //   error,
+        //   provider,
+        // });
 
         // Vérifier s'il y a une erreur OAuth
         if (error) {
@@ -68,7 +68,7 @@ export const AuthCallbackClient: React.FC = () => {
 
         // Récupérer l'URL de base de l'API correctement
         const apiBaseUrl = getApiBaseUrl();
-        console.log("Using API Base URL:", apiBaseUrl); // Debug log
+        // console.log("Using API Base URL:", apiBaseUrl); // Debug log
 
         // Récupérer les informations utilisateur avec le token
         const response = await fetch(
@@ -81,7 +81,7 @@ export const AuthCallbackClient: React.FC = () => {
           }
         );
 
-        console.log("User info response status:", response.status);
+        // console.log("User info response status:", response.status);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -92,7 +92,7 @@ export const AuthCallbackClient: React.FC = () => {
         }
 
         const userData = await response.json();
-        console.log("User data received:", userData);
+        // console.log("User data received:", userData);
 
         // Mettre à jour le store
         setUser(userData);
@@ -114,7 +114,7 @@ export const AuthCallbackClient: React.FC = () => {
           window.location.href = returnUrl;
         }, 2000);
       } catch (error) {
-        console.error("OAuth callback error:", error);
+        // console.error("OAuth callback error:", error);
         setError(
           error instanceof Error
             ? error.message
