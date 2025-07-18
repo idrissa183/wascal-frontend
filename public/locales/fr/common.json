@@ -123,6 +123,8 @@
     "password_reset_sent": "Un lien de réinitialisation a été envoyé à",
     "email_not_received": "Vous ne recevez pas l'email ? Vérifiez vos spams ou ressayez.",
     "back_to_login": "Retour à la connexion",
+    "back_to_home": "Retour à l'accueil",
+    "go_to_dashboard": "Aller au tableau de bord",
     "try_another_email": "Essayer avec un autre email",
     "forgot_password_title": "Mot de passe oublié",
     "forgot_password_subtitle": "Entrez votre email pour recevoir un lien de réinitialisation",

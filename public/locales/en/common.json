@@ -123,6 +123,8 @@
     "password_reset_sent": "A password reset link has been sent to",
     "email_not_received": "Didn't receive the email? Check your spam or try again.",
     "back_to_login": "Back to login",
+    "back_to_home": "Back to home",
+    "go_to_dashboard": "Go to dashboard",
     "try_another_email": "Try another email",
     "forgot_password_title": "Forgot password",
     "forgot_password_subtitle": "Enter your email to receive a reset link",

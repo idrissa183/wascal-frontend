@@ -187,7 +187,7 @@ export const AuthCallbackClient: React.FC = () => {
               </p>
             </div>
             <Button onClick={handleGoToDashboard} className="w-full">
-              Aller au tableau de bord
+              {t.auth?.go_to_dashboard}
             </Button>
           </div>
         );
@@ -231,7 +231,7 @@ export const AuthCallbackClient: React.FC = () => {
                 onClick={() => (window.location.href = "/")}
                 className="w-full"
               >
-                Retour à l'accueil
+               {t.auth?.back_to_home}
               </Button>
             </div>
           </div>
