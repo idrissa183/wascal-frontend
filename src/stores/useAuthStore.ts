@@ -20,6 +20,8 @@ interface AuthStore extends AuthState {
   ) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
+  verifyEmail: (token: string) => Promise<void>;
+  resendVerificationEmail: (email: string) => Promise<void>;
   clearError: () => void;
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
@@ -59,9 +61,11 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
         try {
           const response = await authService.register(userData);
+          // Après l'inscription, l'utilisateur n'est pas automatiquement connecté
+          // Il doit vérifier son email d'abord
           set({
-            user: response.user,
-            isAuthenticated: false, // L'utilisateur devra peut-être vérifier son email
+            user: null, // Pas d'utilisateur connecté après inscription
+            isAuthenticated: false, // Pas connecté
             isLoading: false,
             error: null,
           });
@@ -191,6 +195,41 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
             error:
               error instanceof Error ? error.message : "Password reset failed",
+          });
+          throw error;
+        }
+      },
+
+      verifyEmail: async (token: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          await authService.verifyEmail(token);
+          set({ isLoading: false });
+          
+          // Optionnel: récupérer les informations utilisateur après vérification
+          // Note: l'utilisateur devra toujours se connecter après vérification
+        } catch (error) {
+          set({
+            isLoading: false,
+            error:
+              error instanceof Error ? error.message : "Email verification failed",
+          });
+          throw error;
+        }
+      },
+
+      resendVerificationEmail: async (email: string) => {
+        set({ isLoading: true, error: null });
+        try {
+          await authService.resendVerificationEmail(email);
+          set({ isLoading: false });
+        } catch (error) {
+          set({
+            isLoading: false,
+            error:
+              error instanceof Error 
+                ? error.message 
+                : "Failed to resend verification email",
           });
           throw error;
         }

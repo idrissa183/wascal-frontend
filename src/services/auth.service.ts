@@ -75,8 +75,10 @@ class AuthService {
 
       const data = await response.json();
 
+      // Après l'inscription, pas de connexion automatique
+      // L'utilisateur doit vérifier son email d'abord
       return {
-        user: data,
+        user: null,
         access_token: "",
         refresh_token: "",
         token_type: "bearer",
@@ -286,8 +288,34 @@ class AuthService {
     }
   }
 
+  async resendVerificationEmail(email: string): Promise<void> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/api/auth/resend-verification`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Failed to resend verification email");
+      }
+    } catch (error) {
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : "Failed to resend verification email"
+      );
+    }
+  }
+
   // OAuth methods
-  async initiateOAuthLogin(provider: "google" | "github"): Promise<string> {
+  async initiateOAuthLogin(provider: "google" | "github | facebook | linkedin"): Promise<string> {
     try {
       const response = await fetch(
         `${this.baseUrl}/api/auth/oauth/${provider}/login`
