@@ -8,7 +8,7 @@ const $$NotFound = createComponent(($$result, $$props, $$slots) => {
 }, "/home/idrissa183/Documents/PFE/Idrissa/project/frontend/src/pages/notFound.astro", void 0);
 
 const $$file = "/home/idrissa183/Documents/PFE/Idrissa/project/frontend/src/pages/notFound.astro";
-const $$url = "/notFound";
+const $$url = "/wascal-frontend/notFound";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
