@@ -47,7 +47,7 @@ Exportez vos analyses et rapports dans différents formats (CSV, PDF,
 }, "/home/idrissa183/Documents/PFE/Idrissa/project/frontend/src/pages/starter.astro", void 0);
 
 const $$file = "/home/idrissa183/Documents/PFE/Idrissa/project/frontend/src/pages/starter.astro";
-const $$url = "/wascal-frontend/starter";
+const $$url = "/starter";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
