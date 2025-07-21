@@ -77,7 +77,13 @@ export const ResetPasswordPage: React.FC = () => {
     if (/\d/.test(password)) strength++;
     if (/[^A-Za-z0-9]/.test(password)) strength++;
 
-    const labels = ["Très faible", "Faible", "Moyen", "Fort", "Très fort"];
+    const labels = [
+      t.auth?.password_strength?.very_weak || "Très faible",
+      t.auth?.password_strength?.weak || "Faible",
+      t.auth?.password_strength?.fair || "Moyen",
+      t.auth?.password_strength?.good || "Fort",
+      t.auth?.password_strength?.strong || "Très fort",
+    ];
     const colors = [
       "bg-red-500",
       "bg-orange-500",
@@ -109,10 +115,12 @@ export const ResetPasswordPage: React.FC = () => {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Lien de réinitialisation invalide
+              {t.auth?.invalid_reset_link_title ||
+                "Lien de réinitialisation invalide"}{" "}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Ce lien de réinitialisation n'est plus valide ou a expiré.
+              {t.auth?.invalid_reset_link_message ||
+                "Ce lien de réinitialisation n'est plus valide ou a expiré."}{" "}
             </p>
           </div>
 
@@ -121,14 +129,14 @@ export const ResetPasswordPage: React.FC = () => {
               onClick={() => (window.location.href = "/auth/forgot-password")}
               className="w-full"
             >
-              Demander un nouveau lien
+              {t.auth?.request_new_link || "Demander un nouveau lien"}
             </Button>
             <Button
               variant="outline"
               onClick={() => (window.location.href = "/auth/login")}
               className="w-full"
             >
-              Retour à la connexion
+              {t.auth?.back_to_login || "Retour à la connexion"}
             </Button>
           </div>
         </div>
@@ -140,8 +148,11 @@ export const ResetPasswordPage: React.FC = () => {
   if (success) {
     return (
       <AuthLayout
-        title="Mot de passe modifié"
-        subtitle="Votre mot de passe a été modifié avec succès"
+        title={t.auth?.password_changed_title || "Mot de passe modifié"}
+        subtitle={
+          t.auth?.password_changed_subtitle ||
+          "Votre mot de passe a été modifié avec succès"
+        }
       >
         <div className="text-center space-y-6">
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/20">
@@ -150,11 +161,11 @@ export const ResetPasswordPage: React.FC = () => {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Mot de passe modifié avec succès !
+              {t.user?.password_changed || "Mot de passe modifié avec succès !"}{" "}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Vous pouvez maintenant vous connecter avec votre nouveau mot de
-              passe.
+              {t.auth?.password_change_login_prompt ||
+                "Vous pouvez maintenant vous connecter avec votre nouveau mot de passe."}
             </p>
           </div>
 
@@ -162,7 +173,7 @@ export const ResetPasswordPage: React.FC = () => {
             onClick={() => (window.location.href = "/auth/login")}
             className="w-full"
           >
-            Se connecter
+            {t.auth?.go_to_login || "Se connecter"}
           </Button>
         </div>
       </AuthLayout>
@@ -173,13 +184,17 @@ export const ResetPasswordPage: React.FC = () => {
   if (tokenValid === null) {
     return (
       <AuthLayout
-        title="Vérification..."
-        subtitle="Vérification du lien de réinitialisation"
+        title={t.auth?.verifying_link_title || "Vérification..."}
+        subtitle={
+          t.auth?.verifying_link_subtitle ||
+          "Vérification du lien de réinitialisation"
+        }
       >
         <div className="text-center space-y-6">
           <LoadingSpinner size="lg" />
           <p className="text-gray-600 dark:text-gray-400">
-            Vérification du lien de réinitialisation...
+            {t.auth?.verifying_link_message ||
+              "Vérification du lien de réinitialisation..."}{" "}
           </p>
         </div>
       </AuthLayout>
@@ -189,7 +204,10 @@ export const ResetPasswordPage: React.FC = () => {
   return (
     <AuthLayout
       title={t.auth?.reset_password_title || "Nouveau mot de passe"}
-      subtitle="Choisissez un mot de passe fort et sécurisé"
+      subtitle={
+        t.auth?.choose_strong_password ||
+        "Choisissez un mot de passe fort et sécurisé"
+      }
     >
       <div className="space-y-6">
         {error && (
@@ -206,7 +224,7 @@ export const ResetPasswordPage: React.FC = () => {
               htmlFor="newPassword"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
-              Nouveau mot de passe
+              {t.auth?.new_password || "Nouveau mot de passe"}
             </label>
             <div className="relative">
               <Input
@@ -261,7 +279,7 @@ export const ResetPasswordPage: React.FC = () => {
                     <span className="mr-1">
                       {watchPassword.length >= 8 ? "✓" : "○"}
                     </span>
-                    8+ caractères
+                    {t.auth?.password_criteria?.length || "8+ caractères"}{" "}
                   </div>
                   <div
                     className={`flex items-center ${
@@ -273,7 +291,7 @@ export const ResetPasswordPage: React.FC = () => {
                     <span className="mr-1">
                       {/[A-Z]/.test(watchPassword) ? "✓" : "○"}
                     </span>
-                    Majuscule
+                    {t.auth?.password_criteria?.uppercase || "Majuscule"}{" "}
                   </div>
                   <div
                     className={`flex items-center ${
@@ -285,7 +303,7 @@ export const ResetPasswordPage: React.FC = () => {
                     <span className="mr-1">
                       {/[a-z]/.test(watchPassword) ? "✓" : "○"}
                     </span>
-                    Minuscule
+                    {t.auth?.password_criteria?.lowercase || "Minuscule"}{" "}
                   </div>
                   <div
                     className={`flex items-center ${
@@ -297,7 +315,7 @@ export const ResetPasswordPage: React.FC = () => {
                     <span className="mr-1">
                       {/\d/.test(watchPassword) ? "✓" : "○"}
                     </span>
-                    Chiffre
+                    {t.auth?.password_criteria?.number || "Chiffre"}
                   </div>
                 </div>
               </div>
@@ -309,14 +327,18 @@ export const ResetPasswordPage: React.FC = () => {
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
             >
-              Confirmer le mot de passe
+              {t.confirmPassword || "Confirmer le mot de passe"}{" "}
             </label>
             <div className="relative">
               <Input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 autoComplete="new-password"
-                placeholder="Confirmez votre nouveau mot de passe"
+                placeholder={
+                  t.auth?.confirm_new_password_placeholder ||
+                  t.confirmPasswordPlaceholder ||
+                  "Confirmez votre nouveau mot de passe"
+                }
                 error={errors.confirmPassword?.message}
                 className="pr-10"
                 {...register("confirmPassword")}
@@ -346,10 +368,12 @@ export const ResetPasswordPage: React.FC = () => {
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <LoadingSpinner size="sm" />
-                <span className="ml-2">Modification en cours...</span>
+                <span className="ml-2">
+                  {t.auth?.updating_password || "Modification en cours..."}
+                </span>
               </div>
             ) : (
-              "Modifier le mot de passe"
+              t.auth?.update_password || "Modifier le mot de passe"
             )}
           </Button>
         </form>

@@ -57,7 +57,9 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
 
   const handleResendVerification = async () => {
     if (!email) {
-      setError("Veuillez entrer votre adresse email");
+      setError(
+        t.validation?.email_required || "Veuillez entrer votre adresse email"
+      );
       return;
     }
 
@@ -77,7 +79,8 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
       setError(
         error instanceof Error
           ? error.message
-          : "Échec de l'envoi de l'email de vérification"
+          : t.auth?.resend_verification_failed ||
+              "Échec de l'envoi de l'email de vérification"
       );
     }
   };
@@ -115,7 +118,8 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
                 {t.auth?.verify_email_success || "Email vérifié avec succès !"}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Votre compte est maintenant activé. Vous pouvez vous connecter.
+                {t.auth?.account_activated_message ||
+                  "Votre compte est maintenant activé. Vous pouvez vous connecter."}{" "}
               </p>
             </div>
             <Button onClick={handleGoToLogin} className="w-full">
@@ -185,7 +189,8 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
                 {t.auth?.sending || "Envoi en cours..."}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Envoi d'un nouveau lien de vérification...
+                {t.auth?.sending_new_verification ||
+                  "Envoi d'un nouveau lien de vérification..."}
               </p>
             </div>
           </div>
@@ -201,10 +206,10 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
       title={t.auth?.verify_email_title || "Vérification de l'email"}
       subtitle={
         status === "success"
-          ? "Compte activé avec succès"
+          ? t.auth?.account_activated || "Compte activé avec succès"
           : status === "error"
-          ? "Problème de vérification"
-          : "Vérification en cours..."
+          ? t.auth?.verification_problem || "Problème de vérification"
+          : t.auth?.verification_in_progress || "Vérification en cours..."
       }
     >
       {renderContent()}

@@ -70,7 +70,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Email envoyé avec succès !
+              {t.auth?.email_sent_success || "Email envoyé avec succès !"}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {t.auth?.password_reset_sent ||
@@ -84,13 +84,29 @@ export const ForgotPasswordPage: React.FC = () => {
                 <EnvelopeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
                 <div className="text-left">
                   <p className="text-xs text-blue-800 dark:text-blue-200 font-medium">
-                    Instructions :
+                    {t.auth?.email_instructions?.title || "Instructions :"}
                   </p>
                   <ul className="text-xs text-blue-700 dark:text-blue-300 mt-1 space-y-1">
-                    <li>• Vérifiez votre boîte de réception</li>
-                    <li>• Regardez dans vos spams si nécessaire</li>
-                    <li>• Le lien expire dans 1 heure</li>
-                    <li>• Cliquez sur le lien pour réinitialiser</li>
+                    <li>
+                      •{" "}
+                      {t.auth?.email_instructions?.check_inbox ||
+                        "Vérifiez votre boîte de réception"}
+                    </li>
+                    <li>
+                      •{" "}
+                      {t.auth?.email_instructions?.check_spam ||
+                        "Regardez dans vos spams si nécessaire"}
+                    </li>
+                    <li>
+                      •{" "}
+                      {t.auth?.email_instructions?.link_expires ||
+                        "Le lien expire dans 1 heure"}
+                    </li>
+                    <li>
+                      •{" "}
+                      {t.auth?.email_instructions?.click_link ||
+                        "Cliquez sur le lien pour réinitialiser"}
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -107,7 +123,7 @@ export const ForgotPasswordPage: React.FC = () => {
               variant="outline"
               className="w-full"
             >
-              Essayer avec un autre email
+              {t.auth?.try_another_email || "Essayer avec un autre email"}{" "}
             </Button>
 
             <Button
@@ -126,11 +142,11 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <AuthLayout
-      // title={t.auth?.forgot_password_title || "Mot de passe oublié"}
-      // subtitle={
-      //   t.auth?.forgot_password_subtitle ||
-      //   "Entrez votre email pour recevoir un lien de réinitialisation"
-      // }
+    // title={t.auth?.forgot_password_title || "Mot de passe oublié"}
+    // subtitle={
+    //   t.auth?.forgot_password_subtitle ||
+    //   "Entrez votre email pour recevoir un lien de réinitialisation"
+    // }
     >
       <div className="space-y-6">
         <div>
