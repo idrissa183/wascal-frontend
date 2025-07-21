@@ -1,7 +1,7 @@
 import { c as createComponent, r as renderComponent, a as renderTemplate, m as maybeRenderHead, d as addAttribute } from './astro/server.DhtUQlNh.js';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$Layout } from './Layout.BMIBwRy1.js';
+import { $ as $$Layout } from './Layout.CRcQeTE-.js';
 
 const $$Starter = createComponent(($$result, $$props, $$slots) => {
   return renderTemplate`${renderComponent($$result, "Layout", $$Layout, {}, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="space-y-8">  <div class="text-center py-12"> <div class="flex justify-center mb-6"> <div class="h-16 w-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center"> <span class="text-white font-bold text-2xl">EW</span> </div> </div> <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
