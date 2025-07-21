@@ -28,11 +28,11 @@ export const LoginPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title={t.auth?.login_title || "Connexion à votre compte"}
-      subtitle={
-        t.auth?.login_subtitle ||
-        "Connectez-vous pour accéder à votre tableau de bord"
-      }
+      // title={t.auth?.login_title || "Connexion à votre compte"}
+      // subtitle={
+      //   t.auth?.login_subtitle ||
+      //   "Connectez-vous pour accéder à votre tableau de bord"
+      // }
     >
       <div className="space-y-6">
         <LoginForm

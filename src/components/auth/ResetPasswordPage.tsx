@@ -99,8 +99,8 @@ export const ResetPasswordPage: React.FC = () => {
   if (tokenValid === false) {
     return (
       <AuthLayout
-        title="Lien invalide"
-        subtitle="Le lien de réinitialisation est invalide ou a expiré"
+      //   title="Lien invalide"
+      //   subtitle="Le lien de réinitialisation est invalide ou a expiré"
       >
         <div className="text-center space-y-6">
           <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/20">

@@ -40,7 +40,7 @@ export default defineConfig({
     },
   },
   site: "https://idrissa183.github.io",
-  // base: '/ecowatch.com',
+  // base: '/wascal-frontend',
   outDir: "./dist",
 
   // Configuration pour servir les fichiers statiques correctement

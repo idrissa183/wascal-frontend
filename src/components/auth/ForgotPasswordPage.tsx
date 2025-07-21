@@ -126,13 +126,22 @@ export const ForgotPasswordPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title={t.auth?.forgot_password_title || "Mot de passe oublié"}
-      subtitle={
-        t.auth?.forgot_password_subtitle ||
-        "Entrez votre email pour recevoir un lien de réinitialisation"
-      }
+      // title={t.auth?.forgot_password_title || "Mot de passe oublié"}
+      // subtitle={
+      //   t.auth?.forgot_password_subtitle ||
+      //   "Entrez votre email pour recevoir un lien de réinitialisation"
+      // }
     >
       <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {t.auth?.forgot_password_title || "Mot de passe oublié"}
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {t.auth?.forgot_password_subtitle ||
+              "Entrez votre email pour recevoir un lien de réinitialisation"}{" "}
+          </p>
+        </div>
         {error && (
           <Alert variant="destructive" onClose={clearError}>
             {error}
@@ -155,11 +164,11 @@ export const ForgotPasswordPage: React.FC = () => {
               error={errors.email?.message}
               {...register("email")}
             />
-            {!errors.email && (
+            {/* {!errors.email && (
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                 Entrez l'adresse email associée à votre compte
               </p>
-            )}
+            )} */}
           </div>
 
           <Button

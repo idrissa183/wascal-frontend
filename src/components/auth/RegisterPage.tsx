@@ -27,11 +27,11 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title={t.auth?.register_title || "Créer votre compte"}
-      subtitle={
-        t.auth?.register_subtitle ||
-        "Rejoignez-nous pour surveiller l'environnement"
-      }
+      // title={t.auth?.register_title || "Créer votre compte"}
+      // subtitle={
+      //   t.auth?.register_subtitle ||
+      //   "Rejoignez-nous pour surveiller l'environnement"
+      // }
     >
       <div className="space-y-6">
         <RegisterForm
