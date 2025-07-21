@@ -25,14 +25,14 @@ export const LoginPage: React.FC = () => {
     setGlobalError(null);
   };
 
+  // ✅ Gestionnaire pour le succès OAuth
+  const handleOAuthSuccess = () => {
+    console.log("OAuth login successful, redirecting to dashboard...");
+    // La redirection est déjà gérée dans SocialAuth
+  };
+
   return (
-    <AuthLayout
-      // title={t.auth?.login_title || "Connexion à votre compte"}
-      // subtitle={
-      //   t.auth?.login_subtitle ||
-      //   "Connectez-vous pour accéder à votre tableau de bord"
-      // }
-    >
+    <AuthLayout>
       <div className="space-y-6">
         <LoginForm
           onSuccess={handleLoginSuccess}
@@ -53,7 +53,11 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        <SocialAuth onError={handleSetError} />
+        <SocialAuth
+          mode="login"
+          onError={handleSetError}
+          onSuccess={handleOAuthSuccess}
+        />
       </div>
     </AuthLayout>
   );

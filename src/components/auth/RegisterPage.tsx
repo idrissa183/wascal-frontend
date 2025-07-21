@@ -25,14 +25,15 @@ export const RegisterPage: React.FC = () => {
     setGlobalError(null);
   };
 
+  // ✅ Gestionnaire pour le succès OAuth
+  const handleOAuthSuccess = () => {
+    console.log("OAuth registration successful, redirecting to dashboard...");
+    // Pour OAuth, redirection directe vers le dashboard (pas de vérification email)
+    // La redirection est déjà gérée dans SocialAuth
+  };
+
   return (
-    <AuthLayout
-      // title={t.auth?.register_title || "Créer votre compte"}
-      // subtitle={
-      //   t.auth?.register_subtitle ||
-      //   "Rejoignez-nous pour surveiller l'environnement"
-      // }
-    >
+    <AuthLayout>
       <div className="space-y-6">
         <RegisterForm
           onSuccess={handleRegisterSuccess}
@@ -53,7 +54,11 @@ export const RegisterPage: React.FC = () => {
           </div>
         </div>
 
-        <SocialAuth mode="register" onError={handleSetError} />
+        <SocialAuth
+          mode="register"
+          onError={handleSetError}
+          onSuccess={handleOAuthSuccess}
+        />
       </div>
     </AuthLayout>
   );

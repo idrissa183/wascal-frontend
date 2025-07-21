@@ -5,18 +5,22 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { getApiBaseUrl } from "../../constants";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 interface SocialAuthProps {
   mode?: "login" | "register";
   onError?: (error: string) => void;
+  onSuccess?: () => void; // Nouveau callback pour le succès
 }
 
 export const SocialAuth: React.FC<SocialAuthProps> = ({
   mode = "login",
   onError,
+  onSuccess,
 }) => {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const t = useTranslations();
+  const { setUser, setAuthenticated } = useAuthStore();
 
   const handleOAuthLogin = async (
     provider: "google" | "github" | "facebook" | "linkedin"
@@ -26,20 +30,9 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
       const apiBaseUrl = getApiBaseUrl();
 
-      // ✅ FIX: Sauvegarder l'URL de retour correctement
-      const currentPath = window.location.pathname;
-
-      // Pour OAuth, toujours rediriger vers le dashboard après succès
-      if (currentPath === "/auth/login" || currentPath === "/auth/register") {
-        sessionStorage.setItem("oauth_return_url", "/dashboard");
-      } else {
-        // Si on vient d'une autre page, y retourner après connexion
-        sessionStorage.setItem("oauth_return_url", currentPath);
-      }
-
       console.log(`Initiating ${provider} OAuth...`);
 
-      // Appeler l'API backend pour obtenir l'URL d'autorisation
+      // 1. Obtenir l'URL d'autorisation
       const response = await fetch(
         `${apiBaseUrl}/api/auth/oauth/${provider}/login`,
         {
@@ -65,11 +58,76 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         throw new Error(`URL d'authentification ${provider} non disponible`);
       }
 
-      console.log(`Redirecting to ${provider} auth URL:`, data.auth_url);
+      console.log(`Opening ${provider} OAuth popup...`);
 
-      // ✅ FIX: Redirection vers l'URL d'autorisation OAuth avec window.location.href
-      // pour une redirection complète (pas window.open)
-      window.location.href = data.auth_url;
+      // 2. Ouvrir une popup pour l'OAuth au lieu d'une redirection
+      const popup = window.open(
+        data.auth_url,
+        `${provider}_oauth`,
+        "width=500,height=600,scrollbars=yes,resizable=yes"
+      );
+
+      if (!popup) {
+        throw new Error(
+          "Impossible d'ouvrir la popup. Vérifiez que les popups ne sont pas bloquées."
+        );
+      }
+
+      // 3. Écouter les messages de la popup
+      const handleMessage = async (event: MessageEvent) => {
+        // Vérifier l'origine pour la sécurité
+        if (event.origin !== window.location.origin) {
+          return;
+        }
+
+        if (event.data.type === "OAUTH_SUCCESS") {
+          window.removeEventListener("message", handleMessage);
+          popup.close();
+
+          const { access_token, refresh_token, user } = event.data;
+
+          if (access_token && refresh_token && user) {
+            // Stocker les tokens
+            localStorage.setItem("access_token", access_token);
+            localStorage.setItem("refresh_token", refresh_token);
+
+            // Mettre à jour le store
+            setUser(user);
+            setAuthenticated(true);
+
+            console.log(
+              `${provider} OAuth successful, redirecting to dashboard...`
+            );
+
+            // ✅ Redirection directe vers le dashboard
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 100);
+
+            onSuccess?.();
+          } else {
+            throw new Error("Données OAuth incomplètes");
+          }
+        } else if (event.data.type === "OAUTH_ERROR") {
+          window.removeEventListener("message", handleMessage);
+          popup.close();
+          throw new Error(
+            event.data.error || `Erreur d'authentification ${provider}`
+          );
+        }
+      };
+
+      window.addEventListener("message", handleMessage);
+
+      // 4. Surveiller la fermeture de la popup
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener("message", handleMessage);
+          setLoadingProvider(null);
+          console.log("OAuth popup was closed by user");
+        }
+      }, 1000);
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -77,8 +135,6 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
           : t.errors?.unknown_error || `Erreur d'authentification ${provider}`;
 
       console.error(`${provider} OAuth error:`, error);
-
-      // Propager l'erreur vers le composant parent
       onError?.(errorMessage);
     } finally {
       setLoadingProvider(null);
