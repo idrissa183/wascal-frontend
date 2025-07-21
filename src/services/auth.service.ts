@@ -17,7 +17,7 @@ class AuthService {
 
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     try {
-      console.log("Using API Base URL:", this.baseUrl); // Debug log
+      console.log("Using API Base URL:", this.baseUrl);
 
       const response = await fetch(`${this.baseUrl}/api/auth/login`, {
         method: "POST",
@@ -40,6 +40,9 @@ class AuthService {
       // Stocker les tokens et les données utilisateur
       this.setTokens(data.access_token, data.refresh_token);
       this.setUser(data.user);
+
+      // ✅ FIX: Ne pas rediriger automatiquement ici, laisser le composant gérer
+      console.log("Login successful, tokens stored");
 
       return {
         user: data.user,
@@ -75,8 +78,10 @@ class AuthService {
 
       const data = await response.json();
 
-      // Après l'inscription, pas de connexion automatique
+      // ✅ FIX: Après l'inscription, pas de connexion automatique
       // L'utilisateur doit vérifier son email d'abord
+      console.log("Registration successful, email verification required");
+
       return {
         user: null,
         access_token: "",
@@ -269,18 +274,23 @@ class AuthService {
 
   async verifyEmail(token: string): Promise<void> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/auth/verify-email`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ token }),
-      });
+      // ✅ FIX: Utiliser la bonne méthode et URL
+      const response = await fetch(
+        `${this.baseUrl}/api/auth/verify-email?token=${token}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.detail || "Email verification failed");
       }
+
+      console.log("Email verified successfully");
     } catch (error) {
       throw new Error(
         error instanceof Error ? error.message : "Email verification failed"
@@ -315,7 +325,9 @@ class AuthService {
   }
 
   // OAuth methods
-  async initiateOAuthLogin(provider: "google" | "github | facebook | linkedin"): Promise<string> {
+  async initiateOAuthLogin(
+    provider: "google" | "github | facebook | linkedin"
+  ): Promise<string> {
     try {
       const response = await fetch(
         `${this.baseUrl}/api/auth/oauth/${provider}/login`

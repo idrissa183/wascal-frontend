@@ -90,8 +90,15 @@ export const AuthCallbackClient: React.FC = () => {
         const userData = await response.json();
         console.log("User data received:", userData);
 
-        // Mettre à jour le store
+        // Mettre à jour le store avec l'état d'authentification complet
         setUser(userData);
+
+        // ✅ FIX: Mettre à jour l'état d'authentification dans le store
+        const authStore = useAuthStore.getState();
+        authStore.setUser(userData);
+        // Marquer l'utilisateur comme authentifié
+        useAuthStore.setState({ isAuthenticated: true });
+
         setStatus("success");
 
         // Nettoyer l'URL
@@ -101,13 +108,18 @@ export const AuthCallbackClient: React.FC = () => {
           window.location.pathname
         );
 
-        // Rediriger vers le dashboard après un court délai
+        // ✅ FIX: Redirection vers le dashboard avec délai plus court
         setTimeout(() => {
           const returnUrl =
             sessionStorage.getItem("oauth_return_url") || "/dashboard";
           sessionStorage.removeItem("oauth_return_url");
-          window.location.href = returnUrl;
-        }, 1500);
+
+          // Forcer la redirection vers le dashboard pour OAuth
+          window.location.href =
+            returnUrl === "/auth/login" || returnUrl === "/auth/register"
+              ? "/dashboard"
+              : returnUrl;
+        }, 1000); // Réduire le délai à 1 seconde
       } catch (error) {
         console.error("OAuth callback error:", error);
         setError(

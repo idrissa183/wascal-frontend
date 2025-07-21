@@ -51,7 +51,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
     onClearGlobalError(); // Effacer les erreurs précédentes
     try {
       await login(data);
-      onSuccess?.();
+
+      // ✅ FIX: Après connexion réussie, rediriger vers le dashboard
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 100);
     } catch (error) {
       // L'erreur sera automatiquement propagée via useEffect
       if (error instanceof Error) {

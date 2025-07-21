@@ -1,5 +1,3 @@
-// src/components/auth/SocialAuth.tsx - Version améliorée
-
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { useTranslations } from "../../hooks/useTranslations";
@@ -28,14 +26,18 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
       const apiBaseUrl = getApiBaseUrl();
 
-      // Sauvegarder l'URL de retour pour après l'authentification
-      const currentUrl = window.location.pathname + window.location.search;
-      if (currentUrl !== "/auth/login" && currentUrl !== "/auth/register") {
-        sessionStorage.setItem("oauth_return_url", currentUrl);
-      } else {
-        // Par défaut, rediriger vers le dashboard
+      // ✅ FIX: Sauvegarder l'URL de retour correctement
+      const currentPath = window.location.pathname;
+
+      // Pour OAuth, toujours rediriger vers le dashboard après succès
+      if (currentPath === "/auth/login" || currentPath === "/auth/register") {
         sessionStorage.setItem("oauth_return_url", "/dashboard");
+      } else {
+        // Si on vient d'une autre page, y retourner après connexion
+        sessionStorage.setItem("oauth_return_url", currentPath);
       }
+
+      console.log(`Initiating ${provider} OAuth...`);
 
       // Appeler l'API backend pour obtenir l'URL d'autorisation
       const response = await fetch(
@@ -63,8 +65,10 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         throw new Error(`URL d'authentification ${provider} non disponible`);
       }
 
-      // Rediriger vers l'URL d'autorisation OAuth
-      // Utiliser window.location.href pour une redirection complète
+      console.log(`Redirecting to ${provider} auth URL:`, data.auth_url);
+
+      // ✅ FIX: Redirection vers l'URL d'autorisation OAuth avec window.location.href
+      // pour une redirection complète (pas window.open)
       window.location.href = data.auth_url;
     } catch (error) {
       const errorMessage =

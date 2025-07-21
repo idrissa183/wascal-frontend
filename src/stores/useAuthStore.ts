@@ -26,6 +26,8 @@ interface AuthStore extends AuthState {
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  // ✅ FIX: Ajouter une méthode pour définir explicitement l'état d'authentification
+  setAuthenticated: (isAuthenticated: boolean) => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -40,12 +42,16 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
         try {
           const response = await authService.login(credentials);
+
+          // ✅ FIX: Définir correctement l'état d'authentification
           set({
             user: response.user,
-            isAuthenticated: true,
+            isAuthenticated: true, // ✅ Marquer comme authentifié
             isLoading: false,
             error: null,
           });
+
+          console.log("User logged in successfully:", response.user);
         } catch (error) {
           set({
             user: null,
@@ -60,15 +66,17 @@ export const useAuthStore = create<AuthStore>()(
       register: async (userData: RegisterRequest) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await authService.register(userData);
-          // Après l'inscription, l'utilisateur n'est pas automatiquement connecté
-          // Il doit vérifier son email d'abord
+          await authService.register(userData);
+          // ✅ FIX: Après l'inscription, l'utilisateur n'est pas automatiquement connecté
           set({
-            user: null, // Pas d'utilisateur connecté après inscription
-            isAuthenticated: false, // Pas connecté
+            user: null,
+            isAuthenticated: false,
             isLoading: false,
             error: null,
           });
+          console.log(
+            "User registered successfully, email verification required"
+          );
         } catch (error) {
           set({
             user: null,
@@ -91,6 +99,7 @@ export const useAuthStore = create<AuthStore>()(
             isLoading: false,
             error: null,
           });
+          console.log("User logged out successfully");
         } catch (error) {
           console.error("Logout error:", error);
           // Même en cas d'erreur, on déconnecte l'utilisateur localement
@@ -107,6 +116,10 @@ export const useAuthStore = create<AuthStore>()(
         try {
           await authService.refreshToken();
           // Le token est automatiquement mis à jour dans le service
+          // ✅ FIX: Maintenir l'état d'authentification si le refresh réussit
+          if (authService.isAuthenticated()) {
+            set({ isAuthenticated: true });
+          }
         } catch (error) {
           console.error("Token refresh error:", error);
           // Si le refresh échoue, déconnecter l'utilisateur
@@ -119,7 +132,13 @@ export const useAuthStore = create<AuthStore>()(
       },
 
       getCurrentUser: async () => {
+        // ✅ FIX: Vérifier d'abord l'état d'authentification
         if (!authService.isAuthenticated()) {
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
           return;
         }
 
@@ -129,7 +148,7 @@ export const useAuthStore = create<AuthStore>()(
           if (user) {
             set({
               user,
-              isAuthenticated: true,
+              isAuthenticated: true, // ✅ Confirmer l'authentification
               isLoading: false,
               error: null,
             });
@@ -205,14 +224,17 @@ export const useAuthStore = create<AuthStore>()(
         try {
           await authService.verifyEmail(token);
           set({ isLoading: false });
-          
-          // Optionnel: récupérer les informations utilisateur après vérification
-          // Note: l'utilisateur devra toujours se connecter après vérification
+
+          // ✅ FIX: Après vérification d'email, l'utilisateur peut maintenant se connecter
+          // Mais il n'est pas automatiquement connecté
+          console.log("Email verified successfully, user can now login");
         } catch (error) {
           set({
             isLoading: false,
             error:
-              error instanceof Error ? error.message : "Email verification failed",
+              error instanceof Error
+                ? error.message
+                : "Email verification failed",
           });
           throw error;
         }
@@ -227,8 +249,8 @@ export const useAuthStore = create<AuthStore>()(
           set({
             isLoading: false,
             error:
-              error instanceof Error 
-                ? error.message 
+              error instanceof Error
+                ? error.message
                 : "Failed to resend verification email",
           });
           throw error;
@@ -237,11 +259,22 @@ export const useAuthStore = create<AuthStore>()(
 
       clearError: () => set({ error: null }),
 
-      setUser: (user: User | null) => set({ user }),
+      setUser: (user: User | null) => {
+        set({ user });
+        // ✅ FIX: Synchroniser l'état d'authentification avec la présence d'un utilisateur
+        if (user && authService.isAuthenticated()) {
+          set({ isAuthenticated: true });
+        } else if (!user) {
+          set({ isAuthenticated: false });
+        }
+      },
 
       setLoading: (loading: boolean) => set({ isLoading: loading }),
 
       setError: (error: string | null) => set({ error }),
+
+      // ✅ FIX: Ajouter une méthode pour définir explicitement l'état d'authentification
+      setAuthenticated: (isAuthenticated: boolean) => set({ isAuthenticated }),
     }),
     {
       name: "auth-store",
@@ -249,6 +282,19 @@ export const useAuthStore = create<AuthStore>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      // ✅ FIX: Ajouter une fonction de rehydratation pour synchroniser l'état
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Vérifier la cohérence entre l'état persisté et les tokens
+          const hasValidToken =
+            authService.isAuthenticated() && !authService.isTokenExpired();
+          if (!hasValidToken) {
+            // Si pas de token valide, réinitialiser l'état
+            state.user = null;
+            state.isAuthenticated = false;
+          }
+        }
+      },
     }
   )
 );

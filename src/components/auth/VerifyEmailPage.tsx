@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { AuthLayout } from "./AuthLayout";
 import { useTranslations } from "../../hooks/useTranslations";
-import { authService } from "../../services/auth.service";
+import { useAuthStore } from "../../stores/useAuthStore"; // ✅ Utiliser le store
 import { Button } from "../ui/Button";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 
 interface VerifyEmailPageProps {
-  token?: string; // Token peut être passé en prop ou récupéré depuis l'URL
+  token?: string;
 }
 
 export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
@@ -19,10 +19,11 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
   >("loading");
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
+  const { verifyEmail, resendVerificationEmail, isLoading } = useAuthStore(); // ✅ Utiliser le store
   const t = useTranslations();
 
   useEffect(() => {
-    const verifyEmail = async () => {
+    const verifyEmailToken = async () => {
       // Récupérer le token depuis les props ou l'URL
       const token =
         propToken ||
@@ -39,8 +40,10 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
       }
 
       try {
-        await authService.verifyEmail(token);
+        // ✅ FIX: Utiliser le store pour vérifier l'email
+        await verifyEmail(token);
         setStatus("success");
+        console.log("Email verification successful");
       } catch (error) {
         console.error("Email verification failed:", error);
         setStatus("error");
@@ -52,8 +55,8 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
       }
     };
 
-    verifyEmail();
-  }, [propToken, t.auth]);
+    verifyEmailToken();
+  }, [propToken, verifyEmail, t.auth]);
 
   const handleResendVerification = async () => {
     if (!email) {
@@ -67,13 +70,8 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
     setError(null);
 
     try {
-      // Ici vous devriez avoir une méthode pour renvoyer l'email de vérification
-      // await authService.resendVerificationEmail(email);
-
-      // Pour l'instant, simuler le succès
-      setTimeout(() => {
-        setStatus("success");
-      }, 2000);
+      await resendVerificationEmail(email);
+      setStatus("success");
     } catch (error) {
       setStatus("error");
       setError(
@@ -162,11 +160,18 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
 
               <Button
                 onClick={handleResendVerification}
-                disabled={!email.trim()}
+                disabled={!email.trim() || isLoading}
                 className="w-full"
               >
-                {t.auth?.resend_verification ||
-                  "Renvoyer le lien de vérification"}
+                {isLoading ? (
+                  <>
+                    <LoadingSpinner size="sm" className="mr-2" />
+                    {t.auth?.sending || "Envoi..."}
+                  </>
+                ) : (
+                  t.auth?.resend_verification ||
+                  "Renvoyer le lien de vérification"
+                )}
               </Button>
 
               <Button
@@ -216,5 +221,3 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
     </AuthLayout>
   );
 };
-
-export default VerifyEmailPage;
