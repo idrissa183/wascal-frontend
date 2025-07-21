@@ -5,7 +5,7 @@ import { AuthLayout } from "./AuthLayout";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
-import { getApiBaseUrl } from "../../constants"; // Import ajouté
+import { getApiBaseUrl } from "../../constants";
 
 export const AuthCallbackClient: React.FC = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">(
@@ -25,16 +25,18 @@ export const AuthCallbackClient: React.FC = () => {
         const accessToken = urlParams.get("access_token");
         const refreshToken = urlParams.get("refresh_token");
         const userId = urlParams.get("user_id");
+        const success = urlParams.get("success");
         const error = urlParams.get("error");
-        const provider = window.location.pathname.split("/").pop(); // google ou github
+        const provider = window.location.pathname.split("/").pop();
 
-        // console.log("OAuth callback parameters:", {
-        //   accessToken: accessToken ? "present" : "missing",
-        //   refreshToken: refreshToken ? "present" : "missing",
-        //   userId,
-        //   error,
-        //   provider,
-        // });
+        console.log("OAuth callback parameters:", {
+          accessToken: accessToken ? "present" : "missing",
+          refreshToken: refreshToken ? "present" : "missing",
+          userId,
+          success,
+          error,
+          provider,
+        });
 
         // Vérifier s'il y a une erreur OAuth
         if (error) {
@@ -57,31 +59,25 @@ export const AuthCallbackClient: React.FC = () => {
           throw new Error(errorMessage);
         }
 
-        // Vérifier la présence des tokens
-        if (!accessToken || !refreshToken) {
-          throw new Error("Tokens d'authentification manquants");
+        // Vérifier la présence des tokens ET du succès
+        if (!accessToken || !refreshToken || success !== "true") {
+          throw new Error("Authentification OAuth incomplète");
         }
 
         // Stocker les tokens
         localStorage.setItem("access_token", accessToken);
         localStorage.setItem("refresh_token", refreshToken);
 
-        // Récupérer l'URL de base de l'API correctement
+        // Récupérer l'URL de base de l'API
         const apiBaseUrl = getApiBaseUrl();
-        // console.log("Using API Base URL:", apiBaseUrl); // Debug log
 
         // Récupérer les informations utilisateur avec le token
-        const response = await fetch(
-          `${apiBaseUrl}/api/auth/me`, // Utilisation de getApiBaseUrl()
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        // console.log("User info response status:", response.status);
+        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -92,29 +88,28 @@ export const AuthCallbackClient: React.FC = () => {
         }
 
         const userData = await response.json();
-        // console.log("User data received:", userData);
+        console.log("User data received:", userData);
 
         // Mettre à jour le store
         setUser(userData);
         setStatus("success");
 
+        // Nettoyer l'URL
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+
         // Rediriger vers le dashboard après un court délai
         setTimeout(() => {
-          // Nettoyer l'URL
-          window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-          );
-
-          // Rediriger vers le dashboard
           const returnUrl =
             sessionStorage.getItem("oauth_return_url") || "/dashboard";
           sessionStorage.removeItem("oauth_return_url");
           window.location.href = returnUrl;
-        }, 2000);
+        }, 1500);
       } catch (error) {
-        // console.error("OAuth callback error:", error);
+        console.error("OAuth callback error:", error);
         setError(
           error instanceof Error
             ? error.message
@@ -183,11 +178,12 @@ export const AuthCallbackClient: React.FC = () => {
                 {t.auth?.login_success || "Connexion réussie !"}
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {t.auth?.redirecting || "Redirection en cours..."}
+                {t.auth?.redirecting ||
+                  "Redirection vers le tableau de bord..."}
               </p>
             </div>
             <Button onClick={handleGoToDashboard} className="w-full">
-              {t.auth?.go_to_dashboard}
+              {t.auth?.go_to_dashboard || "Aller au tableau de bord"}
             </Button>
           </div>
         );
@@ -231,7 +227,7 @@ export const AuthCallbackClient: React.FC = () => {
                 onClick={() => (window.location.href = "/")}
                 className="w-full"
               >
-               {t.auth?.back_to_home}
+                {t.auth?.back_to_home || "Retour à l'accueil"}
               </Button>
             </div>
           </div>

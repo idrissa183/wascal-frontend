@@ -1,3 +1,5 @@
+// src/components/auth/SocialAuth.tsx - Version améliorée
+
 import React, { useState } from "react";
 import { Button } from "../ui/Button";
 import { useTranslations } from "../../hooks/useTranslations";
@@ -8,7 +10,7 @@ import { getApiBaseUrl } from "../../constants";
 
 interface SocialAuthProps {
   mode?: "login" | "register";
-  onError?: (error: string) => void; // Callback pour propager l'erreur vers le parent
+  onError?: (error: string) => void;
 }
 
 export const SocialAuth: React.FC<SocialAuthProps> = ({
@@ -25,12 +27,14 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
       setLoadingProvider(provider);
 
       const apiBaseUrl = getApiBaseUrl();
-      // console.log("API Base URL:", apiBaseUrl); // Debug log
 
-      // Sauvegarder l'URL de retour
+      // Sauvegarder l'URL de retour pour après l'authentification
       const currentUrl = window.location.pathname + window.location.search;
       if (currentUrl !== "/auth/login" && currentUrl !== "/auth/register") {
         sessionStorage.setItem("oauth_return_url", currentUrl);
+      } else {
+        // Par défaut, rediriger vers le dashboard
+        sessionStorage.setItem("oauth_return_url", "/dashboard");
       }
 
       // Appeler l'API backend pour obtenir l'URL d'autorisation
@@ -48,7 +52,7 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
           errorData.detail ||
-            t.errors.server_error ||
+            t.errors?.server_error ||
             `Erreur lors de l'initiation de l'authentification ${provider}`
         );
       }
@@ -60,16 +64,17 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
       }
 
       // Rediriger vers l'URL d'autorisation OAuth
+      // Utiliser window.location.href pour une redirection complète
       window.location.href = data.auth_url;
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : t.errors.unknown_error || `Erreur d'authentification ${provider}`;
+          : t.errors?.unknown_error || `Erreur d'authentification ${provider}`;
 
-      // console.error(`${provider} OAuth error:`, error);
+      console.error(`${provider} OAuth error:`, error);
 
-      // Propager l'erreur vers le composant parent au lieu de l'afficher localement
+      // Propager l'erreur vers le composant parent
       onError?.(errorMessage);
     } finally {
       setLoadingProvider(null);
@@ -135,84 +140,53 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
     }
   };
 
+  const providers = [
+    { name: "google", color: "border-gray-300 hover:border-blue-400" },
+    { name: "github", color: "border-gray-300 hover:border-gray-600" },
+    { name: "facebook", color: "border-gray-300 hover:border-blue-600" },
+    { name: "linkedin", color: "border-gray-300 hover:border-blue-800" },
+  ] as const;
+
   return (
     <div className="space-y-3">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => handleOAuthLogin("google")}
-        disabled={loadingProvider !== null}
-        className="w-full"
-      >
-        {loadingProvider === "google" ? (
-          <LoadingSpinner size="sm" className="mr-2" />
-        ) : (
-          getProviderIcon("google")
-        )}
-        {getButtonText("google")}
-      </Button>
-
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => handleOAuthLogin("github")}
-        disabled={loadingProvider !== null}
-        className="w-full"
-      >
-        {loadingProvider === "github" ? (
-          <LoadingSpinner size="sm" className="mr-2" />
-        ) : (
-          getProviderIcon("github")
-        )}
-        {getButtonText("github")}
-      </Button>
-
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => handleOAuthLogin("facebook")}
-        disabled={loadingProvider !== null}
-        className="w-full"
-      >
-        {loadingProvider === "facebook" ? (
-          <LoadingSpinner size="sm" className="mr-2" />
-        ) : (
-          getProviderIcon("facebook")
-        )}
-        {getButtonText("facebook")}
-      </Button>
-
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => handleOAuthLogin("linkedin")}
-        disabled={loadingProvider !== null}
-        className="w-full"
-      >
-        {loadingProvider === "linkedin" ? (
-          <LoadingSpinner size="sm" className="mr-2" />
-        ) : (
-          getProviderIcon("linkedin")
-        )}
-        {getButtonText("linkedin")}
-      </Button>
+      {providers.map(({ name, color }) => (
+        <Button
+          key={name}
+          type="button"
+          variant="outline"
+          onClick={() => handleOAuthLogin(name)}
+          disabled={loadingProvider !== null}
+          className={`w-full transition-all duration-200 ${color}`}
+        >
+          {loadingProvider === name ? (
+            <LoadingSpinner size="sm" className="mr-2" />
+          ) : (
+            getProviderIcon(name)
+          )}
+          {getButtonText(name)}
+        </Button>
+      ))}
 
       {/* Instructions pour l'utilisateur */}
       <div className="text-center">
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          {t.connectingAgree}{" "}
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-4">
+          {t.connectingAgree || "En vous connectant, vous acceptez nos"}{" "}
           <a
             href="https://doc-hosting.flycricket.io/la-cause-rurale-terms-of-use/78422ce1-34a2-4405-80b7-512c558512f7/terms"
-            className="text-primary-600 hover:text-primary-500"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-600 hover:text-primary-500 underline"
           >
-            {t.termsLink}
+            {t.termsLink || "conditions d'utilisation"}
           </a>{" "}
-          {t.andOur}{" "}
+          {t.andOur || "et notre"}{" "}
           <a
             href="https://doc-hosting.flycricket.io/la-cause-rurale-privacy-policy/d328883c-83a8-477a-a5fc-1a27aec79002/privacy"
-            className="text-primary-600 hover:text-primary-500"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-600 hover:text-primary-500 underline"
           >
-            {t.privacyLink}
+            {t.privacyLink || "politique de confidentialité"}
           </a>
         </p>
       </div>
