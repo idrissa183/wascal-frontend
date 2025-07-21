@@ -1,4 +1,3 @@
-// src/components/auth/VerifyEmailPage.tsx
 import React, { useEffect, useState } from "react";
 import { AuthLayout } from "./AuthLayout";
 import { useTranslations } from "../../hooks/useTranslations";

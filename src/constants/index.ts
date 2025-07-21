@@ -7,7 +7,7 @@ export const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (typeof window !== "undefined" && window.location.hostname === "localhost"
     ? "http://localhost:8000"
-    : "https://api.ecowatch.com");
+    : "https://wascal-backend.onrender.com");
 
 // Fonction pour obtenir l'URL de base de l'API
 export const getApiBaseUrl = (): string => {
@@ -17,7 +17,7 @@ export const getApiBaseUrl = (): string => {
   }
 
   // En production
-  return import.meta.env.VITE_API_BASE_URL || "https://api.ecowatch.com";
+  return import.meta.env.VITE_API_BASE_URL || "https://wascal-backend.onrender.com";
 };
 
 // Langues supportées

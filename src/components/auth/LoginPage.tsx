@@ -3,7 +3,6 @@ import { AuthLayout } from "./AuthLayout";
 import { LoginForm } from "./LoginForm";
 import { useTranslations } from "../../hooks/useTranslations";
 import { SocialAuth } from "./SocialAuth";
-import { Alert } from "../ui/Alert";
 
 export const LoginPage: React.FC = () => {
   const [globalError, setGlobalError] = useState<string | null>(null);

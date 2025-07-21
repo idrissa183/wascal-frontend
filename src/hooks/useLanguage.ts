@@ -1,4 +1,3 @@
-// src/hooks/useLanguage.ts - Version corrigée
 import { useEffect, useState } from "react";
 
 type SupportedLanguage = "fr" | "en";

@@ -1,4 +1,3 @@
-// src/utils/globalAuthInit.ts
 import { authService } from "../services/auth.service";
 import { useAuthStore } from "../stores/useAuthStore";
 import { initGlobalRouteProtection } from "./routeProtection";
