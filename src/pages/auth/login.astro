@@ -2,18 +2,26 @@
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Connexion - EcoWatch">
+<Layout title="EcoWatch">
   <div id="login-root"></div>
 </Layout>
 
 <script>
   import { LoginPage } from "../../components/auth/LoginPage";
+  import { TitleUpdater } from "../../components/common/TitleUpdater";
   import { createRoot } from "react-dom/client";
-  import { createElement } from "react";
+  import { createElement, Fragment } from "react";
 
   const container = document.getElementById("login-root");
   if (container) {
     const root = createRoot(container);
-    root.render(createElement(LoginPage));
+    root.render(
+      createElement(
+        Fragment,
+        null,
+        createElement(TitleUpdater, { titleKey: "loginPageTitle" }),
+        createElement(LoginPage)
+      )
+    );
   }
 </script>

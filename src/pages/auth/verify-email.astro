@@ -2,18 +2,26 @@
 import Layout from "../../layouts/Layout.astro";
 ---
 
-<Layout title="Verify Email - EcoWatch">
+<Layout title="EcoWatch">
   <div id="verify-email-root"></div>
 </Layout>
 
 <script>
   import { VerifyEmailPage } from "../../components/auth/VerifyEmailPage";
+  import { TitleUpdater } from "../../components/common/TitleUpdater";
   import { createRoot } from "react-dom/client";
-  import { createElement } from "react";
+  import { createElement, Fragment } from "react";
 
   const container = document.getElementById("verify-email-root");
   if (container) {
     const root = createRoot(container);
-    root.render(createElement(VerifyEmailPage));
+    root.render(
+      createElement(
+        Fragment,
+        null,
+        createElement(TitleUpdater, { titleKey: "verifyEmailPageTitle" }),
+        createElement(VerifyEmailPage)
+      )
+    );
   }
 </script>

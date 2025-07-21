@@ -2,18 +2,26 @@
 import Layout from "../../../layouts/Layout.astro";
 ---
 
-<Layout title="Facebook OAuth - EcoWatch">
+<Layout title="EcoWatch">
   <div id="oauth-callback-root"></div>
 </Layout>
 
 <script>
   import { AuthCallbackClient } from "../../../components/auth/AuthCallbackClient";
+  import { TitleUpdater } from "../../../components/common/TitleUpdater";
   import { createRoot } from "react-dom/client";
-  import { createElement } from "react";
+  import { createElement, Fragment } from "react";
 
   const container = document.getElementById("oauth-callback-root");
   if (container) {
     const root = createRoot(container);
-    root.render(createElement(AuthCallbackClient));
+    root.render(
+      createElement(
+        Fragment,
+        null,
+        createElement(TitleUpdater, { titleKey: "oauthFacebookPageTitle" }),
+        createElement(AuthCallbackClient)
+      )
+    );
   }
 </script>
