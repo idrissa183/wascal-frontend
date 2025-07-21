@@ -9,7 +9,6 @@ import {
   BellIcon,
   CogIcon,
   DocumentTextIcon,
-  UserGroupIcon,
   QuestionMarkCircleIcon,
   SparklesIcon,
   CalendarIcon,

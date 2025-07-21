@@ -9,7 +9,6 @@ import {
   MoonIcon,
   ComputerDesktopIcon,
   LanguageIcon,
-  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 import { APP_NAME } from "../../constants";
 import { useTranslations } from "../../hooks/useTranslations";

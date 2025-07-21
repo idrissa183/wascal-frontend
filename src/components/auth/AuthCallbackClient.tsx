@@ -145,9 +145,9 @@ export const AuthCallbackClient: React.FC = () => {
     window.location.href = "/auth/login";
   };
 
-  const handleGoToDashboard = () => {
-    window.location.href = "/dashboard";
-  };
+  // const handleGoToDashboard = () => {
+  //   window.location.href = "/dashboard";
+  // };
 
   const renderContent = () => {
     switch (status) {
@@ -194,9 +194,9 @@ export const AuthCallbackClient: React.FC = () => {
                   "Redirection vers le tableau de bord..."}
               </p>
             </div>
-            <Button onClick={handleGoToDashboard} className="w-full">
+            {/* <Button onClick={handleGoToDashboard} className="w-full">
               {t.auth?.go_to_dashboard || "Aller au tableau de bord"}
-            </Button>
+            </Button> */}
           </div>
         );
 
