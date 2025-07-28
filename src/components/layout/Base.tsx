@@ -32,7 +32,7 @@ export default function Base({ children, showFooter = true }: BaseProps) {
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="lg:ml-64">
+      <div className="lg:ml-80">
         <main className="pt-16 min-h-screen">
           <div className="p-4">{children}</div>
         </main>
