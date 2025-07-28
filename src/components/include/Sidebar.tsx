@@ -36,9 +36,9 @@ interface SidebarProps {
 
 // Données des filtres WASCAL
 const filterData = {
-  dataset:[
-    {id: "", label: "", metrics: []},
-    {id: "", label: "", metrics: []},
+  datasets: [
+    {id: "", label: "Sentinel1", metrics: []},
+    {id: "", label: "Sentinel2", metrics: []},
     {id: "", label: "Landsat8", metrics: []},
     {id: "", label: "Landsat9", metrics: []},
     {id: "", label: "Copernicus", metrics: []},
@@ -46,7 +46,8 @@ const filterData = {
     {id: "", label: "CHIRPS", metrics: []},
     {id: "NASA/GPM_L3/IMERG_V07", label: "", metrics: []},
     {id: "MERIT/DEM/v1_0_3", label: "", metrics: []},
-    {id: "NOAA/GOES/16/MCMIPF", label: "", metrics: []},
+    {id: "", label: "Soilgrids", metrics: []},
+    {id: "", label: "Modis", metrics: []},
   ],
   categories: [
     { id: 'climat', label: 'Climat', icon: '🌡️', subItems: ['Température', 'Précipitations', 'Humidité', 'Vent'] },
@@ -143,6 +144,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     tools: true,
     management: true,
     filters: true,
+    datasets: false
     categories: false,
     pays: false,
     regions: false,
@@ -151,6 +153,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // États pour les filtres sélectionnés
   const [selectedFilters, setSelectedFilters] = useState({
+    datasets: []
     categories: [],
     pays: [],
     regions: [],
@@ -159,6 +162,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // États pour la recherche dans les filtres
   const [searchTerms, setSearchTerms] = useState({
+    datasets: '',
     categories: '',
     pays: '',
     regions: '',
@@ -167,6 +171,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // États pour "Montrer plus/moins"
   const [showAll, setShowAll] = useState({
+    datasets: false
     categories: false,
     pays: false,
     regions: false,
@@ -283,7 +288,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           onClick={() => toggleSection(section)}
         >
           <div className="flex items-center space-x-2">
-            <SectionIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <SectionIcon className="w-5 h-5 text-gray-500" />
             <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">{title}</span>
           </div>
           <div className="flex items-center">
@@ -418,6 +423,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const clearAllFilters = () => {
     setSelectedFilters({
+      datasets: [],
       categories: [],
       pays: [],
       regions: [],
