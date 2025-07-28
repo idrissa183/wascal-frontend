@@ -72,7 +72,7 @@ export const AuthCallbackClient: React.FC = () => {
         const apiBaseUrl = getApiBaseUrl();
 
         // Récupérer les informations utilisateur avec le token
-        const response = await fetch(`${apiBaseUrl}/api/auth/me`, {
+        const response = await fetch(`${apiBaseUrl}/api/v1/auth/me`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",

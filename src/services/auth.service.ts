@@ -19,7 +19,7 @@ class AuthService {
     try {
       console.log("Using API Base URL:", this.baseUrl);
 
-      const response = await fetch(`${this.baseUrl}/api/auth/login`, {
+      const response = await fetch(`${this.baseUrl}/api/v1/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -41,7 +41,6 @@ class AuthService {
       this.setTokens(data.access_token, data.refresh_token);
       this.setUser(data.user);
 
-      // ✅ FIX: Ne pas rediriger automatiquement ici, laisser le composant gérer
       console.log("Login successful, tokens stored");
 
       return {
@@ -57,7 +56,7 @@ class AuthService {
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/auth/register`, {
+      const response = await fetch(`${this.baseUrl}/api/v1/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,7 +77,6 @@ class AuthService {
 
       const data = await response.json();
 
-      // ✅ FIX: Après l'inscription, pas de connexion automatique
       // L'utilisateur doit vérifier son email d'abord
       console.log("Registration successful, email verification required");
 
@@ -99,7 +97,7 @@ class AuthService {
     try {
       const token = this.getAccessToken();
       if (token) {
-        await fetch(`${this.baseUrl}/api/auth/logout`, {
+        await fetch(`${this.baseUrl}/api/v1/auth/logout`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -122,7 +120,7 @@ class AuthService {
         throw new Error("No refresh token available");
       }
 
-      const response = await fetch(`${this.baseUrl}/api/auth/refresh`, {
+      const response = await fetch(`${this.baseUrl}/api/v1/auth/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +155,7 @@ class AuthService {
         return null;
       }
 
-      const response = await fetch(`${this.baseUrl}/api/auth/me`, {
+      const response = await fetch(`${this.baseUrl}/api/v1/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -198,7 +196,7 @@ class AuthService {
         throw new Error("No access token");
       }
 
-      const response = await fetch(`${this.baseUrl}/api/auth/password/change`, {
+      const response = await fetch(`${this.baseUrl}/api/v1/auth/password/change`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -224,7 +222,7 @@ class AuthService {
   async requestPasswordReset(email: string): Promise<void> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/api/auth/password/reset/request`,
+        `${this.baseUrl}/api/v1/auth/password/reset/request`,
         {
           method: "POST",
           headers: {
@@ -248,7 +246,7 @@ class AuthService {
   async resetPassword(token: string, newPassword: string): Promise<void> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/api/auth/password/reset/confirm`,
+        `${this.baseUrl}/api/v1/auth/password/reset/confirm`,
         {
           method: "POST",
           headers: {
@@ -274,9 +272,8 @@ class AuthService {
 
   async verifyEmail(token: string): Promise<void> {
     try {
-      // ✅ FIX: Utiliser la bonne méthode et URL
       const response = await fetch(
-        `${this.baseUrl}/api/auth/verify-email?token=${token}`,
+        `${this.baseUrl}/api/v1/auth/verify-email?token=${token}`,
         {
           method: "GET",
           headers: {
@@ -301,7 +298,7 @@ class AuthService {
   async resendVerificationEmail(email: string): Promise<void> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/api/auth/resend-verification`,
+        `${this.baseUrl}/api/v1/auth/resend-verification`,
         {
           method: "POST",
           headers: {
@@ -330,7 +327,7 @@ class AuthService {
   ): Promise<string> {
     try {
       const response = await fetch(
-        `${this.baseUrl}/api/auth/oauth/${provider}/login`
+        `${this.baseUrl}/api/v1/auth/oauth/${provider}/login`
       );
 
       if (!response.ok) {
@@ -353,7 +350,7 @@ class AuthService {
   ): Promise<AuthResponse> {
     try {
       const url = new URL(
-        `${this.baseUrl}/api/auth/oauth/${provider}/callback`
+        `${this.baseUrl}/api/v1/auth/oauth/${provider}/callback`
       );
       url.searchParams.append("code", code);
       if (state) {

@@ -34,7 +34,7 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
       // 1. Obtenir l'URL d'autorisation
       const response = await fetch(
-        `${apiBaseUrl}/api/auth/oauth/${provider}/login`,
+        `${apiBaseUrl}/api/v1/auth/oauth/${provider}/login`,
         {
           method: "GET",
           headers: {
