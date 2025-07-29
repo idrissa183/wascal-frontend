@@ -16,9 +16,26 @@ import {
   EyeSlashIcon,
   AdjustmentsHorizontalIcon,
   PhotoIcon,
-  DocumentArrowDownIcon,
   CogIcon,
 } from "@heroicons/react/24/outline";
+
+// OpenLayers imports
+import Map from "ol/Map";
+import View from "ol/View";
+import TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import OSM from "ol/source/OSM";
+import XYZ from "ol/source/XYZ";
+import { Feature } from "ol";
+import { Point, Polygon } from "ol/geom";
+import { Style, Fill, Stroke, Circle as CircleStyle } from "ol/style";
+import { Draw, Modify, Select } from "ol/interaction";
+import { fromLonLat, toLonLat } from "ol/proj";
+import { defaults as defaultControls } from "ol/control";
+import MousePosition from "ol/control/MousePosition";
+import ScaleLine from "ol/control/ScaleLine";
+import { createStringXY } from "ol/coordinate";
 
 interface MapContainerProps {
   onSelectionChange?: (selection: any) => void;
@@ -34,6 +51,7 @@ interface LayerControl {
   visible: boolean;
   opacity: number;
   type: "raster" | "vector";
+  layer?: TileLayer<any> | VectorLayer<any>;
 }
 
 export default function MapContainer({
@@ -42,6 +60,9 @@ export default function MapContainer({
   className = "",
 }: MapContainerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<Map | null>(null);
+  const vectorSourceRef = useRef<VectorSource>(new VectorSource());
+  const drawRef = useRef<Draw | null>(null);
   const t = useTranslations();
 
   // États pour les contrôles de la carte
@@ -50,13 +71,24 @@ export default function MapContainer({
   const [showLayerPanel, setShowLayerPanel] = useState(true);
   const [showToolbar, setShowToolbar] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [coordinates, setCoordinates] = useState<[number, number]>([
+    12.3714, -1.5197,
+  ]);
+  const [zoom, setZoom] = useState(7);
 
   // États pour les couches
   const [layers, setLayers] = useState<LayerControl[]>([
     {
+      id: "osm",
+      name: "OpenStreetMap",
+      visible: true,
+      opacity: 100,
+      type: "raster",
+    },
+    {
       id: "satellite",
       name: "Satellite",
-      visible: true,
+      visible: false,
       opacity: 100,
       type: "raster",
     },
@@ -92,26 +124,209 @@ export default function MapContainer({
   });
 
   useEffect(() => {
-    // Initialisation d'OpenLayers
-    if (mapRef.current) {
-      console.log("Initializing OpenLayers map with geemap-like features");
-      // Ici on initialiserait la carte OpenLayers avec :
-      // - Différentes sources de données (OSM, satellite, etc.)
-      // - Contrôles de zoom personnalisés
-      // - Outils de sélection
-      // - Gestion des couches
-
-      // Simulation du chargement
-      setTimeout(() => {
-        setMapLoaded(true);
-      }, 2000);
+    if (mapRef.current && !mapInstanceRef.current) {
+      initializeMap();
     }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setTarget(undefined);
+      }
+    };
   }, []);
 
+  const initializeMap = () => {
+    if (!mapRef.current) return;
+
+    console.log("Initializing OpenLayers map...");
+
+    // Créer les couches de base
+    const osmLayer = new TileLayer({
+      source: new OSM(),
+      visible: true,
+    });
+
+    const satelliteLayer = new TileLayer({
+      source: new XYZ({
+        url: "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        attributions: "© Google",
+      }),
+      visible: false,
+    });
+
+    // Couche vectorielle pour les dessins
+    const vectorLayer = new VectorLayer({
+      source: vectorSourceRef.current,
+      style: new Style({
+        fill: new Fill({
+          color: "rgba(255, 255, 255, 0.2)",
+        }),
+        stroke: new Stroke({
+          color: "#ffcc33",
+          width: 2,
+        }),
+        image: new CircleStyle({
+          radius: 7,
+          fill: new Fill({
+            color: "#ffcc33",
+          }),
+        }),
+      }),
+    });
+
+    // Contrôles de la carte
+    const mousePositionControl = new MousePosition({
+      coordinateFormat: createStringXY(4),
+      projection: "EPSG:4326",
+      undefinedHTML: "&nbsp;",
+    });
+
+    const scaleLineControl = new ScaleLine({
+      units: "metric",
+    });
+
+    // Créer la carte
+    const map = new Map({
+      target: mapRef.current,
+      layers: [osmLayer, satelliteLayer, vectorLayer],
+      view: new View({
+        center: fromLonLat([coordinates[1], coordinates[0]]),
+        zoom: zoom,
+      }),
+      controls: defaultControls().extend([
+        ...(mapSettings.showCoordinates ? [mousePositionControl] : []),
+        ...(mapSettings.showScale ? [scaleLineControl] : []),
+      ]),
+    });
+
+    // Mettre à jour les références des couches
+    setLayers((prev) =>
+      prev.map((layer) => {
+        switch (layer.id) {
+          case "osm":
+            return { ...layer, layer: osmLayer };
+          case "satellite":
+            return { ...layer, layer: satelliteLayer };
+          case "boundaries":
+            return { ...layer, layer: vectorLayer };
+          default:
+            return layer;
+        }
+      })
+    );
+
+    // Écouter les changements de vue
+    map.getView().on("change:center", () => {
+      const center = map.getView().getCenter();
+      if (center) {
+        const [lon, lat] = toLonLat(center);
+        setCoordinates([lat, lon]);
+      }
+    });
+
+    map.getView().on("change:resolution", () => {
+      setZoom(Math.round(map.getView().getZoom() || 7));
+    });
+
+    mapInstanceRef.current = map;
+    setMapLoaded(true);
+
+    // Ajouter quelques points d'exemple
+    addSampleData();
+  };
+
+  const addSampleData = () => {
+    if (!vectorSourceRef.current) return;
+
+    // Ajouter quelques stations météo d'exemple
+    const stations = [
+      { name: "Ouagadougou", coords: [-1.5197, 12.3714] },
+      { name: "Bobo-Dioulasso", coords: [-4.2945, 11.1777] },
+      { name: "Koudougou", coords: [-2.3667, 12.2533] },
+      { name: "Banfora", coords: [-4.75, 10.6333] },
+    ];
+
+    stations.forEach((station) => {
+      const point = new Point(fromLonLat(station.coords));
+      const feature = new Feature({
+        geometry: point,
+        name: station.name,
+        type: "station",
+      });
+
+      feature.setStyle(
+        new Style({
+          image: new CircleStyle({
+            radius: 6,
+            fill: new Fill({ color: "#3b82f6" }),
+            stroke: new Stroke({ color: "#1e40af", width: 2 }),
+          }),
+        })
+      );
+
+      vectorSourceRef.current?.addFeature(feature);
+    });
+  };
+
   const handleToolChange = (tool: SelectionTool) => {
-    setActiveTool(tool === activeTool ? "none" : tool);
-    // Ici on activerait l'outil correspondant sur la carte
-    console.log(`Activating tool: ${tool}`);
+    if (!mapInstanceRef.current) return;
+
+    // Supprimer l'interaction précédente
+    if (drawRef.current) {
+      mapInstanceRef.current.removeInteraction(drawRef.current);
+      drawRef.current = null;
+    }
+
+    if (tool === activeTool || tool === "none") {
+      setActiveTool("none");
+      return;
+    }
+
+    let geometryType: string | undefined;
+    switch (tool) {
+      case "point":
+        geometryType = "Point";
+        break;
+      case "rectangle":
+        geometryType = "Circle"; // Utiliser Circle pour les rectangles
+        break;
+      case "polygon":
+        geometryType = "Polygon";
+        break;
+      case "circle":
+        geometryType = "Circle";
+        break;
+      default:
+        return;
+    }
+
+    // Créer une nouvelle interaction de dessin
+    if (geometryType) {
+      const draw = new Draw({
+        source: vectorSourceRef.current,
+        type: geometryType as any,
+      });
+
+      draw.on("drawend", (event) => {
+        const feature = event.feature;
+        const geometry = feature.getGeometry();
+
+        if (onSelectionChange) {
+          onSelectionChange({
+            type: tool,
+            geometry: geometry,
+            coordinates: geometry?.getCoordinates(),
+          });
+        }
+
+        console.log(`${tool} drawn:`, geometry?.getCoordinates());
+      });
+
+      mapInstanceRef.current.addInteraction(draw);
+      drawRef.current = draw;
+    }
+
+    setActiveTool(tool);
   };
 
   const handleFullscreen = () => {
@@ -124,29 +339,131 @@ export default function MapContainer({
     }
   };
 
+  const handleZoomIn = () => {
+    if (mapInstanceRef.current) {
+      const view = mapInstanceRef.current.getView();
+      const currentZoom = view.getZoom() || 7;
+      view.setZoom(currentZoom + 1);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstanceRef.current) {
+      const view = mapInstanceRef.current.getView();
+      const currentZoom = view.getZoom() || 7;
+      view.setZoom(currentZoom - 1);
+    }
+  };
+
   const handleLayerToggle = (layerId: string) => {
-    const updatedLayers = layers.map((layer) =>
-      layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
-    );
+    const updatedLayers = layers.map((layer) => {
+      if (layer.id === layerId) {
+        const newVisible = !layer.visible;
+
+        // Mettre à jour la visibilité de la couche OpenLayers
+        if (layer.layer) {
+          layer.layer.setVisible(newVisible);
+        }
+
+        return { ...layer, visible: newVisible };
+      }
+      return layer;
+    });
+
     setLayers(updatedLayers);
     onLayerChange?.(updatedLayers.filter((l) => l.visible).map((l) => l.id));
   };
 
   const handleOpacityChange = (layerId: string, opacity: number) => {
-    const updatedLayers = layers.map((layer) =>
-      layer.id === layerId ? { ...layer, opacity } : layer
-    );
+    const updatedLayers = layers.map((layer) => {
+      if (layer.id === layerId) {
+        // Mettre à jour l'opacité de la couche OpenLayers
+        if (layer.layer) {
+          layer.layer.setOpacity(opacity / 100);
+        }
+
+        return { ...layer, opacity };
+      }
+      return layer;
+    });
     setLayers(updatedLayers);
   };
 
   const exportMap = () => {
-    console.log("Exporting map...");
-    // Logique d'export de la carte
+    if (!mapInstanceRef.current) return;
+
+    mapInstanceRef.current.once("rendercomplete", () => {
+      const mapCanvas = document.createElement("canvas");
+      const size = mapInstanceRef.current!.getSize();
+      if (size) {
+        mapCanvas.width = size[0];
+        mapCanvas.height = size[1];
+        const mapContext = mapCanvas.getContext("2d");
+        if (mapContext) {
+          Array.prototype.forEach.call(
+            document.querySelectorAll(".ol-layer canvas"),
+            (canvas: HTMLCanvasElement) => {
+              if (canvas.width > 0) {
+                const opacity = canvas.parentElement?.style.opacity;
+                mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
+                const transform = canvas.style.transform;
+                const matrix = transform
+                  .match(/^matrix\(([^(]*)\)$/)?.[1]
+                  .split(",")
+                  .map(Number);
+                if (matrix) {
+                  mapContext.setTransform(...matrix);
+                }
+                mapContext.drawImage(canvas, 0, 0);
+              }
+            }
+          );
+          mapContext.globalAlpha = 1;
+
+          // Télécharger l'image
+          const link = document.createElement("a");
+          link.download = "map.png";
+          link.href = mapCanvas.toDataURL();
+          link.click();
+        }
+      }
+    });
+    mapInstanceRef.current.renderSync();
   };
 
   const resetView = () => {
-    console.log("Resetting view...");
-    // Réinitialiser la vue de la carte
+    if (mapInstanceRef.current) {
+      const view = mapInstanceRef.current.getView();
+      view.setCenter(fromLonLat([-1.5197, 12.3714]));
+      view.setZoom(7);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      // Utiliser Nominatim pour la géolocalisation
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery
+        )}&limit=1`
+      );
+      const results = await response.json();
+
+      if (results.length > 0) {
+        const result = results[0];
+        const coords = [parseFloat(result.lon), parseFloat(result.lat)];
+
+        if (mapInstanceRef.current) {
+          const view = mapInstanceRef.current.getView();
+          view.setCenter(fromLonLat(coords));
+          view.setZoom(12);
+        }
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+    }
   };
 
   return (
@@ -162,6 +479,7 @@ export default function MapContainer({
             placeholder="Rechercher un lieu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             className="w-80 pl-10 pr-4 py-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg shadow-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
           />
         </div>
@@ -169,10 +487,16 @@ export default function MapContainer({
 
       {/* Contrôles de zoom */}
       <div className="absolute top-4 right-4 z-20 flex flex-col space-y-1">
-        <button className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <button
+          onClick={handleZoomIn}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
           <PlusIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
-        <button className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <button
+          onClick={handleZoomOut}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
           <MinusIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
         <button
@@ -261,22 +585,12 @@ export default function MapContainer({
 
       {/* Conteneur de la carte */}
       <div ref={mapRef} className="w-full h-full min-h-[600px]">
-        {!mapLoaded ? (
+        {!mapLoaded && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
               <p className="text-gray-500 dark:text-gray-400">
                 Chargement de la carte...
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-green-100 to-blue-100 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
-            <div className="text-center text-gray-600 dark:text-gray-400">
-              <MapIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>Carte interactive OpenLayers</p>
-              <p className="text-sm">
-                Outil actif: {activeTool === "none" ? "Navigation" : activeTool}
               </p>
             </div>
           </div>
@@ -388,7 +702,8 @@ export default function MapContainer({
       {mapSettings.showCoordinates && (
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
           <div className="bg-black bg-opacity-75 text-white px-3 py-1 rounded text-xs">
-            Lat: 12.3714° | Lon: -1.5197° | Zoom: 7
+            Lat: {coordinates[0].toFixed(4)}° | Lon: {coordinates[1].toFixed(4)}
+            ° | Zoom: {zoom}
           </div>
         </div>
       )}

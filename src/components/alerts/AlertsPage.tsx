@@ -3,4 +3,723 @@ import { useTranslations } from "../../hooks/useTranslations";
 import Base from "../layout/Base";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
-import {\n  BellIcon,\n  ExclamationTriangleIcon,\n  InformationCircleIcon,\n  CheckCircleIcon,\n  XCircleIcon,\n  ClockIcon,\n  MapPinIcon,\n  FunnelIcon,\n  CogIcon,\n  PlusIcon,\n  BellAlertIcon,\n  EyeIcon,\n  EyeSlashIcon,\n} from \"@heroicons/react/24/outline\";\n\ninterface AlertRule {\n  id: string;\n  name: string;\n  parameter: string;\n  condition: string;\n  threshold: number;\n  severity: 'low' | 'medium' | 'high' | 'critical';\n  enabled: boolean;\n  lastTriggered?: string;\n  triggerCount: number;\n}\n\ninterface AlertItem {\n  id: string;\n  ruleId: string;\n  title: string;\n  message: string;\n  severity: 'low' | 'medium' | 'high' | 'critical';\n  status: 'active' | 'acknowledged' | 'resolved';\n  location: string;\n  coordinates: [number, number];\n  timestamp: string;\n  value: number;\n  threshold: number;\n  unit: string;\n  acknowledgedBy?: string;\n  acknowledgedAt?: string;\n  resolvedAt?: string;\n}\n\nexport const AlertsPage: React.FC = () => {\n  const t = useTranslations();\n  const [isLoading, setIsLoading] = useState(true);\n  const [selectedSeverity, setSelectedSeverity] = useState<string>('all');\n  const [selectedStatus, setSelectedStatus] = useState<string>('all');\n  const [showRules, setShowRules] = useState(false);\n  const [selectedAlert, setSelectedAlert] = useState<AlertItem | null>(null);\n\n  // Règles d'alerte\n  const [alertRules, setAlertRules] = useState<AlertRule[]>([\n    {\n      id: 'rule-001',\n      name: 'Température Critique',\n      parameter: 'Température',\n      condition: '>',\n      threshold: 35,\n      severity: 'high',\n      enabled: true,\n      lastTriggered: '2024-01-15T10:25:00Z',\n      triggerCount: 12\n    },\n    {\n      id: 'rule-002',\n      name: 'Précipitations Faibles',\n      parameter: 'Précipitations',\n      condition: '<',\n      threshold: 10,\n      severity: 'medium',\n      enabled: true,\n      lastTriggered: '2024-01-14T08:30:00Z',\n      triggerCount: 5\n    },\n    {\n      id: 'rule-003',\n      name: 'NDVI Critique',\n      parameter: 'NDVI',\n      condition: '<',\n      threshold: 0.3,\n      severity: 'critical',\n      enabled: true,\n      triggerCount: 0\n    },\n    {\n      id: 'rule-004',\n      name: 'Vent Violent',\n      parameter: 'Vitesse du vent',\n      condition: '>',\n      threshold: 50,\n      severity: 'high',\n      enabled: false,\n      triggerCount: 2\n    },\n    {\n      id: 'rule-005',\n      name: 'Humidité Faible',\n      parameter: 'Humidité',\n      condition: '<',\n      threshold: 30,\n      severity: 'low',\n      enabled: true,\n      lastTriggered: '2024-01-13T15:45:00Z',\n      triggerCount: 8\n    }\n  ]);\n\n  // Alertes actives\n  const [alerts, setAlerts] = useState<AlertItem[]>([\n    {\n      id: 'alert-001',\n      ruleId: 'rule-001',\n      title: 'Température critique détectée',\n      message: 'La température a dépassé le seuil critique dans la région de Ouagadougou',\n      severity: 'high',\n      status: 'active',\n      location: 'Ouagadougou, Centre',\n      coordinates: [12.3714, -1.5197],\n      timestamp: '2024-01-15T10:25:00Z',\n      value: 38.2,\n      threshold: 35,\n      unit: '°C'\n    },\n    {\n      id: 'alert-002',\n      ruleId: 'rule-002',\n      title: 'Précipitations insuffisantes',\n      message: 'Niveau de précipitations critique dans la région du Sahel',\n      severity: 'medium',\n      status: 'acknowledged',\n      location: 'Dori, Sahel',\n      coordinates: [14.0354, -0.0348],\n      timestamp: '2024-01-14T08:30:00Z',\n      value: 5.2,\n      threshold: 10,\n      unit: 'mm',\n      acknowledgedBy: 'Admin User',\n      acknowledgedAt: '2024-01-14T09:15:00Z'\n    },\n    {\n      id: 'alert-003',\n      ruleId: 'rule-005',\n      title: 'Humidité faible détectée',\n      message: 'Taux d\\'humidité en dessous du seuil acceptable',\n      severity: 'low',\n      status: 'resolved',\n      location: 'Bobo-Dioulasso, Houet',\n      coordinates: [11.1777, -4.2945],\n      timestamp: '2024-01-13T15:45:00Z',\n      value: 28,\n      threshold: 30,\n      unit: '%',\n      acknowledgedBy: 'Tech User',\n      acknowledgedAt: '2024-01-13T16:00:00Z',\n      resolvedAt: '2024-01-14T10:30:00Z'\n    },\n    {\n      id: 'alert-004',\n      ruleId: 'rule-001',\n      title: 'Température élevée persistante',\n      message: 'Température élevée maintenue pendant plus de 4 heures',\n      severity: 'critical',\n      status: 'active',\n      location: 'Fada N\\'Gourma, Gourma',\n      coordinates: [12.0619, 0.3549],\n      timestamp: '2024-01-15T07:20:00Z',\n      value: 39.8,\n      threshold: 35,\n      unit: '°C'\n    }\n  ]);\n\n  const severityLevels = [\n    { id: 'all', name: 'Toutes' },\n    { id: 'critical', name: 'Critique' },\n    { id: 'high', name: 'Élevée' },\n    { id: 'medium', name: 'Moyenne' },\n    { id: 'low', name: 'Faible' }\n  ];\n\n  const statusLevels = [\n    { id: 'all', name: 'Tous' },\n    { id: 'active', name: 'Actif' },\n    { id: 'acknowledged', name: 'Acquitté' },\n    { id: 'resolved', name: 'Résolu' }\n  ];\n\n  useEffect(() => {\n    const timer = setTimeout(() => {\n      setIsLoading(false);\n    }, 1000);\n\n    return () => clearTimeout(timer);\n  }, [selectedSeverity, selectedStatus]);\n\n  const getSeverityIcon = (severity: AlertItem['severity']) => {\n    switch (severity) {\n      case 'critical':\n        return <XCircleIcon className=\"w-5 h-5 text-red-600\" />;\n      case 'high':\n        return <ExclamationTriangleIcon className=\"w-5 h-5 text-orange-600\" />;\n      case 'medium':\n        return <InformationCircleIcon className=\"w-5 h-5 text-yellow-600\" />;\n      case 'low':\n        return <CheckCircleIcon className=\"w-5 h-5 text-blue-600\" />;\n    }\n  };\n\n  const getSeverityColor = (severity: AlertItem['severity']) => {\n    switch (severity) {\n      case 'critical':\n        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800';\n      case 'high':\n        return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-800';\n      case 'medium':\n        return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-800';\n      case 'low':\n        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-800';\n    }\n  };\n\n  const getStatusColor = (status: AlertItem['status']) => {\n    switch (status) {\n      case 'active':\n        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';\n      case 'acknowledged':\n        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';\n      case 'resolved':\n        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';\n    }\n  };\n\n  const acknowledgeAlert = (alertId: string) => {\n    setAlerts(prev => prev.map(alert => \n      alert.id === alertId \n        ? { \n            ...alert, \n            status: 'acknowledged',\n            acknowledgedBy: 'Current User',\n            acknowledgedAt: new Date().toISOString()\n          }\n        : alert\n    ));\n  };\n\n  const resolveAlert = (alertId: string) => {\n    setAlerts(prev => prev.map(alert => \n      alert.id === alertId \n        ? { \n            ...alert, \n            status: 'resolved',\n            resolvedAt: new Date().toISOString()\n          }\n        : alert\n    ));\n  };\n\n  const toggleRule = (ruleId: string) => {\n    setAlertRules(prev => prev.map(rule => \n      rule.id === ruleId \n        ? { ...rule, enabled: !rule.enabled }\n        : rule\n    ));\n  };\n\n  const formatTimestamp = (timestamp: string) => {\n    return new Date(timestamp).toLocaleString('fr-FR');\n  };\n\n  const filteredAlerts = alerts.filter(alert => {\n    const severityMatch = selectedSeverity === 'all' || alert.severity === selectedSeverity;\n    const statusMatch = selectedStatus === 'all' || alert.status === selectedStatus;\n    return severityMatch && statusMatch;\n  });\n\n  const getAlertStats = () => {\n    const active = alerts.filter(a => a.status === 'active').length;\n    const acknowledged = alerts.filter(a => a.status === 'acknowledged').length;\n    const resolved = alerts.filter(a => a.status === 'resolved').length;\n    const critical = alerts.filter(a => a.severity === 'critical' && a.status === 'active').length;\n    \n    return { active, acknowledged, resolved, critical };\n  };\n\n  const stats = getAlertStats();\n\n  if (isLoading) {\n    return (\n      <Base>\n        <div className=\"min-h-screen flex items-center justify-center\">\n          <div className=\"text-center space-y-4\">\n            <LoadingSpinner size=\"lg\" />\n            <p className=\"text-gray-600 dark:text-gray-400\">\n              Chargement des alertes...\n            </p>\n          </div>\n        </div>\n      </Base>\n    );\n  }\n\n  return (\n    <Base>\n      <div className=\"space-y-6\">\n        {/* En-tête */}\n        <div className=\"flex items-center justify-between\">\n          <div>\n            <h1 className=\"text-2xl font-bold text-gray-900 dark:text-white flex items-center\">\n              <BellIcon className=\"w-8 h-8 mr-3 text-red-600\" />\n              Système d'Alertes\n            </h1>\n            <p className=\"text-gray-600 dark:text-gray-400 mt-1\">\n              Gestion et surveillance des alertes environnementales\n            </p>\n          </div>\n          <div className=\"flex items-center space-x-3\">\n            <button\n              onClick={() => setShowRules(!showRules)}\n              className=\"px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center space-x-2\"\n            >\n              <CogIcon className=\"w-4 h-4\" />\n              <span>Règles</span>\n            </button>\n            <button className=\"px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center space-x-2\">\n              <PlusIcon className=\"w-4 h-4\" />\n              <span>Nouvelle Alerte</span>\n            </button>\n          </div>\n        </div>\n\n        {/* Statistiques */}\n        <div className=\"grid grid-cols-1 md:grid-cols-4 gap-6\">\n          <div className=\"bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6\">\n            <div className=\"flex items-center\">\n              <div className=\"bg-red-50 dark:bg-red-900/20 p-3 rounded-lg\">\n                <BellAlertIcon className=\"w-6 h-6 text-red-600 dark:text-red-400\" />\n              </div>\n              <div className=\"ml-4\">\n                <p className=\"text-sm font-medium text-gray-600 dark:text-gray-400\">Alertes Actives</p>\n                <p className=\"text-2xl font-bold text-gray-900 dark:text-white\">{stats.active}</p>\n              </div>\n            </div>\n          </div>\n\n          <div className=\"bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6\">\n            <div className=\"flex items-center\">\n              <div className=\"bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg\">\n                <EyeIcon className=\"w-6 h-6 text-yellow-600 dark:text-yellow-400\" />\n              </div>\n              <div className=\"ml-4\">\n                <p className=\"text-sm font-medium text-gray-600 dark:text-gray-400\">Acquittées</p>\n                <p className=\"text-2xl font-bold text-gray-900 dark:text-white\">{stats.acknowledged}</p>\n              </div>\n            </div>\n          </div>\n\n          <div className=\"bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6\">\n            <div className=\"flex items-center\">\n              <div className=\"bg-green-50 dark:bg-green-900/20 p-3 rounded-lg\">\n                <CheckCircleIcon className=\"w-6 h-6 text-green-600 dark:text-green-400\" />\n              </div>\n              <div className=\"ml-4\">\n                <p className=\"text-sm font-medium text-gray-600 dark:text-gray-400\">Résolues</p>\n                <p className=\"text-2xl font-bold text-gray-900 dark:text-white\">{stats.resolved}</p>\n              </div>\n            </div>\n          </div>\n\n          <div className=\"bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6\">\n            <div className=\"flex items-center\">\n              <div className=\"bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg\">\n                <XCircleIcon className=\"w-6 h-6 text-purple-600 dark:text-purple-400\" />\n              </div>\n              <div className=\"ml-4\">\n                <p className=\"text-sm font-medium text-gray-600 dark:text-gray-400\">Critiques</p>\n                <p className=\"text-2xl font-bold text-gray-900 dark:text-white\">{stats.critical}</p>\n              </div>\n            </div>\n          </div>\n        </div>\n\n        {/* Filtres */}\n        <div className=\"bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6\">\n          <div className=\"flex flex-wrap items-center justify-between gap-4\">\n            <div className=\"flex items-center space-x-4\">\n              <div className=\"flex items-center space-x-2\">\n                <FunnelIcon className=\"w-5 h-5 text-gray-500\" />\n                <span className=\"text-sm font-medium text-gray-700 dark:text-gray-300\">Gravité:</span>\n                <select\n                  value={selectedSeverity}\n                  onChange={(e) => setSelectedSeverity(e.target.value)}\n                  className=\"text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500\"\n                >\n                  {severityLevels.map((level) => (\n                    <option key={level.id} value={level.id}>\n                      {level.name}\n                    </option>\n                  ))}\n                </select>\n              </div>\n              \n              <div className=\"flex items-center space-x-2\">\n                <ClockIcon className=\"w-5 h-5 text-gray-500\" />\n                <span className=\"text-sm font-medium text-gray-700 dark:text-gray-300\">Statut:</span>\n                <select\n                  value={selectedStatus}\n                  onChange={(e) => setSelectedStatus(e.target.value)}\n                  className=\"text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500\"\n                >\n                  {statusLevels.map((status) => (\n                    <option key={status.id} value={status.id}>\n                      {status.name}\n                    </option>\n                  ))}\n                </select>\n              </div>\n            </div>\n            \n            <div className=\"text-sm text-gray-600 dark:text-gray-400\">\n              {filteredAlerts.length} alerte{filteredAlerts.length > 1 ? 's' : ''} trouvée{filteredAlerts.length > 1 ? 's' : ''}\n            </div>\n          </div>\n        </div>\n\n        {/* Règles d'alerte (panneau pliable) */}\n        {showRules && (\n          <div className=\"bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700\">\n            <div className=\"p-6 border-b border-gray-200 dark:border-gray-700\">\n              <h3 className=\"text-lg font-semibold text-gray-900 dark:text-white flex items-center\">\n                <CogIcon className=\"w-5 h-5 mr-2\" />\n                Règles d'Alerte\n              </h3>\n            </div>\n            <div className=\"p-6\">\n              <div className=\"space-y-4\">\n                {alertRules.map((rule) => (\n                  <div key={rule.id} className=\"flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg\">\n                    <div className=\"flex items-center space-x-4\">\n                      <button\n                        onClick={() => toggleRule(rule.id)}\n                        className=\"text-gray-400 hover:text-gray-600 dark:hover:text-gray-300\"\n                      >\n                        {rule.enabled ? (\n                          <EyeIcon className=\"w-5 h-5 text-green-600\" />\n                        ) : (\n                          <EyeSlashIcon className=\"w-5 h-5\" />\n                        )}\n                      </button>\n                      <div>\n                        <h4 className=\"font-medium text-gray-900 dark:text-white\">\n                          {rule.name}\n                        </h4>\n                        <p className=\"text-sm text-gray-600 dark:text-gray-400\">\n                          {rule.parameter} {rule.condition} {rule.threshold}\n                        </p>\n                      </div>\n                    </div>\n                    <div className=\"flex items-center space-x-4\">\n                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(rule.severity).split(' ').slice(0, 2).join(' ')}`}>\n                        {rule.severity === 'critical' && 'Critique'}\n                        {rule.severity === 'high' && 'Élevée'}\n                        {rule.severity === 'medium' && 'Moyenne'}\n                        {rule.severity === 'low' && 'Faible'}\n                      </span>\n                      <div className=\"text-right text-sm\">\n                        <div className=\"text-gray-900 dark:text-white font-medium\">\n                          {rule.triggerCount} déclenchement{rule.triggerCount > 1 ? 's' : ''}\n                        </div>\n                        {rule.lastTriggered && (\n                          <div className=\"text-gray-500 dark:text-gray-400\">\n                            {formatTimestamp(rule.lastTriggered)}\n                          </div>\n                        )}\n                      </div>\n                    </div>\n                  </div>\n                ))}\n              </div>\n            </div>\n          </div>\n        )}\n\n        {/* Liste des alertes */}\n        <div className=\"space-y-4\">\n          {filteredAlerts.length === 0 ? (\n            <div className=\"bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12\">\n              <div className=\"text-center\">\n                <CheckCircleIcon className=\"w-16 h-16 mx-auto text-green-500 mb-4\" />\n                <h3 className=\"text-lg font-medium text-gray-900 dark:text-white mb-2\">\n                  Aucune alerte trouvée\n                </h3>\n                <p className=\"text-gray-600 dark:text-gray-400\">\n                  Aucune alerte ne correspond aux critères sélectionnés.\n                </p>\n              </div>\n            </div>\n          ) : (\n            filteredAlerts.map((alert) => (\n              <div \n                key={alert.id} \n                className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 ${getSeverityColor(alert.severity)}`}\n              >\n                <div className=\"flex items-start justify-between\">\n                  <div className=\"flex items-start space-x-4\">\n                    {getSeverityIcon(alert.severity)}\n                    <div className=\"flex-1\">\n                      <div className=\"flex items-center space-x-3 mb-2\">\n                        <h3 className=\"text-lg font-semibold text-gray-900 dark:text-white\">\n                          {alert.title}\n                        </h3>\n                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(alert.status)}`}>\n                          {alert.status === 'active' && 'Actif'}\n                          {alert.status === 'acknowledged' && 'Acquitté'}\n                          {alert.status === 'resolved' && 'Résolu'}\n                        </span>\n                      </div>\n                      <p className=\"text-gray-700 dark:text-gray-300 mb-3\">\n                        {alert.message}\n                      </p>\n                      <div className=\"flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400\">\n                        <div className=\"flex items-center space-x-1\">\n                          <MapPinIcon className=\"w-4 h-4\" />\n                          <span>{alert.location}</span>\n                        </div>\n                        <div className=\"flex items-center space-x-1\">\n                          <ClockIcon className=\"w-4 h-4\" />\n                          <span>{formatTimestamp(alert.timestamp)}</span>\n                        </div>\n                        <div className=\"font-medium\">\n                          Valeur: {alert.value} {alert.unit} (seuil: {alert.threshold} {alert.unit})\n                        </div>\n                      </div>\n                      \n                      {/* Informations d'acquittement/résolution */}\n                      {alert.acknowledgedBy && (\n                        <div className=\"mt-2 text-xs text-gray-500 dark:text-gray-400\">\n                          Acquitté par {alert.acknowledgedBy} le {formatTimestamp(alert.acknowledgedAt!)}\n                          {alert.resolvedAt && (\n                            <span> • Résolu le {formatTimestamp(alert.resolvedAt)}</span>\n                          )}\n                        </div>\n                      )}\n                    </div>\n                  </div>\n                  \n                  {/* Actions */}\n                  <div className=\"flex items-center space-x-2\">\n                    {alert.status === 'active' && (\n                      <>\n                        <button\n                          onClick={() => acknowledgeAlert(alert.id)}\n                          className=\"px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-md hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700 dark:hover:bg-yellow-800\"\n                        >\n                          Acquitter\n                        </button>\n                        <button\n                          onClick={() => resolveAlert(alert.id)}\n                          className=\"px-3 py-1 text-xs font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-green-900 dark:text-green-200 dark:border-green-700 dark:hover:bg-green-800\"\n                        >\n                          Résoudre\n                        </button>\n                      </>\n                    )}\n                    {alert.status === 'acknowledged' && (\n                      <button\n                        onClick={() => resolveAlert(alert.id)}\n                        className=\"px-3 py-1 text-xs font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-green-900 dark:text-green-200 dark:border-green-700 dark:hover:bg-green-800\"\n                      >\n                        Résoudre\n                      </button>\n                    )}\n                  </div>\n                </div>\n              </div>\n            ))\n          )}\n        </div>\n\n        {/* Résumé et conseils */}\n        {stats.active > 0 && (\n          <Alert>\n            <div className=\"flex items-start space-x-3\">\n              <BellAlertIcon className=\"w-5 h-5 text-red-600 mt-0.5\" />\n              <div>\n                <h4 className=\"font-medium text-red-900 dark:text-red-200\">\n                  {stats.active} Alerte{stats.active > 1 ? 's' : ''} Active{stats.active > 1 ? 's' : ''}\n                </h4>\n                <p className=\"text-red-700 dark:text-red-300 text-sm mt-1\">\n                  {stats.critical > 0 && `${stats.critical} alerte${stats.critical > 1 ? 's' : ''} critique${stats.critical > 1 ? 's' : ''} nécessite${stats.critical === 1 ? '' : 'nt'} une attention immédiate. `}\n                  Vérifiez les conditions sur le terrain et prenez les mesures appropriées.\n                </p>\n              </div>\n            </div>\n          </Alert>\n        )}\n      </div>\n    </Base>\n  );\n};
+import {
+  BellIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  MapPinIcon,
+  FunnelIcon,
+  CogIcon,
+  PlusIcon,
+  BellAlertIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/24/outline";
+
+// Types et interfaces
+interface AlertRule {
+  id: string;
+  name: string;
+  parameter: string;
+  condition: string;
+  threshold: number;
+  severity: "low" | "medium" | "high" | "critical";
+  enabled: boolean;
+  lastTriggered?: string;
+  triggerCount: number;
+}
+
+interface AlertItem {
+  id: string;
+  ruleId: string;
+  title: string;
+  message: string;
+  severity: "low" | "medium" | "high" | "critical";
+  status: "active" | "acknowledged" | "resolved";
+  location: string;
+  coordinates: [number, number];
+  timestamp: string;
+  value: number;
+  threshold: number;
+  unit: string;
+  acknowledgedBy?: string;
+  acknowledgedAt?: string;
+  resolvedAt?: string;
+}
+
+interface AlertStats {
+  active: number;
+  acknowledged: number;
+  resolved: number;
+  critical: number;
+}
+
+// Données de configuration
+const SEVERITY_LEVELS = [
+  { id: "all", name: "Toutes" },
+  { id: "critical", name: "Critique" },
+  { id: "high", name: "Élevée" },
+  { id: "medium", name: "Moyenne" },
+  { id: "low", name: "Faible" },
+];
+
+const STATUS_LEVELS = [
+  { id: "all", name: "Tous" },
+  { id: "active", name: "Actif" },
+  { id: "acknowledged", name: "Acquitté" },
+  { id: "resolved", name: "Résolu" },
+];
+
+// Données d'exemple
+const INITIAL_ALERT_RULES: AlertRule[] = [
+  {
+    id: "rule-001",
+    name: "Température Critique",
+    parameter: "Température",
+    condition: ">",
+    threshold: 35,
+    severity: "high",
+    enabled: true,
+    lastTriggered: "2024-01-15T10:25:00Z",
+    triggerCount: 12,
+  },
+  {
+    id: "rule-002",
+    name: "Précipitations Faibles",
+    parameter: "Précipitations",
+    condition: "<",
+    threshold: 10,
+    severity: "medium",
+    enabled: true,
+    lastTriggered: "2024-01-14T08:30:00Z",
+    triggerCount: 5,
+  },
+  {
+    id: "rule-003",
+    name: "NDVI Critique",
+    parameter: "NDVI",
+    condition: "<",
+    threshold: 0.3,
+    severity: "critical",
+    enabled: true,
+    triggerCount: 0,
+  },
+  {
+    id: "rule-004",
+    name: "Vent Violent",
+    parameter: "Vitesse du vent",
+    condition: ">",
+    threshold: 50,
+    severity: "high",
+    enabled: false,
+    triggerCount: 2,
+  },
+  {
+    id: "rule-005",
+    name: "Humidité Faible",
+    parameter: "Humidité",
+    condition: "<",
+    threshold: 30,
+    severity: "low",
+    enabled: true,
+    lastTriggered: "2024-01-13T15:45:00Z",
+    triggerCount: 8,
+  },
+];
+
+const INITIAL_ALERTS: AlertItem[] = [
+  {
+    id: "alert-001",
+    ruleId: "rule-001",
+    title: "Température critique détectée",
+    message:
+      "La température a dépassé le seuil critique dans la région de Ouagadougou",
+    severity: "high",
+    status: "active",
+    location: "Ouagadougou, Centre",
+    coordinates: [12.3714, -1.5197],
+    timestamp: "2024-01-15T10:25:00Z",
+    value: 38.2,
+    threshold: 35,
+    unit: "°C",
+  },
+  {
+    id: "alert-002",
+    ruleId: "rule-002",
+    title: "Précipitations insuffisantes",
+    message: "Niveau de précipitations critique dans la région du Sahel",
+    severity: "medium",
+    status: "acknowledged",
+    location: "Dori, Sahel",
+    coordinates: [14.0354, -0.0348],
+    timestamp: "2024-01-14T08:30:00Z",
+    value: 5.2,
+    threshold: 10,
+    unit: "mm",
+    acknowledgedBy: "Admin User",
+    acknowledgedAt: "2024-01-14T09:15:00Z",
+  },
+  {
+    id: "alert-003",
+    ruleId: "rule-005",
+    title: "Humidité faible détectée",
+    message: "Taux d'humidité en dessous du seuil acceptable",
+    severity: "low",
+    status: "resolved",
+    location: "Bobo-Dioulasso, Houet",
+    coordinates: [11.1777, -4.2945],
+    timestamp: "2024-01-13T15:45:00Z",
+    value: 28,
+    threshold: 30,
+    unit: "%",
+    acknowledgedBy: "Tech User",
+    acknowledgedAt: "2024-01-13T16:00:00Z",
+    resolvedAt: "2024-01-14T10:30:00Z",
+  },
+  {
+    id: "alert-004",
+    ruleId: "rule-001",
+    title: "Température élevée persistante",
+    message: "Température élevée maintenue pendant plus de 4 heures",
+    severity: "critical",
+    status: "active",
+    location: "Fada N'Gourma, Gourma",
+    coordinates: [12.0619, 0.3549],
+    timestamp: "2024-01-15T07:20:00Z",
+    value: 39.8,
+    threshold: 35,
+    unit: "°C",
+  },
+];
+
+// Utilitaires
+const getSeverityIcon = (
+  severity: AlertItem["severity"]
+): React.ReactElement => {
+  switch (severity) {
+    case "critical":
+      return <XCircleIcon className="w-5 h-5 text-red-600" />;
+    case "high":
+      return <ExclamationTriangleIcon className="w-5 h-5 text-orange-600" />;
+    case "medium":
+      return <InformationCircleIcon className="w-5 h-5 text-yellow-600" />;
+    case "low":
+      return <CheckCircleIcon className="w-5 h-5 text-blue-600" />;
+  }
+};
+
+const getSeverityColor = (severity: AlertItem["severity"]): string => {
+  switch (severity) {
+    case "critical":
+      return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900 dark:text-red-200 dark:border-red-800";
+    case "high":
+      return "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-800";
+    case "medium":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-800";
+    case "low":
+      return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-800";
+  }
+};
+
+const getStatusColor = (status: AlertItem["status"]): string => {
+  switch (status) {
+    case "active":
+      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+    case "acknowledged":
+      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+    case "resolved":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+  }
+};
+
+const formatTimestamp = (timestamp: string): string => {
+  return new Date(timestamp).toLocaleString("fr-FR");
+};
+
+// Composants
+const StatsCard: React.FC<{
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  value: number;
+  color: string;
+}> = ({ icon: Icon, title, value, color }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div className="flex items-center">
+      <div className={`${color} p-3 rounded-lg`}>
+        <Icon className="w-6 h-6" />
+      </div>
+      <div className="ml-4">
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          {title}
+        </p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+          {value}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+const FilterPanel: React.FC<{
+  selectedSeverity: string;
+  selectedStatus: string;
+  onSeverityChange: (severity: string) => void;
+  onStatusChange: (status: string) => void;
+  alertCount: number;
+}> = ({
+  selectedSeverity,
+  selectedStatus,
+  onSeverityChange,
+  onStatusChange,
+  alertCount,
+}) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
+          <FunnelIcon className="w-5 h-5 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Gravité:
+          </span>
+          <select
+            value={selectedSeverity}
+            onChange={(e) => onSeverityChange(e.target.value)}
+            className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500"
+          >
+            {SEVERITY_LEVELS.map((level) => (
+              <option key={level.id} value={level.id}>
+                {level.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <ClockIcon className="w-5 h-5 text-gray-500" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Statut:
+          </span>
+          <select
+            value={selectedStatus}
+            onChange={(e) => onStatusChange(e.target.value)}
+            className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500"
+          >
+            {STATUS_LEVELS.map((status) => (
+              <option key={status.id} value={status.id}>
+                {status.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="text-sm text-gray-600 dark:text-gray-400">
+        {alertCount} alerte{alertCount > 1 ? "s" : ""} trouvée
+        {alertCount > 1 ? "s" : ""}
+      </div>
+    </div>
+  </div>
+);
+
+const RulesPanel: React.FC<{
+  rules: AlertRule[];
+  showRules: boolean;
+  onToggleRules: () => void;
+  onToggleRule: (ruleId: string) => void;
+}> = ({ rules, showRules, onToggleRules, onToggleRule }) => {
+  if (!showRules) return null;
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+            <CogIcon className="w-5 h-5 mr-2" />
+            Règles d'Alerte
+          </h3>
+          <button
+            onClick={onToggleRules}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <ChevronUpIcon className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+      <div className="p-6">
+        <div className="space-y-4">
+          {rules.map((rule) => (
+            <div
+              key={rule.id}
+              className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+            >
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => onToggleRule(rule.id)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  {rule.enabled ? (
+                    <EyeIcon className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <EyeSlashIcon className="w-5 h-5" />
+                  )}
+                </button>
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">
+                    {rule.name}
+                  </h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {rule.parameter} {rule.condition} {rule.threshold}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeverityColor(
+                    rule.severity
+                  )
+                    .split(" ")
+                    .slice(0, 2)
+                    .join(" ")}`}
+                >
+                  {rule.severity === "critical" && "Critique"}
+                  {rule.severity === "high" && "Élevée"}
+                  {rule.severity === "medium" && "Moyenne"}
+                  {rule.severity === "low" && "Faible"}
+                </span>
+                <div className="text-right text-sm">
+                  <div className="text-gray-900 dark:text-white font-medium">
+                    {rule.triggerCount} déclenchement
+                    {rule.triggerCount > 1 ? "s" : ""}
+                  </div>
+                  {rule.lastTriggered && (
+                    <div className="text-gray-500 dark:text-gray-400">
+                      {formatTimestamp(rule.lastTriggered)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AlertCard: React.FC<{
+  alert: AlertItem;
+  onAcknowledge: (id: string) => void;
+  onResolve: (id: string) => void;
+}> = ({ alert, onAcknowledge, onResolve }) => (
+  <div
+    className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border p-6 ${getSeverityColor(
+      alert.severity
+    )}`}
+  >
+    <div className="flex items-start justify-between">
+      <div className="flex items-start space-x-4">
+        {getSeverityIcon(alert.severity)}
+        <div className="flex-1">
+          <div className="flex items-center space-x-3 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {alert.title}
+            </h3>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                alert.status
+              )}`}
+            >
+              {alert.status === "active" && "Actif"}
+              {alert.status === "acknowledged" && "Acquitté"}
+              {alert.status === "resolved" && "Résolu"}
+            </span>
+          </div>
+          <p className="text-gray-700 dark:text-gray-300 mb-3">
+            {alert.message}
+          </p>
+          <div className="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center space-x-1">
+              <MapPinIcon className="w-4 h-4" />
+              <span>{alert.location}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <ClockIcon className="w-4 h-4" />
+              <span>{formatTimestamp(alert.timestamp)}</span>
+            </div>
+            <div className="font-medium">
+              Valeur: {alert.value} {alert.unit} (seuil: {alert.threshold}{" "}
+              {alert.unit})
+            </div>
+          </div>
+
+          {/* Informations d'acquittement/résolution */}
+          {alert.acknowledgedBy && (
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Acquitté par {alert.acknowledgedBy} le{" "}
+              {formatTimestamp(alert.acknowledgedAt!)}
+              {alert.resolvedAt && (
+                <span> • Résolu le {formatTimestamp(alert.resolvedAt)}</span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center space-x-2">
+        {alert.status === "active" && (
+          <>
+            <button
+              onClick={() => onAcknowledge(alert.id)}
+              className="px-3 py-1 text-xs font-medium text-yellow-700 bg-yellow-100 border border-yellow-300 rounded-md hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700 dark:hover:bg-yellow-800"
+            >
+              Acquitter
+            </button>
+            <button
+              onClick={() => onResolve(alert.id)}
+              className="px-3 py-1 text-xs font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-green-900 dark:text-green-200 dark:border-green-700 dark:hover:bg-green-800"
+            >
+              Résoudre
+            </button>
+          </>
+        )}
+        {alert.status === "acknowledged" && (
+          <button
+            onClick={() => onResolve(alert.id)}
+            className="px-3 py-1 text-xs font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-green-900 dark:text-green-200 dark:border-green-700 dark:hover:bg-green-800"
+          >
+            Résoudre
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+// Composant principal
+export const AlertsPage: React.FC = () => {
+  const t = useTranslations();
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedSeverity, setSelectedSeverity] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [showRules, setShowRules] = useState(false);
+  const [alertRules, setAlertRules] =
+    useState<AlertRule[]>(INITIAL_ALERT_RULES);
+  const [alerts, setAlerts] = useState<AlertItem[]>(INITIAL_ALERTS);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [selectedSeverity, selectedStatus]);
+
+  const acknowledgeAlert = (alertId: string) => {
+    setAlerts((prev) =>
+      prev.map((alert) =>
+        alert.id === alertId
+          ? {
+              ...alert,
+              status: "acknowledged",
+              acknowledgedBy: "Current User",
+              acknowledgedAt: new Date().toISOString(),
+            }
+          : alert
+      )
+    );
+  };
+
+  const resolveAlert = (alertId: string) => {
+    setAlerts((prev) =>
+      prev.map((alert) =>
+        alert.id === alertId
+          ? {
+              ...alert,
+              status: "resolved",
+              resolvedAt: new Date().toISOString(),
+            }
+          : alert
+      )
+    );
+  };
+
+  const toggleRule = (ruleId: string) => {
+    setAlertRules((prev) =>
+      prev.map((rule) =>
+        rule.id === ruleId ? { ...rule, enabled: !rule.enabled } : rule
+      )
+    );
+  };
+
+  const filteredAlerts = alerts.filter((alert) => {
+    const severityMatch =
+      selectedSeverity === "all" || alert.severity === selectedSeverity;
+    const statusMatch =
+      selectedStatus === "all" || alert.status === selectedStatus;
+    return severityMatch && statusMatch;
+  });
+
+  const getAlertStats = (): AlertStats => {
+    const active = alerts.filter((a) => a.status === "active").length;
+    const acknowledged = alerts.filter(
+      (a) => a.status === "acknowledged"
+    ).length;
+    const resolved = alerts.filter((a) => a.status === "resolved").length;
+    const critical = alerts.filter(
+      (a) => a.severity === "critical" && a.status === "active"
+    ).length;
+
+    return { active, acknowledged, resolved, critical };
+  };
+
+  const stats = getAlertStats();
+
+  if (isLoading) {
+    return (
+      <Base>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <LoadingSpinner size="lg" />
+            <p className="text-gray-600 dark:text-gray-400">
+              Chargement des alertes...
+            </p>
+          </div>
+        </div>
+      </Base>
+    );
+  }
+
+  return (
+    <Base>
+      <div className="space-y-6">
+        {/* En-tête */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
+              <BellIcon className="w-8 h-8 mr-3 text-red-600" />
+              Système d'Alertes
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Gestion et surveillance des alertes environnementales
+            </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowRules(!showRules)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center space-x-2"
+            >
+              <CogIcon className="w-4 h-4" />
+              <span>Règles</span>
+            </button>
+            <button className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center space-x-2">
+              <PlusIcon className="w-4 h-4" />
+              <span>Nouvelle Alerte</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <StatsCard
+            icon={BellAlertIcon}
+            title="Alertes Actives"
+            value={stats.active}
+            color="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+          />
+          <StatsCard
+            icon={EyeIcon}
+            title="Acquittées"
+            value={stats.acknowledged}
+            color="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"
+          />
+          <StatsCard
+            icon={CheckCircleIcon}
+            title="Résolues"
+            value={stats.resolved}
+            color="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400"
+          />
+          <StatsCard
+            icon={XCircleIcon}
+            title="Critiques"
+            value={stats.critical}
+            color="bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
+          />
+        </div>
+
+        {/* Filtres */}
+        <FilterPanel
+          selectedSeverity={selectedSeverity}
+          selectedStatus={selectedStatus}
+          onSeverityChange={setSelectedSeverity}
+          onStatusChange={setSelectedStatus}
+          alertCount={filteredAlerts.length}
+        />
+
+        {/* Règles d'alerte */}
+        <RulesPanel
+          rules={alertRules}
+          showRules={showRules}
+          onToggleRules={() => setShowRules(!showRules)}
+          onToggleRule={toggleRule}
+        />
+
+        {/* Liste des alertes */}
+        <div className="space-y-4">
+          {filteredAlerts.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-12">
+              <div className="text-center">
+                <CheckCircleIcon className="w-16 h-16 mx-auto text-green-500 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Aucune alerte trouvée
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Aucune alerte ne correspond aux critères sélectionnés.
+                </p>
+              </div>
+            </div>
+          ) : (
+            filteredAlerts.map((alert) => (
+              <AlertCard
+                key={alert.id}
+                alert={alert}
+                onAcknowledge={acknowledgeAlert}
+                onResolve={resolveAlert}
+              />
+            ))
+          )}
+        </div>
+
+        {/* Résumé et conseils */}
+        {stats.active > 0 && (
+          <Alert>
+            <div className="flex items-start space-x-3">
+              <BellAlertIcon className="w-5 h-5 text-red-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-red-900 dark:text-red-200">
+                  {stats.active} Alerte{stats.active > 1 ? "s" : ""} Active
+                  {stats.active > 1 ? "s" : ""}
+                </h4>
+                <p className="text-red-700 dark:text-red-300 text-sm mt-1">
+                  {stats.critical > 0 &&
+                    `${stats.critical} alerte${
+                      stats.critical > 1 ? "s" : ""
+                    } critique${stats.critical > 1 ? "s" : ""} nécessite${
+                      stats.critical === 1 ? "" : "nt"
+                    } une attention immédiate. `}
+                  Vérifiez les conditions sur le terrain et prenez les mesures
+                  appropriées.
+                </p>
+              </div>
+            </div>
+          </Alert>
+        )}
+      </div>
+    </Base>
+  );
+};

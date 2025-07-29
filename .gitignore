@@ -26,4 +26,5 @@ pnpm-debug.log*
 CLAUDE.md
 .cursor
 .mcp.json
-
+.vscode
+.github

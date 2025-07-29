@@ -18,15 +18,19 @@ interface AnalyticsData {
   title: string;
   value: string;
   change: string;
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
   icon: React.ComponentType<{ className?: string }>;
 }
 
 export const AnalyticsPage: React.FC = () => {
   const t = useTranslations();
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState('30d');
-  const [selectedMetrics, setSelectedMetrics] = useState(['temperature', 'precipitation', 'vegetation']);
+  const [selectedPeriod, setSelectedPeriod] = useState("30d");
+  const [selectedMetrics, setSelectedMetrics] = useState([
+    "temperature",
+    "precipitation",
+    "vegetation",
+  ]);
 
   // Données d'exemple pour l'analytique
   const analyticsData: AnalyticsData[] = [
@@ -34,30 +38,30 @@ export const AnalyticsPage: React.FC = () => {
       title: "Température Moyenne",
       value: "28.5°C",
       change: "+2.3%",
-      trend: 'up',
-      icon: ChartBarIcon
+      trend: "up",
+      icon: ChartBarIcon,
     },
     {
       title: "Précipitations",
       value: "45.2mm",
       change: "-12.5%",
-      trend: 'down',
-      icon: ChartPieIcon
+      trend: "down",
+      icon: ChartPieIcon,
     },
     {
       title: "NDVI Moyen",
       value: "0.45",
       change: "+5.8%",
-      trend: 'up',
-      icon: PresentationChartLineIcon
+      trend: "up",
+      icon: PresentationChartLineIcon,
     },
     {
       title: "Zones Analysées",
       value: "156",
       change: "+23",
-      trend: 'up',
-      icon: TableCellsIcon
-    }
+      trend: "up",
+      icon: TableCellsIcon,
+    },
   ];
 
   useEffect(() => {
@@ -75,15 +79,15 @@ export const AnalyticsPage: React.FC = () => {
   };
 
   const handleMetricToggle = (metric: string) => {
-    setSelectedMetrics(prev => 
-      prev.includes(metric) 
-        ? prev.filter(m => m !== metric)
+    setSelectedMetrics((prev) =>
+      prev.includes(metric)
+        ? prev.filter((m) => m !== metric)
         : [...prev, metric]
     );
   };
 
   const exportData = () => {
-    console.log('Exporting analytics data...');
+    console.log("Exporting analytics data...");
     // Logique d'export des données
   };
 
@@ -113,7 +117,8 @@ export const AnalyticsPage: React.FC = () => {
               Analyses & Statistiques
             </h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Analysez les tendances et les patterns de vos données environnementales
+              Analysez les tendances et les patterns de vos données
+              environnementales
             </p>
           </div>
           <div className="flex items-center space-x-3">
@@ -133,7 +138,9 @@ export const AnalyticsPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <CalendarIcon className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Période:</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Période:
+                </span>
                 <select
                   value={selectedPeriod}
                   onChange={(e) => handlePeriodChange(e.target.value)}
@@ -145,12 +152,19 @@ export const AnalyticsPage: React.FC = () => {
                   <option value="1y">Dernière année</option>
                 </select>
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <FunnelIcon className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Métriques:</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Métriques:
+                </span>
                 <div className="flex space-x-2">
-                  {['temperature', 'precipitation', 'vegetation', 'humidity'].map((metric) => (
+                  {[
+                    "temperature",
+                    "precipitation",
+                    "vegetation",
+                    "humidity",
+                  ].map((metric) => (
                     <label key={metric} className="flex items-center space-x-1">
                       <input
                         type="checkbox"
@@ -159,13 +173,15 @@ export const AnalyticsPage: React.FC = () => {
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
-                        {metric === 'temperature' && 'Temp.'}
-                        {metric === 'precipitation' && 'Précip.'}
-                        {metric === 'vegetation' && 'Végét.'}
-                        {metric === 'humidity' && 'Humid.'}
+                        {metric === "temperature" && "Temp."}
+                        {metric === "precipitation" && "Précip."}
+                        {metric === "vegetation" && "Végét."}
+                        {metric === "humidity" && "Humid."}
                       </span>
                     </label>
-                  ))}\n                </div>
+                  ))}
+                  \n{" "}
+                </div>
               </div>
             </div>
           </div>
@@ -174,24 +190,37 @@ export const AnalyticsPage: React.FC = () => {
         {/* Cartes de statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {analyticsData.map((item, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div
+              key={index}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{item.title}</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{item.value}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {item.title}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                    {item.value}
+                  </p>
                   <div className="flex items-center mt-2">
-                    <ArrowTrendingUpIcon 
+                    <ArrowTrendingUpIcon
                       className={`w-4 h-4 mr-1 ${
-                        item.trend === 'up' ? 'text-green-500' : 
-                        item.trend === 'down' ? 'text-red-500 rotate-180' : 
-                        'text-gray-500'
-                      }`} 
+                        item.trend === "up"
+                          ? "text-green-500"
+                          : item.trend === "down"
+                          ? "text-red-500 rotate-180"
+                          : "text-gray-500"
+                      }`}
                     />
-                    <span className={`text-sm font-medium ${
-                      item.trend === 'up' ? 'text-green-600' : 
-                      item.trend === 'down' ? 'text-red-600' : 
-                      'text-gray-600'
-                    }`}>
+                    <span
+                      className={`text-sm font-medium ${
+                        item.trend === "up"
+                          ? "text-green-600"
+                          : item.trend === "down"
+                          ? "text-red-600"
+                          : "text-gray-600"
+                      }`}
+                    >
                       {item.change}
                     </span>
                   </div>
@@ -215,7 +244,9 @@ export const AnalyticsPage: React.FC = () => {
               <div className="text-center">
                 <PresentationChartLineIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p>Graphique temporel interactif</p>
-                <p className="text-sm">Métriques: {selectedMetrics.join(', ')}</p>
+                <p className="text-sm">
+                  Métriques: {selectedMetrics.join(", ")}
+                </p>
               </div>
             </div>
           </div>
@@ -267,10 +298,34 @@ export const AnalyticsPage: React.FC = () => {
                 </thead>
                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {[
-                    { region: 'Centre', temp: '29.2°C', precip: '52.1mm', ndvi: '0.48', trend: 'up' },
-                    { region: 'Nord', temp: '31.8°C', precip: '38.5mm', ndvi: '0.42', trend: 'down' },
-                    { region: 'Sud-Ouest', temp: '26.7°C', precip: '68.3mm', ndvi: '0.51', trend: 'up' },
-                    { region: 'Est', temp: '28.9°C', precip: '45.7mm', ndvi: '0.46', trend: 'stable' },
+                    {
+                      region: "Centre",
+                      temp: "29.2°C",
+                      precip: "52.1mm",
+                      ndvi: "0.48",
+                      trend: "up",
+                    },
+                    {
+                      region: "Nord",
+                      temp: "31.8°C",
+                      precip: "38.5mm",
+                      ndvi: "0.42",
+                      trend: "down",
+                    },
+                    {
+                      region: "Sud-Ouest",
+                      temp: "26.7°C",
+                      precip: "68.3mm",
+                      ndvi: "0.51",
+                      trend: "up",
+                    },
+                    {
+                      region: "Est",
+                      temp: "28.9°C",
+                      precip: "45.7mm",
+                      ndvi: "0.46",
+                      trend: "stable",
+                    },
                   ].map((row, index) => (
                     <tr key={index}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
@@ -286,14 +341,18 @@ export const AnalyticsPage: React.FC = () => {
                         {row.ndvi}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          row.trend === 'up' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                          row.trend === 'down' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                        }`}>
-                          {row.trend === 'up' && '↗ Hausse'}
-                          {row.trend === 'down' && '↘ Baisse'}
-                          {row.trend === 'stable' && '→ Stable'}
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            row.trend === "up"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : row.trend === "down"
+                              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                          }`}
+                        >
+                          {row.trend === "up" && "↗ Hausse"}
+                          {row.trend === "down" && "↘ Baisse"}
+                          {row.trend === "stable" && "→ Stable"}
                         </span>
                       </td>
                     </tr>
@@ -309,10 +368,13 @@ export const AnalyticsPage: React.FC = () => {
           <div className="flex items-start space-x-3">
             <ChartBarIcon className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <h4 className="font-medium text-blue-900 dark:text-blue-200">Analyses en temps réel</h4>
+              <h4 className="font-medium text-blue-900 dark:text-blue-200">
+                Analyses en temps réel
+              </h4>
               <p className="text-blue-700 dark:text-blue-300 text-sm mt-1">
-                Les données sont mises à jour automatiquement toutes les heures. 
-                Utilisez les filtres pour personnaliser vos analyses selon vos besoins.
+                Les données sont mises à jour automatiquement toutes les heures.
+                Utilisez les filtres pour personnaliser vos analyses selon vos
+                besoins.
               </p>
             </div>
           </div>
