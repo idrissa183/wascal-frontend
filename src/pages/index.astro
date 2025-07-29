@@ -1,8 +1,21 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Starter from "./starter.astro";
 ---
 
-<Layout>
-    <Starter/>
+<Layout title="EcoWatch - Environmental Monitoring Platform">
+  <div id="react-root" style="min-height: 100vh;"></div>
 </Layout>
+
+<script>
+  import App from "../App";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const container = document.getElementById("react-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(App));
+  } else {
+    console.error("Root container not found");
+  }
+</script>

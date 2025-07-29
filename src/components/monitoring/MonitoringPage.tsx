@@ -22,7 +22,7 @@ interface MonitoringStation {
   name: string;
   location: string;
   coordinates: [number, number];
-  status: 'active' | 'inactive' | 'maintenance' | 'alert';
+  status: "active" | "inactive" | "maintenance" | "alert";
   lastUpdate: string;
   parameters: string[];
   values: Record<string, number>;
@@ -30,7 +30,7 @@ interface MonitoringStation {
 
 interface AlertItem {
   id: string;
-  type: 'warning' | 'critical' | 'info';
+  type: "warning" | "critical" | "info";
   station: string;
   parameter: string;
   message: string;
@@ -48,76 +48,81 @@ export const MonitoringPage: React.FC = () => {
   // Données d'exemple des stations de monitoring
   const [stations, setStations] = useState<MonitoringStation[]>([
     {
-      id: 'station-001',
-      name: 'Station Ouagadougou Centre',
-      location: 'Ouagadougou, Kadiogo',
+      id: "station-001",
+      name: "Station Ouagadougou Centre",
+      location: "Ouagadougou, Kadiogo",
       coordinates: [12.3714, -1.5197],
-      status: 'active',
-      lastUpdate: '2024-01-15T10:30:00Z',
-      parameters: ['Température', 'Humidité', 'Pression', 'Précipitations'],
-      values: { temperature: 32.5, humidity: 65, pressure: 1013.2, precipitation: 0 }
+      status: "active",
+      lastUpdate: "2024-01-15T10:30:00Z",
+      parameters: ["Température", "Humidité", "Pression", "Précipitations"],
+      values: {
+        temperature: 32.5,
+        humidity: 65,
+        pressure: 1013.2,
+        precipitation: 0,
+      },
     },
     {
-      id: 'station-002',
-      name: 'Station Bobo-Dioulasso',
-      location: 'Bobo-Dioulasso, Houet',
+      id: "station-002",
+      name: "Station Bobo-Dioulasso",
+      location: "Bobo-Dioulasso, Houet",
       coordinates: [11.1777, -4.2945],
-      status: 'active',
-      lastUpdate: '2024-01-15T10:28:00Z',
-      parameters: ['Température', 'Humidité', 'Vent', 'UV'],
-      values: { temperature: 29.8, humidity: 72, wind: 15.2, uv: 8.5 }
+      status: "active",
+      lastUpdate: "2024-01-15T10:28:00Z",
+      parameters: ["Température", "Humidité", "Vent", "UV"],
+      values: { temperature: 29.8, humidity: 72, wind: 15.2, uv: 8.5 },
     },
     {
-      id: 'station-003',
-      name: 'Station Sahel Nord',
-      location: 'Dori, Sahel',
+      id: "station-003",
+      name: "Station Sahel Nord",
+      location: "Dori, Sahel",
       coordinates: [14.0354, -0.0348],
-      status: 'alert',
-      lastUpdate: '2024-01-15T09:45:00Z',
-      parameters: ['Température', 'Humidité', 'Vent'],
-      values: { temperature: 38.2, humidity: 25, wind: 28.5 }
+      status: "alert",
+      lastUpdate: "2024-01-15T09:45:00Z",
+      parameters: ["Température", "Humidité", "Vent"],
+      values: { temperature: 38.2, humidity: 25, wind: 28.5 },
     },
     {
-      id: 'station-004',
-      name: 'Station Gourma',
-      location: 'Fada N\'Gourma, Gourma',
+      id: "station-004",
+      name: "Station Gourma",
+      location: "Fada N'Gourma, Gourma",
       coordinates: [12.0619, 0.3549],
-      status: 'maintenance',
-      lastUpdate: '2024-01-15T08:15:00Z',
-      parameters: ['Température', 'Précipitations'],
-      values: { temperature: 0, precipitation: 0 }
-    }
+      status: "maintenance",
+      lastUpdate: "2024-01-15T08:15:00Z",
+      parameters: ["Température", "Précipitations"],
+      values: { temperature: 0, precipitation: 0 },
+    },
   ]);
 
   // Alertes actives
   const [alerts, setAlerts] = useState<AlertItem[]>([
     {
-      id: 'alert-001',
-      type: 'critical',
-      station: 'Station Sahel Nord',
-      parameter: 'Température',
-      message: 'Température critique détectée: 38.2°C',
-      timestamp: '2024-01-15T10:25:00Z',
-      acknowledged: false
+      id: "alert-001",
+      type: "critical",
+      station: "Station Sahel Nord",
+      parameter: "Température",
+      message: "Température critique détectée: 38.2°C",
+      timestamp: "2024-01-15T10:25:00Z",
+      acknowledged: false,
     },
     {
-      id: 'alert-002',
-      type: 'warning',
-      station: 'Station Gourma',
-      parameter: 'Connexion',
-      message: 'Station en maintenance programmée',
-      timestamp: '2024-01-15T08:00:00Z',
-      acknowledged: true
+      id: "alert-002",
+      type: "warning",
+      station: "Station Gourma",
+      parameter: "Connexion",
+      message: "Station en maintenance programmée",
+      timestamp: "2024-01-15T08:00:00Z",
+      acknowledged: true,
     },
     {
-      id: 'alert-003',
-      type: 'warning',
-      station: 'Station Sahel Nord',
-      parameter: 'Vent',
-      message: 'Vitesse du vent élevée: 28.5 km/h',
-      timestamp: '2024-01-15T10:20:00Z',
-      acknowledged: false
-    }
+      id: "alert-003",
+      type: "warning",
+      station: "Station Sahel Nord",
+      parameter: "Vent",
+      message: "Vitesse du vent élevée: 28.5 km/h",
+      timestamp: "2024-01-15T10:20:00Z",
+      acknowledged: false,
+    },
   ]);
 
   useEffect(() => {
@@ -134,62 +139,64 @@ export const MonitoringPage: React.FC = () => {
     if (!monitoringActive) return;
 
     const interval = setInterval(() => {
-      console.log('Refreshing monitoring data...');
+      console.log("Refreshing monitoring data...");
       // Ici on actualiserait les données depuis l'API
     }, refreshInterval * 1000);
 
     return () => clearInterval(interval);
   }, [monitoringActive, refreshInterval]);
 
-  const getStatusIcon = (status: MonitoringStation['status']) => {
+  const getStatusIcon = (status: MonitoringStation["status"]) => {
     switch (status) {
-      case 'active':
+      case "active":
         return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
-      case 'inactive':
+      case "inactive":
         return <XCircleIcon className="w-5 h-5 text-red-500" />;
-      case 'maintenance':
+      case "maintenance":
         return <CogIcon className="w-5 h-5 text-yellow-500" />;
-      case 'alert':
+      case "alert":
         return <ExclamationTriangleIcon className="w-5 h-5 text-orange-500" />;
       default:
         return <XCircleIcon className="w-5 h-5 text-gray-500" />;
     }
   };
 
-  const getStatusColor = (status: MonitoringStation['status']) => {
+  const getStatusColor = (status: MonitoringStation["status"]) => {
     switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'inactive':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-      case 'maintenance':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'alert':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case "active":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "inactive":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      case "maintenance":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "alert":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+        return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
     }
   };
 
-  const getAlertIcon = (type: AlertItem['type']) => {
+  const getAlertIcon = (type: AlertItem["type"]) => {
     switch (type) {
-      case 'critical':
+      case "critical":
         return <XCircleIcon className="w-5 h-5 text-red-500" />;
-      case 'warning':
+      case "warning":
         return <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500" />;
-      case 'info':
+      case "info":
         return <CheckCircleIcon className="w-5 h-5 text-blue-500" />;
     }
   };
 
   const acknowledgeAlert = (alertId: string) => {
-    setAlerts(prev => prev.map(alert => 
-      alert.id === alertId ? { ...alert, acknowledged: true } : alert
-    ));
+    setAlerts((prev) =>
+      prev.map((alert) =>
+        alert.id === alertId ? { ...alert, acknowledged: true } : alert
+      )
+    );
   };
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('fr-FR');
+    return new Date(timestamp).toLocaleString("fr-FR");
   };
 
   if (isLoading) {
@@ -223,7 +230,9 @@ export const MonitoringPage: React.FC = () => {
           </div>
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Actualisation:</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Actualisation:
+              </span>
               <select
                 value={refreshInterval}
                 onChange={(e) => setRefreshInterval(Number(e.target.value))}
@@ -239,8 +248,8 @@ export const MonitoringPage: React.FC = () => {
               onClick={() => setMonitoringActive(!monitoringActive)}
               className={`px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center space-x-2 ${
                 monitoringActive
-                  ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
-                  : 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500'
+                  ? "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
+                  : "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500"
               }`}
             >
               {monitoringActive ? (
@@ -266,9 +275,11 @@ export const MonitoringPage: React.FC = () => {
                 <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Stations Actives</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Stations Actives
+                </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stations.filter(s => s.status === 'active').length}
+                  {stations.filter((s) => s.status === "active").length}
                 </p>
               </div>
             </div>
@@ -280,9 +291,11 @@ export const MonitoringPage: React.FC = () => {
                 <ExclamationTriangleIcon className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Alertes Actives</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Alertes Actives
+                </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {alerts.filter(a => !a.acknowledged).length}
+                  {alerts.filter((a) => !a.acknowledged).length}
                 </p>
               </div>
             </div>
@@ -294,9 +307,11 @@ export const MonitoringPage: React.FC = () => {
                 <CogIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Maintenance</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Maintenance
+                </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stations.filter(s => s.status === 'maintenance').length}
+                  {stations.filter((s) => s.status === "maintenance").length}
                 </p>
               </div>
             </div>
@@ -308,9 +323,16 @@ export const MonitoringPage: React.FC = () => {
                 <SignalIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Connectivité</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Connectivité
+                </p>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {Math.round((stations.filter(s => s.status === 'active').length / stations.length) * 100)}%
+                  {Math.round(
+                    (stations.filter((s) => s.status === "active").length /
+                      stations.length) *
+                      100
+                  )}
+                  %
                 </p>
               </div>
             </div>
@@ -318,7 +340,7 @@ export const MonitoringPage: React.FC = () => {
         </div>
 
         {/* Alertes récentes */}
-        {alerts.filter(a => !a.acknowledged).length > 0 && (
+        {alerts.filter((a) => !a.acknowledged).length > 0 && (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-red-200 dark:border-red-800">
             <div className="p-6 border-b border-red-200 dark:border-red-800">
               <h3 className="text-lg font-semibold text-red-900 dark:text-red-200 flex items-center">
@@ -328,30 +350,37 @@ export const MonitoringPage: React.FC = () => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {alerts.filter(a => !a.acknowledged).map((alert) => (
-                  <div key={alert.id} className="flex items-start space-x-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-                    {getAlertIcon(alert.type)}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {alert.station} - {alert.parameter}
+                {alerts
+                  .filter((a) => !a.acknowledged)
+                  .map((alert) => (
+                    <div
+                      key={alert.id}
+                      className="flex items-start space-x-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800"
+                    >
+                      {getAlertIcon(alert.type)}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium text-gray-900 dark:text-white">
+                            {alert.station} - {alert.parameter}
+                          </p>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {formatTimestamp(alert.timestamp)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {alert.message}
                         </p>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {formatTimestamp(alert.timestamp)}
-                        </span>
+                        <button
+                          onClick={() => acknowledgeAlert(alert.id)}
+                          className="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
+                        >
+                          Acquitter l'alerte
+                        </button>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {alert.message}
-                      </p>
-                      <button
-                        onClick={() => acknowledgeAlert(alert.id)}
-                        className="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
-                      >
-                        Acquitter l'alerte
-                      </button>
                     </div>
-                  </div>
-                ))}\n              </div>
+                  ))}
+                \n{" "}
+              </div>
             </div>
           </div>
         )}
@@ -370,14 +399,18 @@ export const MonitoringPage: React.FC = () => {
           <div className="p-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {stations.map((station) => (
-                <div 
-                  key={station.id} 
+                <div
+                  key={station.id}
                   className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                    selectedStation === station.id 
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    selectedStation === station.id
+                      ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                   }`}
-                  onClick={() => setSelectedStation(selectedStation === station.id ? null : station.id)}
+                  onClick={() =>
+                    setSelectedStation(
+                      selectedStation === station.id ? null : station.id
+                    )
+                  }
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3">
@@ -392,53 +425,65 @@ export const MonitoringPage: React.FC = () => {
                         <div className="flex items-center space-x-2 mt-2">
                           <ClockIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Dernière mise à jour: {formatTimestamp(station.lastUpdate)}
+                            Dernière mise à jour:{" "}
+                            {formatTimestamp(station.lastUpdate)}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(station.status)}
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(station.status)}`}>
-                        {station.status === 'active' && 'Actif'}
-                        {station.status === 'inactive' && 'Inactif'}
-                        {station.status === 'maintenance' && 'Maintenance'}
-                        {station.status === 'alert' && 'Alerte'}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                          station.status
+                        )}`}
+                      >
+                        {station.status === "active" && "Actif"}
+                        {station.status === "inactive" && "Inactif"}
+                        {station.status === "maintenance" && "Maintenance"}
+                        {station.status === "alert" && "Alerte"}
                       </span>
                     </div>
                   </div>
 
                   {/* Données détaillées */}
-                  {selectedStation === station.id && station.status === 'active' && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                        Mesures Actuelles
-                      </h5>
-                      <div className="grid grid-cols-2 gap-4">
-                        {Object.entries(station.values).map(([param, value]) => (
-                          <div key={param} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                            <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">
-                              {param === 'temperature' && 'Température'}
-                              {param === 'humidity' && 'Humidité'}
-                              {param === 'pressure' && 'Pression'}
-                              {param === 'precipitation' && 'Précipitations'}
-                              {param === 'wind' && 'Vent'}
-                              {param === 'uv' && 'UV'}
-                            </p>
-                            <p className="text-lg font-bold text-gray-900 dark:text-white">
-                              {value}
-                              {param === 'temperature' && '°C'}
-                              {param === 'humidity' && '%'}
-                              {param === 'pressure' && ' hPa'}
-                              {param === 'precipitation' && ' mm'}
-                              {param === 'wind' && ' km/h'}
-                              {param === 'uv' && ''}
-                            </p>
-                          </div>
-                        ))}
+                  {selectedStation === station.id &&
+                    station.status === "active" && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+                          Mesures Actuelles
+                        </h5>
+                        <div className="grid grid-cols-2 gap-4">
+                          {Object.entries(station.values).map(
+                            ([param, value]) => (
+                              <div
+                                key={param}
+                                className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
+                              >
+                                <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">
+                                  {param === "temperature" && "Température"}
+                                  {param === "humidity" && "Humidité"}
+                                  {param === "pressure" && "Pression"}
+                                  {param === "precipitation" &&
+                                    "Précipitations"}
+                                  {param === "wind" && "Vent"}
+                                  {param === "uv" && "UV"}
+                                </p>
+                                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                                  {value}
+                                  {param === "temperature" && "°C"}
+                                  {param === "humidity" && "%"}
+                                  {param === "pressure" && " hPa"}
+                                  {param === "precipitation" && " mm"}
+                                  {param === "wind" && " km/h"}
+                                  {param === "uv" && ""}
+                                </p>
+                              </div>
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               ))}
             </div>
@@ -451,13 +496,14 @@ export const MonitoringPage: React.FC = () => {
             <SignalIcon className="w-5 h-5 text-green-600 mt-0.5" />
             <div>
               <h4 className="font-medium text-green-900 dark:text-green-200">
-                Monitoring {monitoringActive ? 'Actif' : 'Suspendu'}
+                Monitoring {monitoringActive ? "Actif" : "Suspendu"}
               </h4>
               <p className="text-green-700 dark:text-green-300 text-sm mt-1">
-                {monitoringActive 
-                  ? `Actualisation automatique toutes les ${refreshInterval} secondes. ${stations.filter(s => s.status === 'active').length} stations en fonctionnement.`
-                  : 'Le monitoring est actuellement suspendu. Cliquez sur "Reprendre" pour relancer la surveillance.'
-                }
+                {monitoringActive
+                  ? `Actualisation automatique toutes les ${refreshInterval} secondes. ${
+                      stations.filter((s) => s.status === "active").length
+                    } stations en fonctionnement.`
+                  : 'Le monitoring est actuellement suspendu. Cliquez sur "Reprendre" pour relancer la surveillance.'}
               </p>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { useTranslations } from "../../hooks/useTranslations";
 import Base from "../layout/Base";
 import RecentActivity from "./RecentActivity";
 import MapContainer from "../map/MapContainer";
+import NavigationTest from "../debug/NavigationTest";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
 
@@ -54,6 +55,8 @@ export const DashboardPage: React.FC = () => {
   return (
     <Base>
       <div className="space-y-6">
+        {/* Navigation Test Component */}
+        {/* <NavigationTest /> */}
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Map */}

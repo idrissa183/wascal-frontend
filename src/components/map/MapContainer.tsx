@@ -68,7 +68,7 @@ export default function MapContainer({
   // États pour les contrôles de la carte
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeTool, setActiveTool] = useState<SelectionTool>("none");
-  const [showLayerPanel, setShowLayerPanel] = useState(true);
+  const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [coordinates, setCoordinates] = useState<[number, number]>([

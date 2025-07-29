@@ -180,7 +180,6 @@ export const AnalyticsPage: React.FC = () => {
                       </span>
                     </label>
                   ))}
-                  \n{" "}
                 </div>
               </div>
             </div>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../../hooks/useLanguage";
 import {
   HomeIcon,
@@ -87,7 +86,7 @@ interface ShowAll {
   provinces: boolean;
 }
 
-// Données des filtres WASCAL
+// Données des filtres WASCAL (version complète pour legacy)
 const filterData: Record<string, FilterItem[]> = {
   datasets: [
     { id: "COPERNICUS/S1_GRD", label: "Sentinel-1", metrics: [] },
@@ -260,20 +259,10 @@ const filterData: Record<string, FilterItem[]> = {
   ],
 };
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function SidebarLegacy({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations();
-  const navigate = useNavigate();
-  const location = useLocation();
   const { user, getCurrentUser, isLoading, error } = useAuthStore();
-
-  const getLocalizedFilterData = (): Record<string, FilterItem[]> => ({
-    ...filterData,
-    categories: [
-      { id: "climat", label: t.geography?.climate || "Climate" },
-      { id: "vegetation", label: t.geography?.vegetation || "Vegetation" },
-      { id: "sol", label: t.geography?.soil || "Soil" },
-    ],
-  });
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
 
   // États pour l'expansion des sections
   const [expandedSections, setExpandedSections] = useState<ExpandedSections>({
@@ -316,18 +305,35 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     provinces: false,
   });
 
+  // Écouter les changements de route
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+
+    window.addEventListener("popstate", handleLocationChange);
+    return () => window.removeEventListener("popstate", handleLocationChange);
+  }, []);
+
   const isActiveRoute = (href: string): boolean => {
-    return (
-      location.pathname === href || location.pathname.startsWith(href + "/")
-    );
+    return currentPath === href || currentPath.startsWith(href + "/");
   };
 
   const handleNavigation = (href: string) => {
-    navigate(href);
+    window.location.href = href;
     if (window.innerWidth < 1024) {
       onClose();
     }
   };
+
+  const getLocalizedFilterData = (): Record<string, FilterItem[]> => ({
+    ...filterData,
+    categories: [
+      { id: "climat", label: t.geography?.climate || "Climate" },
+      { id: "vegetation", label: t.geography?.vegetation || "Vegetation" },
+      { id: "sol", label: t.geography?.soil || "Soil" },
+    ],
+  });
 
   const menuItems: MenuItem[] = [
     {
@@ -510,6 +516,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return filteredCount > 5;
   };
 
+  const clearAllFilters = () => {
+    setSelectedFilters({
+      datasets: [],
+      categories: [],
+      pays: [],
+      regions: [],
+      provinces: [],
+    });
+  };
+
+  const getTotalSelectedFilters = () => {
+    return Object.values(selectedFilters).reduce(
+      (total, filters) => total + filters.length,
+      0
+    );
+  };
+
   // Icônes pour les sections de filtres
   const filterSectionIcons: Record<
     string,
@@ -528,7 +551,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     hasSearch = false
   ) => {
     const SectionIcon = filterSectionIcons[section];
-    const isExpanded = expandedSections[section];
+    const isExpanded = expandedSections[section as keyof ExpandedSections];
     const filteredItems = getFilteredItems(section);
 
     return (
@@ -536,7 +559,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* En-tête de section */}
         <div
           className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-          onClick={() => toggleSection(section)}
+          onClick={() => toggleSection(section as keyof ExpandedSections)}
         >
           <div className="flex items-center space-x-2">
             <SectionIcon className="w-5 h-5 text-gray-500" />
@@ -569,8 +592,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     ) || `Search ${title.toLowerCase()}...`
                   }
                   className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
-                  value={searchTerms[section]}
-                  onChange={(e) => handleSearch(section, e.target.value)}
+                  value={searchTerms[section as keyof SearchTerms]}
+                  onChange={(e) =>
+                    handleSearch(section as keyof SearchTerms, e.target.value)
+                  }
                 />
               </div>
             )}
@@ -585,8 +610,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <input
                     type="checkbox"
                     className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 bg-white dark:bg-gray-800"
-                    checked={selectedFilters[section].includes(item.id)}
-                    onChange={() => toggleFilter(section, item.id)}
+                    checked={selectedFilters[
+                      section as keyof SelectedFilters
+                    ].includes(item.id)}
+                    onChange={() =>
+                      toggleFilter(section as keyof SelectedFilters, item.id)
+                    }
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
@@ -610,10 +639,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Bouton Montrer plus/moins */}
             {shouldShowToggle(section) && (
               <button
-                onClick={() => toggleShowAll(section)}
+                type="button"
+                onClick={() => toggleShowAll(section as keyof ShowAll)}
                 className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
               >
-                {showAll[section]
+                {showAll[section as keyof ShowAll]
                   ? t.sidebar?.show_less || "Show less"
                   : t.sidebar?.show_more || "Show more"}
               </button>
@@ -622,6 +652,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       </div>
     );
+  };
+
+  const getInitials = (user: User | null) => {
+    if (user?.firstname && user?.lastname) {
+      return `${user.firstname.charAt(0)}${user.lastname.charAt(
+        0
+      )}`.toUpperCase();
+    }
+    if (user?.firstname) {
+      return user.firstname.charAt(0).toUpperCase();
+    }
+    if (user?.lastname) {
+      return user.lastname.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "U";
   };
 
   const SidebarSection: React.FC<{
@@ -667,41 +715,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     </div>
   );
 
-  const getInitials = (user: User | null) => {
-    if (user?.firstname && user?.lastname) {
-      return `${user.firstname.charAt(0)}${user.lastname.charAt(
-        0
-      )}`.toUpperCase();
-    }
-    if (user?.firstname) {
-      return user.firstname.charAt(0).toUpperCase();
-    }
-    if (user?.lastname) {
-      return user.lastname.charAt(0).toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.charAt(0).toUpperCase();
-    }
-    return "U";
-  };
-
-  const clearAllFilters = () => {
-    setSelectedFilters({
-      datasets: [],
-      categories: [],
-      pays: [],
-      regions: [],
-      provinces: [],
-    });
-  };
-
-  const getTotalSelectedFilters = () => {
-    return Object.values(selectedFilters).reduce(
-      (total, filters) => total + filters.length,
-      0
-    );
-  };
-
   return (
     <>
       {/* Mobile backdrop */}
@@ -742,23 +755,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 items={otherItems}
                 sectionKey="management"
               />
+              <SidebarSection
+                title={t.sidebar?.settings_help || "Settings & Help"}
+                items={bottomItems}
+                sectionKey="main"
+              />
 
-              {/* Section Filtres WASCAL */}
+              {/* Section des filtres */}
               <div className="mb-6">
                 <div
                   className="flex items-center justify-between cursor-pointer mb-3"
                   onClick={() => toggleSection("filters")}
                 >
-                  <div className="flex items-center space-x-2">
-                    <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                      {t.sidebar?.filters || "Filters"}
-                    </h3>
-                    {getTotalSelectedFilters() > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                        {getTotalSelectedFilters()}
-                      </span>
-                    )}
-                  </div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                    <AdjustmentsHorizontalIcon className="w-4 h-4 inline mr-2" />
+                    {t.sidebar?.filters || "Filtres"}
+                  </h3>
                   {expandedSections.filters ? (
                     <ChevronUpIcon className="w-4 h-4 text-gray-400" />
                   ) : (
@@ -767,15 +779,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </div>
 
                 {expandedSections.filters && (
-                  <div className="space-y-1">
-                    {renderFilterSection("datasets", t.datasets, true)}
+                  <div className="space-y-2">
+                    {renderFilterSection(
+                      "datasets",
+                      t.sidebar?.datasets || "Datasets",
+                      true
+                    )}
                     {renderFilterSection(
                       "categories",
-                      t.sidebar?.categories || "Categories"
+                      t.sidebar?.categories || "Categories",
+                      true
                     )}
                     {renderFilterSection(
                       "pays",
-                      t.sidebar?.countries || "WASCAL Countries",
+                      t.sidebar?.countries || "Pays",
                       true
                     )}
                     {renderFilterSection(
@@ -788,70 +805,39 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       t.sidebar?.provinces || "Provinces",
                       true
                     )}
+
+                    {/* Résumé des filtres et actions */}
+                    {getTotalSelectedFilters() > 0 && (
+                      <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            {getTotalSelectedFilters()}{" "}
+                            {t.sidebar?.selected_filters ||
+                              "filtres sélectionnés"}
+                          </span>
+                          <div className="space-x-2">
+                            <button
+                              type="button"
+                              onClick={clearAllFilters}
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs font-medium transition-colors"
+                            >
+                              {t.sidebar?.clear_all || "Tout effacer"}
+                            </button>
+                            <button
+                              type="button"
+                              className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                            >
+                              {t.sidebar?.apply_filters || "Appliquer"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-              <SidebarSection
-                title={t.sidebar?.settings_help || "Settings & Help"}
-                items={bottomItems}
-                sectionKey="main"
-              />
             </div>
           </div>
-
-          {/* Footer avec résumé des filtres */}
-          {getTotalSelectedFilters() > 0 && (
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 text-sm">
-                    {t.sidebar?.active_filters || "Active Filters"}
-                  </h4>
-                  <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                    {getTotalSelectedFilters()}{" "}
-                    {getTotalSelectedFilters() > 1
-                      ? t.sidebar?.selected_plural || "selected"
-                      : t.sidebar?.selected || "selected"}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {Object.entries(selectedFilters).map(
-                    ([section, items]) =>
-                      items.length > 0 && (
-                        <div
-                          key={section}
-                          className="flex justify-between text-xs"
-                        >
-                          <span className="capitalize text-gray-600 dark:text-gray-400">
-                            {section}:
-                          </span>
-                          <span className="font-medium text-green-600 dark:text-green-400">
-                            {items.length}
-                          </span>
-                        </div>
-                      )
-                  )}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={clearAllFilters}
-                  className="flex-1 text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-2 px-3 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  {t.sidebar?.clear || "Clear"}
-                </button>
-                <button
-                  type="button"
-                  className="flex-1 text-xs text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium py-2 px-3 border border-green-200 dark:border-green-800 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                >
-                  {t.sidebar?.apply || "Apply"}
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* User info at bottom */}
           <div className="p-3 border-t border-gray-200 dark:border-gray-700">

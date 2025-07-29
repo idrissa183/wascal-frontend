@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../include/Navbar";
 import Sidebar from "../include/Sidebar";
+import SidebarLegacy from "../include/SidebarLegacy";
 import Footer from "../include/Footer";
+import { useRouterContext } from "../../hooks/useRouterContext";
 
 interface BaseProps {
   children: React.ReactNode;
@@ -10,6 +12,7 @@ interface BaseProps {
 
 export default function Base({ children, showFooter = true }: BaseProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isInRouterContext = useRouterContext();
 
   // Close sidebar on mobile when clicking outside
   useEffect(() => {
@@ -30,7 +33,11 @@ export default function Base({ children, showFooter = true }: BaseProps) {
         sidebarOpen={sidebarOpen}
       />
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {isInRouterContext ? (
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      ) : (
+        <SidebarLegacy isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      )}
 
       <div className="lg:ml-80">
         <main className="pt-16 min-h-screen">
