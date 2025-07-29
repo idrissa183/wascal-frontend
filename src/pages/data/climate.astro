@@ -1,0 +1,19 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Données Climatiques - EcoWatch">
+  <div id="climate-root"></div>
+</Layout>
+
+<script>
+  import { ClimatePage } from "../../components/data/ClimatePage";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const container = document.getElementById("climate-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(ClimatePage));
+  }
+</script>

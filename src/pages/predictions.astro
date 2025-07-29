@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Prédictions IA - EcoWatch">
+  <div id="predictions-root"></div>
+</Layout>
+
+<script>
+  import { PredictionsPage } from "../components/predictions/PredictionsPage";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const container = document.getElementById("predictions-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(PredictionsPage));
+  }
+</script>

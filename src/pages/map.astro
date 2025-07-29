@@ -1,0 +1,30 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Carte Interactive - EcoWatch">
+  <div id="map-root"></div>
+</Layout>
+
+<script>
+  import MapContainer from "../components/map/MapContainer";
+  import Base from "../components/layout/Base";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const MapPage = () => {
+    return React.createElement(Base, {}, 
+      React.createElement('div', { className: 'h-screen p-6' },
+        React.createElement('div', { className: 'h-full' },
+          React.createElement(MapContainer)
+        )
+      )
+    );
+  };
+
+  const container = document.getElementById("map-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(MapPage));
+  }
+</script>
