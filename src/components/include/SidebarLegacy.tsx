@@ -15,7 +15,6 @@ import {
   FolderIcon,
   GlobeAltIcon,
   EyeIcon,
-  AdjustmentsHorizontalIcon,
   Squares2X2Icon,
   GlobeAmericasIcon,
   BuildingOfficeIcon,
@@ -561,17 +560,15 @@ export default function SidebarLegacy({ isOpen, onClose }: SidebarProps) {
           className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
           onClick={() => toggleSection(section as keyof ExpandedSections)}
         >
-          <div className="flex items-center space-x-2">
-            <SectionIcon className="w-5 h-5 text-gray-500" />
-            <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">
-              {title}
-            </span>
+          <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+            <SectionIcon className="w-5 h-5" />
+            <span className="font-medium text-sm">{title}</span>
           </div>
           <div className="flex items-center">
             {isExpanded ? (
-              <ChevronUpIcon className="w-4 h-4 text-gray-500" />
+              <ChevronUpIcon className="w-4 h-4 text-gray-400" />
             ) : (
-              <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+              <ChevronDownIcon className="w-4 h-4 text-gray-400" />
             )}
           </div>
         </div>
@@ -591,7 +588,7 @@ export default function SidebarLegacy({ isOpen, onClose }: SidebarProps) {
                       title.toLowerCase()
                     ) || `Search ${title.toLowerCase()}...`
                   }
-                  className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
+                  className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
                   value={searchTerms[section as keyof SearchTerms]}
                   onChange={(e) =>
                     handleSearch(section as keyof SearchTerms, e.target.value)
@@ -609,7 +606,7 @@ export default function SidebarLegacy({ isOpen, onClose }: SidebarProps) {
                 >
                   <input
                     type="checkbox"
-                    className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-green-500 bg-white dark:bg-gray-800"
+                    className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                     checked={selectedFilters[
                       section as keyof SelectedFilters
                     ].includes(item.id)}
@@ -768,7 +765,7 @@ export default function SidebarLegacy({ isOpen, onClose }: SidebarProps) {
                   onClick={() => toggleSection("filters")}
                 >
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
-                    <AdjustmentsHorizontalIcon className="w-4 h-4 inline mr-2" />
+                    {/* <AdjustmentsHorizontalIcon className="w-4 h-4 inline mr-2" /> */}
                     {t.sidebar?.filters || "Filtres"}
                   </h3>
                   {expandedSections.filters ? (
