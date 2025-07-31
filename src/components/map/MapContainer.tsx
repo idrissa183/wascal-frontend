@@ -74,7 +74,9 @@ export default function MapContainer({
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [coordinates, setCoordinates] = useState<[number, number]>([
+  
+  // États pour les coordonnées dynamiques
+  const [mouseCoordinates, setMouseCoordinates] = useState<[number, number]>([
     12.3714, -1.5197,
   ]);
   const [zoom, setZoom] = useState(7);
@@ -120,11 +122,6 @@ export default function MapContainer({
   ]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [mapSettings, setMapSettings] = useState({
-    showCoordinates: true,
-    showScale: true,
-    showAttribution: true,
-  });
 
   useEffect(() => {
     if (mapRef.current && !mapInstanceRef.current) {
@@ -177,29 +174,48 @@ export default function MapContainer({
       }),
     });
 
-    // Contrôles de la carte
+    // Contrôle de position de souris dynamique
     const mousePositionControl = new MousePosition({
       coordinateFormat: createStringXY(4),
       projection: "EPSG:4326",
       undefinedHTML: "&nbsp;",
+      className: "custom-mouse-position",
     });
 
+    // Contrôle d'échelle personnalisé
     const scaleLineControl = new ScaleLine({
       units: "metric",
+      className: "custom-scale-line",
+      minWidth: 80,
     });
 
-    // Créer la carte
+    // Créer la carte sans les contrôles par défaut qui sont redondants
     const map = new Map({
       target: mapRef.current,
       layers: [osmLayer, satelliteLayer, vectorLayer],
       view: new View({
-        center: fromLonLat([coordinates[1], coordinates[0]]),
+        center: fromLonLat([-1.5197, 12.3714]), // Ouagadougou
         zoom: zoom,
       }),
-      controls: defaultControls().extend([
-        ...(mapSettings.showCoordinates ? [mousePositionControl] : []),
-        ...(mapSettings.showScale ? [scaleLineControl] : []),
-      ]),
+      controls: defaultControls({
+        attribution: true,
+        zoom: false, // On enlève les contrôles de zoom car on a nos propres boutons
+        rotate: false,
+      }).extend([mousePositionControl, scaleLineControl]),
+    });
+
+    // Écouter les mouvements de souris pour mettre à jour les coordonnées
+    map.on("pointermove", (event) => {
+      const coordinates = toLonLat(event.coordinate);
+      setMouseCoordinates([coordinates[1], coordinates[0]]); // lat, lon
+    });
+
+    // Écouter les changements de vue pour le zoom
+    map.getView().on("change:resolution", () => {
+      const currentZoom = map.getView().getZoom();
+      if (currentZoom !== undefined) {
+        setZoom(Math.round(currentZoom));
+      }
     });
 
     // Mettre à jour les références des couches
@@ -217,19 +233,6 @@ export default function MapContainer({
         }
       })
     );
-
-    // Écouter les changements de vue
-    map.getView().on("change:center", () => {
-      const center = map.getView().getCenter();
-      if (center) {
-        const [lon, lat] = toLonLat(center);
-        setCoordinates([lat, lon]);
-      }
-    });
-
-    map.getView().on("change:resolution", () => {
-      setZoom(Math.round(map.getView().getZoom() || 7));
-    });
 
     mapInstanceRef.current = map;
     setMapLoaded(true);
@@ -294,7 +297,7 @@ export default function MapContainer({
         geometryType = "Point";
         break;
       case "rectangle":
-        geometryType = "Circle"; // Utiliser Circle pour les rectangles
+        geometryType = "Circle";
         drawOptions.geometryFunction = createBox();
         break;
       case "polygon":
@@ -715,7 +718,7 @@ export default function MapContainer({
       )}
 
       {/* Contrôles supplémentaires */}
-      <div className="absolute bottom-4 right-4 z-20 flex space-x-2">
+      <div className="absolute bottom-4 right-20 z-20 flex space-x-2">
         <button
           onClick={exportMap}
           className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -732,15 +735,16 @@ export default function MapContainer({
         </button>
       </div>
 
-      {/* Coordonnées et échelle */}
-      {mapSettings.showCoordinates && (
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-          <div className="bg-black bg-opacity-75 text-white px-3 py-1 rounded text-xs">
-            Lat: {coordinates[0].toFixed(4)}° | Lon: {coordinates[1].toFixed(4)}
-            ° | Zoom: {zoom}
-          </div>
+      {/* Coordonnées dynamiques en bas au milieu */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="bg-black bg-opacity-75 text-white px-3 py-1 rounded text-xs">
+          Lat: {mouseCoordinates[0].toFixed(4)}° | Lon: {mouseCoordinates[1].toFixed(4)}° | Zoom: {zoom}
         </div>
-      )}
-    </div>
-  );
-}
+      </div>
+
+      {/* CSS personnalisé pour positionner l'échelle */}
+      <style jsx>{`
+        .custom-scale-line {
+          position: absolute !important;
+          bottom: 1rem !important;
+          right: 8rem
