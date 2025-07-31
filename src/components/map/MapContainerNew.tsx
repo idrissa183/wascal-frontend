@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "../../hooks/useTranslations";
 import { geographicService } from "../../services/geographic.service";
-import type { Country, Region, Province, Department, GeographicFilter, MapSelection } from "../../types/map";
+import type {
+  Country,
+  Region,
+  Province,
+  Department,
+  GeographicFilter,
+  MapSelection,
+} from "../../types/map";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -33,6 +40,7 @@ import { Feature } from "ol";
 import { Point, Polygon } from "ol/geom";
 import { Style, Fill, Stroke, Circle as CircleStyle } from "ol/style";
 import { Draw, Modify, Select } from "ol/interaction";
+import { createBox } from "ol/interaction/Draw";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { defaults as defaultControls } from "ol/control";
 import MousePosition from "ol/control/MousePosition";
@@ -155,7 +163,11 @@ export default function MapContainerNew({
 
   // Mettre à jour la carte quand les filtres géographiques changent
   useEffect(() => {
-    if (geographicFilters && mapInstanceRef.current && geographicLayerRef.current) {
+    if (
+      geographicFilters &&
+      mapInstanceRef.current &&
+      geographicLayerRef.current
+    ) {
       updateGeographicLayer();
     }
   }, [geographicFilters, geographicData]);
@@ -173,16 +185,16 @@ export default function MapContainerNew({
   }, []);
 
   const loadGeographicData = async () => {
-    setGeographicData(prev => ({ ...prev, loading: true, error: null }));
-    
+    setGeographicData((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const [countries, regions, provinces, departments] = await Promise.all([
         geographicService.getCountries(),
-        geographicService.getRegions(), 
+        geographicService.getRegions(),
         geographicService.getProvinces(),
         geographicService.getDepartments(),
       ]);
-      
+
       setGeographicData({
         countries,
         regions,
@@ -192,11 +204,14 @@ export default function MapContainerNew({
         error: null,
       });
     } catch (error) {
-      console.error('Erreur lors du chargement des données géographiques:', error);
-      setGeographicData(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: 'Erreur lors du chargement des données géographiques' 
+      console.error(
+        "Erreur lors du chargement des données géographiques:",
+        error
+      );
+      setGeographicData((prev) => ({
+        ...prev,
+        loading: false,
+        error: "Erreur lors du chargement des données géographiques",
       }));
     }
   };
@@ -328,22 +343,30 @@ export default function MapContainerNew({
 
     // Collecter toutes les entités sélectionnées
     const selectedEntities = [
-      ...geographicData.countries.filter(c => geographicFilters.countries.includes(c.id)),
-      ...geographicData.regions.filter(r => geographicFilters.regions.includes(r.id)),
-      ...geographicData.provinces.filter(p => geographicFilters.provinces.includes(p.id)),
-      ...geographicData.departments.filter(d => geographicFilters.departments.includes(d.id)),
+      ...geographicData.countries.filter((c) =>
+        geographicFilters.countries.includes(c.id)
+      ),
+      ...geographicData.regions.filter((r) =>
+        geographicFilters.regions.includes(r.id)
+      ),
+      ...geographicData.provinces.filter((p) =>
+        geographicFilters.provinces.includes(p.id)
+      ),
+      ...geographicData.departments.filter((d) =>
+        geographicFilters.departments.includes(d.id)
+      ),
     ];
 
     // Ajouter les géométries à la couche
-    selectedEntities.forEach(entity => {
+    selectedEntities.forEach((entity) => {
       if (entity.geometry) {
         try {
           const format = new GeoJSON();
           const feature = format.readFeature(entity.geometry, {
-            dataProjection: 'EPSG:4326',
-            featureProjection: 'EPSG:3857'
+            dataProjection: "EPSG:4326",
+            featureProjection: "EPSG:3857",
           });
-          
+
           feature.setProperties({
             name: entity.shape_name,
             type: getEntityType(entity),
@@ -352,7 +375,7 @@ export default function MapContainerNew({
 
           source.addFeature(feature);
         } catch (error) {
-          console.error('Erreur lors de l\'ajout de la géométrie:', error);
+          console.error("Erreur lors de l'ajout de la géométrie:", error);
         }
       }
     });
@@ -360,20 +383,25 @@ export default function MapContainerNew({
     // Ajuster la vue pour montrer les entités sélectionnées
     if (selectedEntities.length > 0 && mapInstanceRef.current) {
       const extent = source.getExtent();
-      if (extent && extent.some(coord => isFinite(coord))) {
+      if (extent && extent.some((coord) => isFinite(coord))) {
         mapInstanceRef.current.getView().fit(extent, {
           padding: [50, 50, 50, 50],
-          maxZoom: 10
+          maxZoom: 10,
         });
       }
     }
   };
 
   const getEntityType = (entity: any): string => {
-    if ('country_id' in entity && 'region_id' in entity && 'province_id' in entity) return 'department';
-    if ('country_id' in entity && 'region_id' in entity) return 'province';
-    if ('country_id' in entity) return 'region';
-    return 'country';
+    if (
+      "country_id" in entity &&
+      "region_id" in entity &&
+      "province_id" in entity
+    )
+      return "department";
+    if ("country_id" in entity && "region_id" in entity) return "province";
+    if ("country_id" in entity) return "region";
+    return "country";
   };
 
   const addSampleData = () => {
@@ -424,12 +452,16 @@ export default function MapContainerNew({
     }
 
     let geometryType: string | undefined;
+    const drawOptions: any = {
+      source: vectorSourceRef.current,
+    };
     switch (tool) {
       case "point":
         geometryType = "Point";
         break;
       case "rectangle":
         geometryType = "Circle"; // Utiliser Circle pour les rectangles
+        drawOptions.geometryFunction = createBox();
         break;
       case "polygon":
         geometryType = "Polygon";
@@ -629,7 +661,9 @@ export default function MapContainerNew({
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder={t.map_page?.search_placeholder || "Rechercher un lieu..."}
+            placeholder={
+              t.map_page?.search_placeholder || "Rechercher un lieu..."
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -888,7 +922,9 @@ export default function MapContainerNew({
                 Départements: {geographicFilters.departments.length}
               </div>
             )}
-            {Object.values(geographicFilters).every(arr => arr.length === 0) && (
+            {Object.values(geographicFilters).every(
+              (arr) => arr.length === 0
+            ) && (
               <div className="text-gray-500 dark:text-gray-400">
                 Aucun filtre actif
               </div>

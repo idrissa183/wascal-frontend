@@ -17,6 +17,8 @@ import {
   AdjustmentsHorizontalIcon,
   PhotoIcon,
   CogIcon,
+  ScissorsIcon,
+  ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
 
 // OpenLayers imports
@@ -31,6 +33,7 @@ import { Feature } from "ol";
 import { Point, Polygon } from "ol/geom";
 import { Style, Fill, Stroke, Circle as CircleStyle } from "ol/style";
 import { Draw, Modify, Select } from "ol/interaction";
+import { createBox } from "ol/interaction/Draw";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { defaults as defaultControls } from "ol/control";
 import MousePosition from "ol/control/MousePosition";
@@ -283,12 +286,16 @@ export default function MapContainer({
     }
 
     let geometryType: string | undefined;
+    const drawOptions: any = {
+      source: vectorSourceRef.current,
+    };
     switch (tool) {
       case "point":
         geometryType = "Point";
         break;
       case "rectangle":
         geometryType = "Circle"; // Utiliser Circle pour les rectangles
+        drawOptions.geometryFunction = createBox();
         break;
       case "polygon":
         geometryType = "Polygon";
@@ -303,7 +310,7 @@ export default function MapContainer({
     // Créer une nouvelle interaction de dessin
     if (geometryType) {
       const draw = new Draw({
-        source: vectorSourceRef.current,
+        ...drawOptions,
         type: geometryType as any,
       });
 
@@ -387,6 +394,17 @@ export default function MapContainer({
       return layer;
     });
     setLayers(updatedLayers);
+  };
+
+  const handleCut = () => {
+    vectorSourceRef.current?.clear();
+  };
+
+  const handleUndo = () => {
+    const features = vectorSourceRef.current?.getFeatures();
+    if (features && features.length > 0) {
+      vectorSourceRef.current?.removeFeature(features[features.length - 1]);
+    }
   };
 
   const exportMap = () => {
@@ -489,11 +507,13 @@ export default function MapContainer({
       <div className="absolute top-4 right-4 z-20 flex flex-col space-y-1">
         <button
           onClick={handleZoomIn}
+          title="Zoom avant"
           className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           <PlusIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
         <button
+          title="Zoom arrière"
           onClick={handleZoomOut}
           className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
@@ -577,6 +597,20 @@ export default function MapContainer({
                 title="Sélection circulaire"
               >
                 <StopIcon className="w-4 h-4 rounded-full" />
+              </button>
+              <button
+                onClick={handleCut}
+                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                title="Effacer les dessins"
+              >
+                <ScissorsIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleUndo}
+                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                title="Annuler le dernier dessin"
+              >
+                <ArrowUturnLeftIcon className="w-4 h-4" />
               </button>
             </div>
           </div>
