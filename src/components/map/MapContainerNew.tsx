@@ -1,0 +1,901 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslations } from "../../hooks/useTranslations";
+import { geographicService } from "../../services/geographic.service";
+import type { Country, Region, Province, Department, GeographicFilter, MapSelection } from "../../types/map";
+import {
+  MagnifyingGlassIcon,
+  PlusIcon,
+  MinusIcon,
+  ArrowsPointingOutIcon,
+  ArrowsPointingInIcon,
+  MapIcon,
+  CursorArrowRippleIcon,
+  RectangleStackIcon,
+  StopIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  AdjustmentsHorizontalIcon,
+  PhotoIcon,
+  CogIcon,
+} from "@heroicons/react/24/outline";
+
+// OpenLayers imports
+import Map from "ol/Map";
+import View from "ol/View";
+import TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import OSM from "ol/source/OSM";
+import XYZ from "ol/source/XYZ";
+import { Feature } from "ol";
+import { Point, Polygon } from "ol/geom";
+import { Style, Fill, Stroke, Circle as CircleStyle } from "ol/style";
+import { Draw, Modify, Select } from "ol/interaction";
+import { fromLonLat, toLonLat } from "ol/proj";
+import { defaults as defaultControls } from "ol/control";
+import MousePosition from "ol/control/MousePosition";
+import ScaleLine from "ol/control/ScaleLine";
+import { createStringXY } from "ol/coordinate";
+import { GeoJSON } from "ol/format";
+
+interface MapContainerProps {
+  geographicFilters?: GeographicFilter;
+  onSelectionChange?: (selection: MapSelection) => void;
+  onLayerChange?: (layers: string[]) => void;
+  className?: string;
+}
+
+type SelectionTool = "none" | "point" | "rectangle" | "polygon" | "circle";
+
+interface LayerControl {
+  id: string;
+  name: string;
+  visible: boolean;
+  opacity: number;
+  type: "raster" | "vector";
+  layer?: TileLayer<any> | VectorLayer<any>;
+}
+
+interface GeographicData {
+  countries: Country[];
+  regions: Region[];
+  provinces: Province[];
+  departments: Department[];
+  loading: boolean;
+  error: string | null;
+}
+
+export default function MapContainerNew({
+  geographicFilters,
+  onSelectionChange,
+  onLayerChange,
+  className = "",
+}: MapContainerProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<Map | null>(null);
+  const vectorSourceRef = useRef<VectorSource>(new VectorSource());
+  const geographicLayerRef = useRef<VectorLayer<any> | null>(null);
+  const drawRef = useRef<Draw | null>(null);
+  const t = useTranslations();
+
+  // États pour les contrôles de la carte
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [activeTool, setActiveTool] = useState<SelectionTool>("none");
+  const [showLayerPanel, setShowLayerPanel] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(true);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [coordinates, setCoordinates] = useState<[number, number]>([
+    12.3714, -1.5197,
+  ]);
+  const [zoom, setZoom] = useState(7);
+
+  // États pour les données géographiques
+  const [geographicData, setGeographicData] = useState<GeographicData>({
+    countries: [],
+    regions: [],
+    provinces: [],
+    departments: [],
+    loading: false,
+    error: null,
+  });
+
+  // États pour les couches
+  const [layers, setLayers] = useState<LayerControl[]>([
+    {
+      id: "osm",
+      name: "OpenStreetMap",
+      visible: true,
+      opacity: 100,
+      type: "raster",
+    },
+    {
+      id: "satellite",
+      name: "Satellite",
+      visible: false,
+      opacity: 100,
+      type: "raster",
+    },
+    { id: "ndvi", name: "NDVI", visible: false, opacity: 70, type: "raster" },
+    {
+      id: "temperature",
+      name: "Température",
+      visible: false,
+      opacity: 70,
+      type: "raster",
+    },
+    {
+      id: "precipitation",
+      name: "Précipitations",
+      visible: false,
+      opacity: 70,
+      type: "raster",
+    },
+    {
+      id: "geographic_boundaries",
+      name: "Limites géographiques",
+      visible: true,
+      opacity: 80,
+      type: "vector",
+    },
+  ]);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [mapSettings, setMapSettings] = useState({
+    showCoordinates: true,
+    showScale: true,
+    showAttribution: true,
+  });
+
+  // Charger les données géographiques au montage
+  useEffect(() => {
+    loadGeographicData();
+  }, []);
+
+  // Mettre à jour la carte quand les filtres géographiques changent
+  useEffect(() => {
+    if (geographicFilters && mapInstanceRef.current && geographicLayerRef.current) {
+      updateGeographicLayer();
+    }
+  }, [geographicFilters, geographicData]);
+
+  useEffect(() => {
+    if (mapRef.current && !mapInstanceRef.current) {
+      initializeMap();
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setTarget(undefined);
+      }
+    };
+  }, []);
+
+  const loadGeographicData = async () => {
+    setGeographicData(prev => ({ ...prev, loading: true, error: null }));
+    
+    try {
+      const [countries, regions, provinces, departments] = await Promise.all([
+        geographicService.getCountries(),
+        geographicService.getRegions(), 
+        geographicService.getProvinces(),
+        geographicService.getDepartments(),
+      ]);
+      
+      setGeographicData({
+        countries,
+        regions,
+        provinces,
+        departments,
+        loading: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des données géographiques:', error);
+      setGeographicData(prev => ({ 
+        ...prev, 
+        loading: false, 
+        error: 'Erreur lors du chargement des données géographiques' 
+      }));
+    }
+  };
+
+  const initializeMap = () => {
+    if (!mapRef.current) return;
+
+    console.log("Initializing OpenLayers map...");
+
+    // Créer les couches de base
+    const osmLayer = new TileLayer({
+      source: new OSM(),
+      visible: true,
+    });
+
+    const satelliteLayer = new TileLayer({
+      source: new XYZ({
+        url: "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+        attributions: "© Google",
+      }),
+      visible: false,
+    });
+
+    // Couche vectorielle pour les dessins
+    const vectorLayer = new VectorLayer({
+      source: vectorSourceRef.current,
+      style: new Style({
+        fill: new Fill({
+          color: "rgba(255, 255, 255, 0.2)",
+        }),
+        stroke: new Stroke({
+          color: "#ffcc33",
+          width: 2,
+        }),
+        image: new CircleStyle({
+          radius: 7,
+          fill: new Fill({
+            color: "#ffcc33",
+          }),
+        }),
+      }),
+    });
+
+    // Couche pour les limites géographiques
+    const geographicLayer = new VectorLayer({
+      source: new VectorSource(),
+      style: new Style({
+        fill: new Fill({
+          color: "rgba(0, 123, 255, 0.1)",
+        }),
+        stroke: new Stroke({
+          color: "#007bff",
+          width: 2,
+        }),
+      }),
+    });
+
+    geographicLayerRef.current = geographicLayer;
+
+    // Contrôles de la carte
+    const mousePositionControl = new MousePosition({
+      coordinateFormat: createStringXY(4),
+      projection: "EPSG:4326",
+      undefinedHTML: "&nbsp;",
+    });
+
+    const scaleLineControl = new ScaleLine({
+      units: "metric",
+    });
+
+    // Créer la carte
+    const map = new Map({
+      target: mapRef.current,
+      layers: [osmLayer, satelliteLayer, geographicLayer, vectorLayer],
+      view: new View({
+        center: fromLonLat([coordinates[1], coordinates[0]]),
+        zoom: zoom,
+      }),
+      controls: defaultControls().extend([
+        ...(mapSettings.showCoordinates ? [mousePositionControl] : []),
+        ...(mapSettings.showScale ? [scaleLineControl] : []),
+      ]),
+    });
+
+    // Mettre à jour les références des couches
+    setLayers((prev) =>
+      prev.map((layer) => {
+        switch (layer.id) {
+          case "osm":
+            return { ...layer, layer: osmLayer };
+          case "satellite":
+            return { ...layer, layer: satelliteLayer };
+          case "geographic_boundaries":
+            return { ...layer, layer: geographicLayer };
+          default:
+            return layer;
+        }
+      })
+    );
+
+    // Écouter les changements de vue
+    map.getView().on("change:center", () => {
+      const center = map.getView().getCenter();
+      if (center) {
+        const [lon, lat] = toLonLat(center);
+        setCoordinates([lat, lon]);
+      }
+    });
+
+    map.getView().on("change:resolution", () => {
+      setZoom(Math.round(map.getView().getZoom() || 7));
+    });
+
+    mapInstanceRef.current = map;
+    setMapLoaded(true);
+
+    // Ajouter quelques points d'exemple
+    addSampleData();
+  };
+
+  const updateGeographicLayer = () => {
+    if (!geographicLayerRef.current || !geographicFilters) return;
+
+    const source = geographicLayerRef.current.getSource();
+    if (!source) return;
+
+    // Effacer les features existantes
+    source.clear();
+
+    // Collecter toutes les entités sélectionnées
+    const selectedEntities = [
+      ...geographicData.countries.filter(c => geographicFilters.countries.includes(c.id)),
+      ...geographicData.regions.filter(r => geographicFilters.regions.includes(r.id)),
+      ...geographicData.provinces.filter(p => geographicFilters.provinces.includes(p.id)),
+      ...geographicData.departments.filter(d => geographicFilters.departments.includes(d.id)),
+    ];
+
+    // Ajouter les géométries à la couche
+    selectedEntities.forEach(entity => {
+      if (entity.geometry) {
+        try {
+          const format = new GeoJSON();
+          const feature = format.readFeature(entity.geometry, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857'
+          });
+          
+          feature.setProperties({
+            name: entity.shape_name,
+            type: getEntityType(entity),
+            id: entity.id,
+          });
+
+          source.addFeature(feature);
+        } catch (error) {
+          console.error('Erreur lors de l\'ajout de la géométrie:', error);
+        }
+      }
+    });
+
+    // Ajuster la vue pour montrer les entités sélectionnées
+    if (selectedEntities.length > 0 && mapInstanceRef.current) {
+      const extent = source.getExtent();
+      if (extent && extent.some(coord => isFinite(coord))) {
+        mapInstanceRef.current.getView().fit(extent, {
+          padding: [50, 50, 50, 50],
+          maxZoom: 10
+        });
+      }
+    }
+  };
+
+  const getEntityType = (entity: any): string => {
+    if ('country_id' in entity && 'region_id' in entity && 'province_id' in entity) return 'department';
+    if ('country_id' in entity && 'region_id' in entity) return 'province';
+    if ('country_id' in entity) return 'region';
+    return 'country';
+  };
+
+  const addSampleData = () => {
+    if (!vectorSourceRef.current) return;
+
+    // Ajouter quelques stations météo d'exemple
+    const stations = [
+      { name: "Ouagadougou", coords: [-1.5197, 12.3714] },
+      { name: "Bobo-Dioulasso", coords: [-4.2945, 11.1777] },
+      { name: "Koudougou", coords: [-2.3667, 12.2533] },
+      { name: "Banfora", coords: [-4.75, 10.6333] },
+    ];
+
+    stations.forEach((station) => {
+      const point = new Point(fromLonLat(station.coords));
+      const feature = new Feature({
+        geometry: point,
+        name: station.name,
+        type: "station",
+      });
+
+      feature.setStyle(
+        new Style({
+          image: new CircleStyle({
+            radius: 6,
+            fill: new Fill({ color: "#3b82f6" }),
+            stroke: new Stroke({ color: "#1e40af", width: 2 }),
+          }),
+        })
+      );
+
+      vectorSourceRef.current?.addFeature(feature);
+    });
+  };
+
+  const handleToolChange = (tool: SelectionTool) => {
+    if (!mapInstanceRef.current) return;
+
+    // Supprimer l'interaction précédente
+    if (drawRef.current) {
+      mapInstanceRef.current.removeInteraction(drawRef.current);
+      drawRef.current = null;
+    }
+
+    if (tool === activeTool || tool === "none") {
+      setActiveTool("none");
+      return;
+    }
+
+    let geometryType: string | undefined;
+    switch (tool) {
+      case "point":
+        geometryType = "Point";
+        break;
+      case "rectangle":
+        geometryType = "Circle"; // Utiliser Circle pour les rectangles
+        break;
+      case "polygon":
+        geometryType = "Polygon";
+        break;
+      case "circle":
+        geometryType = "Circle";
+        break;
+      default:
+        return;
+    }
+
+    // Créer une nouvelle interaction de dessin
+    if (geometryType) {
+      const draw = new Draw({
+        source: vectorSourceRef.current,
+        type: geometryType as any,
+      });
+
+      draw.on("drawend", (event) => {
+        const feature = event.feature;
+        const geometry = feature.getGeometry();
+
+        if (onSelectionChange) {
+          onSelectionChange({
+            type: tool,
+            geometry: geometry,
+            coordinates: geometry?.getCoordinates(),
+          });
+        }
+
+        console.log(`${tool} drawn:`, geometry?.getCoordinates());
+      });
+
+      mapInstanceRef.current.addInteraction(draw);
+      drawRef.current = draw;
+    }
+
+    setActiveTool(tool);
+  };
+
+  const handleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      mapRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  const handleZoomIn = () => {
+    if (mapInstanceRef.current) {
+      const view = mapInstanceRef.current.getView();
+      const currentZoom = view.getZoom() || 7;
+      view.setZoom(currentZoom + 1);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstanceRef.current) {
+      const view = mapInstanceRef.current.getView();
+      const currentZoom = view.getZoom() || 7;
+      view.setZoom(currentZoom - 1);
+    }
+  };
+
+  const handleLayerToggle = (layerId: string) => {
+    const updatedLayers = layers.map((layer) => {
+      if (layer.id === layerId) {
+        const newVisible = !layer.visible;
+
+        // Mettre à jour la visibilité de la couche OpenLayers
+        if (layer.layer) {
+          layer.layer.setVisible(newVisible);
+        }
+
+        return { ...layer, visible: newVisible };
+      }
+      return layer;
+    });
+
+    setLayers(updatedLayers);
+    onLayerChange?.(updatedLayers.filter((l) => l.visible).map((l) => l.id));
+  };
+
+  const handleOpacityChange = (layerId: string, opacity: number) => {
+    const updatedLayers = layers.map((layer) => {
+      if (layer.id === layerId) {
+        // Mettre à jour l'opacité de la couche OpenLayers
+        if (layer.layer) {
+          layer.layer.setOpacity(opacity / 100);
+        }
+
+        return { ...layer, opacity };
+      }
+      return layer;
+    });
+    setLayers(updatedLayers);
+  };
+
+  const exportMap = () => {
+    if (!mapInstanceRef.current) return;
+
+    mapInstanceRef.current.once("rendercomplete", () => {
+      const mapCanvas = document.createElement("canvas");
+      const size = mapInstanceRef.current!.getSize();
+      if (size) {
+        mapCanvas.width = size[0];
+        mapCanvas.height = size[1];
+        const mapContext = mapCanvas.getContext("2d");
+        if (mapContext) {
+          Array.prototype.forEach.call(
+            document.querySelectorAll(".ol-layer canvas"),
+            (canvas: HTMLCanvasElement) => {
+              if (canvas.width > 0) {
+                const opacity = canvas.parentElement?.style.opacity;
+                mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
+                const transform = canvas.style.transform;
+                const matrix = transform
+                  .match(/^matrix\(([^(]*)\)$/)?.[1]
+                  .split(",")
+                  .map(Number);
+                if (matrix) {
+                  mapContext.setTransform(...matrix);
+                }
+                mapContext.drawImage(canvas, 0, 0);
+              }
+            }
+          );
+          mapContext.globalAlpha = 1;
+
+          // Télécharger l'image
+          const link = document.createElement("a");
+          link.download = "map.png";
+          link.href = mapCanvas.toDataURL();
+          link.click();
+        }
+      }
+    });
+    mapInstanceRef.current.renderSync();
+  };
+
+  const resetView = () => {
+    if (mapInstanceRef.current) {
+      const view = mapInstanceRef.current.getView();
+      view.setCenter(fromLonLat([-1.5197, 12.3714]));
+      view.setZoom(7);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    try {
+      // Utiliser Nominatim pour la géolocalisation
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery
+        )}&limit=1`
+      );
+      const results = await response.json();
+
+      if (results.length > 0) {
+        const result = results[0];
+        const coords = [parseFloat(result.lon), parseFloat(result.lat)];
+
+        if (mapInstanceRef.current) {
+          const view = mapInstanceRef.current.getView();
+          view.setCenter(fromLonLat(coords));
+          view.setZoom(12);
+        }
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+    }
+  };
+
+  return (
+    <div
+      className={`relative h-full w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden ${className}`}
+    >
+      {/* Indicateur de chargement des données géographiques */}
+      {geographicData.loading && (
+        <div className="absolute top-4 right-4 z-30 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 border border-gray-200 dark:border-gray-600">
+          <div className="flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+            <span className="text-sm text-gray-600 dark:text-gray-300">
+              Chargement des données géographiques...
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Barre de recherche */}
+      <div className="absolute top-4 left-4 z-20">
+        <div className="relative">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder={t.map_page?.search_placeholder || "Rechercher un lieu..."}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+            className="w-80 pl-10 pr-4 py-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg shadow-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+          />
+        </div>
+      </div>
+
+      {/* Contrôles de zoom */}
+      <div className="absolute top-4 right-4 z-20 flex flex-col space-y-1">
+        <button
+          onClick={handleZoomIn}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          <PlusIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          <MinusIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+        <button
+          onClick={handleFullscreen}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          {isFullscreen ? (
+            <ArrowsPointingInIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          ) : (
+            <ArrowsPointingOutIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          )}
+        </button>
+        <button
+          onClick={resetView}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          <MapIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+      </div>
+
+      {/* Barre d'outils de sélection */}
+      {showToolbar && (
+        <div className="absolute top-20 left-4 z-20">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-2">
+            <div className="flex space-x-1">
+              <button
+                onClick={() => handleToolChange("point")}
+                className={`p-2 rounded-md transition-colors ${
+                  activeTool === "point"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                }`}
+                title="Sélection par point"
+              >
+                <CursorArrowRippleIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleToolChange("rectangle")}
+                className={`p-2 rounded-md transition-colors ${
+                  activeTool === "rectangle"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                }`}
+                title="Sélection rectangulaire"
+              >
+                <RectangleStackIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleToolChange("polygon")}
+                className={`p-2 rounded-md transition-colors ${
+                  activeTool === "polygon"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                }`}
+                title="Sélection polygonale"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={() => handleToolChange("circle")}
+                className={`p-2 rounded-md transition-colors ${
+                  activeTool === "circle"
+                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                }`}
+                title="Sélection circulaire"
+              >
+                <StopIcon className="w-4 h-4 rounded-full" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Conteneur de la carte */}
+      <div ref={mapRef} className="w-full h-full min-h-[600px]">
+        {!mapLoaded && (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+              <p className="text-gray-500 dark:text-gray-400">
+                Chargement de la carte...
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Panneau de contrôle des couches */}
+      {showLayerPanel && (
+        <div className="absolute bottom-4 left-4 z-20 w-80">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
+                <AdjustmentsHorizontalIcon className="w-4 h-4 mr-2" />
+                Couches de données
+              </h4>
+              <button
+                onClick={() => setShowLayerPanel(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <ChevronDownIcon className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-4 max-h-80 overflow-y-auto">
+              <div className="space-y-3">
+                {layers.map((layer) => (
+                  <div key={layer.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={layer.visible}
+                          onChange={() => handleLayerToggle(layer.id)}
+                          className="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-2"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                          {layer.name}
+                        </span>
+                      </label>
+                      <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        {layer.visible ? (
+                          <EyeIcon className="w-4 h-4" />
+                        ) : (
+                          <EyeSlashIcon className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                    {layer.visible && (
+                      <div className="ml-6">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 w-16">
+                            Opacité:
+                          </span>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={layer.opacity}
+                            onChange={(e) =>
+                              handleOpacityChange(
+                                layer.id,
+                                parseInt(e.target.value)
+                              )
+                            }
+                            className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                          />
+                          <span className="text-xs text-gray-500 dark:text-gray-400 w-8">
+                            {layer.opacity}%
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bouton pour réafficher le panneau de couches */}
+      {!showLayerPanel && (
+        <button
+          onClick={() => setShowLayerPanel(true)}
+          className="absolute bottom-4 left-4 z-20 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        >
+          <ChevronUpIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+      )}
+
+      {/* Contrôles supplémentaires */}
+      <div className="absolute bottom-4 right-4 z-20 flex space-x-2">
+        <button
+          onClick={exportMap}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          title="Exporter la carte"
+        >
+          <PhotoIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+        <button
+          onClick={() => setShowToolbar(!showToolbar)}
+          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          title="Basculer la barre d'outils"
+        >
+          <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+      </div>
+
+      {/* Coordonnées et échelle */}
+      {mapSettings.showCoordinates && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+          <div className="bg-black bg-opacity-75 text-white px-3 py-1 rounded text-xs">
+            Lat: {coordinates[0].toFixed(4)}° | Lon: {coordinates[1].toFixed(4)}
+            ° | Zoom: {zoom}
+          </div>
+        </div>
+      )}
+
+      {/* Résumé des filtres géographiques actifs */}
+      {geographicFilters && (
+        <div className="absolute top-20 right-4 z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-3 max-w-xs">
+          <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+            Filtres géographiques actifs
+          </h5>
+          <div className="space-y-1 text-xs">
+            {geographicFilters.countries.length > 0 && (
+              <div className="text-gray-600 dark:text-gray-400">
+                Pays: {geographicFilters.countries.length}
+              </div>
+            )}
+            {geographicFilters.regions.length > 0 && (
+              <div className="text-gray-600 dark:text-gray-400">
+                Régions: {geographicFilters.regions.length}
+              </div>
+            )}
+            {geographicFilters.provinces.length > 0 && (
+              <div className="text-gray-600 dark:text-gray-400">
+                Provinces: {geographicFilters.provinces.length}
+              </div>
+            )}
+            {geographicFilters.departments.length > 0 && (
+              <div className="text-gray-600 dark:text-gray-400">
+                Départements: {geographicFilters.departments.length}
+              </div>
+            )}
+            {Object.values(geographicFilters).every(arr => arr.length === 0) && (
+              <div className="text-gray-500 dark:text-gray-400">
+                Aucun filtre actif
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

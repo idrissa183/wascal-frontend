@@ -196,17 +196,20 @@ class AuthService {
         throw new Error("No access token");
       }
 
-      const response = await fetch(`${this.baseUrl}/api/v1/auth/password/change`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          current_password: currentPassword,
-          new_password: newPassword,
-        }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/api/v1/auth/password/change`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            current_password: currentPassword,
+            new_password: newPassword,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();

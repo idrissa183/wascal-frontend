@@ -36,7 +36,10 @@ export default function Base({ children, showFooter = true }: BaseProps) {
       {isInRouterContext ? (
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       ) : (
-        <SidebarLegacy isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <SidebarLegacy
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
       )}
 
       <div className="lg:ml-80">

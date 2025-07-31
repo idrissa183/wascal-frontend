@@ -274,6 +274,28 @@
     "vegetation": "Vegetation",
     "soil": "Soil"
   },
+  "sidebar": {
+    "main": "Main",
+    "management": "Management",
+    "settings_help": "Settings & Help",
+    "filters": "Filters",
+    "categories": "Categories",
+    "countries": "WASCAL Countries",
+    "regions": "Regions",
+    "provinces": "Provinces",
+    "departments": "Departments",
+    "active_filters": "Active Filters",
+    "selected": "selected",
+    "selected_plural": "selected",
+    "clear": "Clear",
+    "apply": "Apply",
+    "show_more": "Show more",
+    "show_less": "Show less",
+    "search_placeholder": "Search {0}...",
+    "capital": "Capital",
+    "country": "Country",
+    "region": "Region"
+  },
   "descriptions": {
     "map_description": "Interactive map for environmental monitoring",
     "ai_assistant_description": "AI-powered environmental analysis assistant",

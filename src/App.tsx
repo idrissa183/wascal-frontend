@@ -50,6 +50,7 @@ import PrecipitationPage from "./components/data/PrecipitationPage";
 
 // Error Pages
 import NotFoundPage from "./components/error/NotFoundPage";
+import MapPageNew from "./components/map/MapPageNew";
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
@@ -178,7 +179,7 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <Base>
-                <MapPage />
+                <MapPageNew />
               </Base>
             </ProtectedRoute>
           }

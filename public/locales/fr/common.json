@@ -255,6 +255,7 @@
     "countries": "Pays WASCAL",
     "regions": "Régions",
     "provinces": "Provinces",
+    "departments": "Départements",
     "active_filters": "Filtres Actifs",
     "selected": "sélectionné",
     "selected_plural": "sélectionnés",
@@ -263,7 +264,7 @@
     "show_more": "Montrer plus",
     "show_less": "Montrer moins",
     "search_placeholder": "Rechercher {0}...",
-    "capital": "Capital",
+    "capital": "Capitale",
     "country": "Pays",
     "region": "Région"
   },
