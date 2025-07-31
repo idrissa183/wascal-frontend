@@ -306,5 +306,8 @@
     "back_to_dashboard": "Retour au tableau de bord",
     "processing_login": "Traitement de la connexion...",
     "please_wait": "Veuillez patienter pendant que nous vous connectons."
+  },
+  "map_page":{
+    "search_placeholder": "Search a place..."
   }
 }

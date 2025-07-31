@@ -379,7 +379,6 @@ export const MonitoringPage: React.FC = () => {
                       </div>
                     </div>
                   ))}
-                \n{" "}
               </div>
             </div>
           </div>

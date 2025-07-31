@@ -308,5 +308,9 @@
     "back_to_dashboard": "Back to Dashboard",
     "processing_login": "Processing login...",
     "please_wait": "Please wait while we sign you in."
+  },
+  "map_page":{
+    "search_placeholder": "Search a place..."
   }
+  
 }
