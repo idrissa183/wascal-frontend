@@ -15,14 +15,18 @@ import Layout from "../layouts/Layout.astro";
   const MapPage = () => {
     return React.createElement(
       Base,
-      {},
+      { showFooter: false }, // Désactiver le footer pour cette page
       React.createElement(
         "div",
-        { className: "h-[calc(100vh-6rem)] p-6 flex flex-col" },
+        {
+          className:
+            "min-h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] p-4 flex flex-col overflow-hidden",
+          style: { height: "calc(100vh - 4rem)" },
+        },
         React.createElement(
           "div",
-          { className: "flex-1" },
-          React.createElement(MapContainer)
+          { className: "flex-1 min-h-0" }, // min-h-0 est crucial pour le flex
+          React.createElement(MapContainer, { className: "h-full w-full" })
         )
       )
     );

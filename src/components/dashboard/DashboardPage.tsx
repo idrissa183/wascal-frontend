@@ -86,9 +86,9 @@ export const DashboardPage: React.FC = () => {
                   </svg>
                 </a>
               </div>
-              <div className="h-96">
+              {/* <div className="h-96">
                 <MapContainer />
-              </div>
+              </div> */}
             </div>
           </div>
 

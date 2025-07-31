@@ -20,7 +20,7 @@ import {
   ScissorsIcon,
   ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
-import "./MapContainer.css"; // <-- AJOUTER CET IMPORT
+import "./MapContainer.css";
 
 // OpenLayers imports
 import Map from "ol/Map";
@@ -490,7 +490,8 @@ export default function MapContainer({
 
   return (
     <div
-      className={`relative h-full w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden map-container ${className}`}
+      className={`relative w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden map-container ${className}`}
+      style={{ minHeight: "500px" }} // Hauteur minimale pour éviter les problèmes
     >
       {/* Barre de recherche */}
       <div className="absolute top-4 left-4 z-20">
@@ -498,7 +499,9 @@ export default function MapContainer({
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder={t.map_page?.search_placeholder}
+            placeholder={
+              t.map_page?.search_placeholder || "Rechercher une localisation..."
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
@@ -625,9 +628,9 @@ export default function MapContainer({
       )}
 
       {/* Conteneur de la carte */}
-      <div ref={mapRef} className="w-full h-full min-h-[600px]">
+      <div ref={mapRef} className="w-full h-full absolute inset-0">
         {!mapLoaded && (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
               <p className="text-gray-500 dark:text-gray-400">
@@ -640,7 +643,7 @@ export default function MapContainer({
 
       {/* Panneau de contrôle des couches */}
       {showLayerPanel && (
-        <div className="absolute bottom-4 left-4 z-20 w-80">
+        <div className="absolute bottom-4 left-4 z-30 w-80">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
@@ -715,7 +718,7 @@ export default function MapContainer({
       {!showLayerPanel && (
         <button
           onClick={() => setShowLayerPanel(true)}
-          className="absolute bottom-4 left-4 z-20 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute bottom-4 left-4 z-30 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           <ChevronUpIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>

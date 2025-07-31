@@ -27,7 +27,7 @@ export default function Base({ children, showFooter = true }: BaseProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       <Navbar
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
@@ -42,9 +42,11 @@ export default function Base({ children, showFooter = true }: BaseProps) {
         />
       )}
 
-      <div className="lg:ml-80">
-        <main className="pt-16 min-h-screen">
-          <div className="p-4">{children}</div>
+      <div className="lg:ml-80 flex flex-col flex-1">
+        <main className="pt-16 flex-1 flex flex-col">
+          <div className={showFooter ? "flex-1" : "flex-1 min-h-0"}>
+            {children}
+          </div>
         </main>
 
         {showFooter && <Footer />}
