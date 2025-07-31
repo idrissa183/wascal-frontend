@@ -20,6 +20,7 @@ import {
   ScissorsIcon,
   ArrowUturnLeftIcon,
 } from "@heroicons/react/24/outline";
+import "./MapContainer.css"; // <-- AJOUTER CET IMPORT
 
 // OpenLayers imports
 import Map from "ol/Map";
@@ -74,7 +75,7 @@ export default function MapContainer({
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
-  
+
   // États pour les coordonnées dynamiques
   const [mouseCoordinates, setMouseCoordinates] = useState<[number, number]>([
     12.3714, -1.5197,
@@ -198,7 +199,7 @@ export default function MapContainer({
         zoom: zoom,
       }),
       controls: defaultControls({
-        attribution: true,
+        attribution: false,
         zoom: false, // On enlève les contrôles de zoom car on a nos propres boutons
         rotate: false,
       }).extend([mousePositionControl, scaleLineControl]),
@@ -489,7 +490,7 @@ export default function MapContainer({
 
   return (
     <div
-      className={`relative h-full w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden ${className}`}
+      className={`relative h-full w-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden map-container ${className}`}
     >
       {/* Barre de recherche */}
       <div className="absolute top-4 left-4 z-20">
@@ -506,25 +507,12 @@ export default function MapContainer({
         </div>
       </div>
 
-      {/* Contrôles de zoom */}
+      {/* Contrôles essentiels en haut à droite */}
       <div className="absolute top-4 right-4 z-20 flex flex-col space-y-1">
-        <button
-          onClick={handleZoomIn}
-          title="Zoom avant"
-          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        >
-          <PlusIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-        </button>
-        <button
-          title="Zoom arrière"
-          onClick={handleZoomOut}
-          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-        >
-          <MinusIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-        </button>
         <button
           onClick={handleFullscreen}
           className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          title="Plein écran"
         >
           {isFullscreen ? (
             <ArrowsPointingInIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
@@ -535,6 +523,7 @@ export default function MapContainer({
         <button
           onClick={resetView}
           className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          title="Vue par défaut"
         >
           <MapIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
@@ -545,6 +534,21 @@ export default function MapContainer({
         <div className="absolute top-20 left-4 z-20">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-2">
             <div className="flex space-x-1">
+              <button
+                onClick={handleZoomIn}
+                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                title="Zoom avant"
+              >
+                <PlusIcon className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                title="Zoom arrière"
+              >
+                <MinusIcon className="w-4 h-4" />
+              </button>
+              <div className="border-l border-gray-300 dark:border-gray-600 mx-1"></div>
               <button
                 onClick={() => handleToolChange("point")}
                 className={`p-2 rounded-md transition-colors ${
@@ -738,13 +742,10 @@ export default function MapContainer({
       {/* Coordonnées dynamiques en bas au milieu */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
         <div className="bg-black bg-opacity-75 text-white px-3 py-1 rounded text-xs">
-          Lat: {mouseCoordinates[0].toFixed(4)}° | Lon: {mouseCoordinates[1].toFixed(4)}° | Zoom: {zoom}
+          Lat: {mouseCoordinates[0].toFixed(4)}° | Lon:{" "}
+          {mouseCoordinates[1].toFixed(4)}° | Zoom: {zoom}
         </div>
       </div>
-
-      {/* CSS personnalisé pour positionner l'échelle */}
-      <style jsx>{`
-        .custom-scale-line {
-          position: absolute !important;
-          bottom: 1rem !important;
-          right: 8rem
+    </div>
+  );
+}

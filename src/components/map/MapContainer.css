@@ -1,0 +1,36 @@
+/* MapContainer.css */
+
+/* Ces sélecteurs sont maintenant globaux. 
+   Pour les rendre spécifiques, on peut préfixer avec une classe sur le conteneur principal, 
+   par exemple .map-container .ol-scale-line */
+
+.map-container .ol-scale-line {
+  display: none !important;
+}
+.map-container .custom-scale-line {
+  display: block !important;
+}
+.map-container .custom-mouse-position {
+  display: none !important;
+}
+.map-container .ol-attribution {
+  bottom: 60px !important;
+  right: 0.5em !important;
+}
+.map-container .ol-zoom {
+  display: none !important;
+}
+.map-container .ol-rotate {
+  display: none !important;
+}
+.map-container .custom-scale-line {
+  position: absolute !important;
+  bottom: 4rem !important;
+  right: 1rem !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: white !important;
+  padding: 0.25rem 0.5rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.75rem !important;
+  font-family: monospace !important;
+}
