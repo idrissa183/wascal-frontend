@@ -32,7 +32,7 @@ import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
 import { Feature } from "ol";
 import { Point, Polygon } from "ol/geom";
-import { Style, Fill, Stroke, Circle as CircleStyle } from "ol/style";
+import { Style, Fill, Stroke, Circle as CircleStyle, Icon } from "ol/style";
 import { Draw, Modify, Select } from "ol/interaction";
 import { createBox } from "ol/interaction/Draw";
 import { fromLonLat, toLonLat } from "ol/proj";
@@ -41,6 +41,8 @@ import MousePosition from "ol/control/MousePosition";
 import ScaleLine from "ol/control/ScaleLine";
 import { createStringXY } from "ol/coordinate";
 import { FaRegCircle } from "react-icons/fa";
+import { FaLocationDot } from "react-icons/fa6";
+import { renderToStaticMarkup } from "react-dom/server";
 import { LuRectangleHorizontal } from "react-icons/lu";
 import { PiPolygonBold } from "react-icons/pi";
 
@@ -84,6 +86,17 @@ export default function MapContainer({
     12.3714, -1.5197,
   ]);
   const [zoom, setZoom] = useState(7);
+  const locationIconUrl = `data:image/svg+xml,${encodeURIComponent(
+    renderToStaticMarkup(<FaLocationDot />)
+  )}`;
+  const pointStyle = new Style({
+    image: new Icon({
+      src: locationIconUrl,
+      anchor: [0.5, 1],
+      height: 48,
+      width: 48,
+    }),
+  });
 
   // États pour les couches
   const [layers, setLayers] = useState<LayerControl[]>([
@@ -299,6 +312,7 @@ export default function MapContainer({
     switch (tool) {
       case "point":
         geometryType = "Point";
+        drawOptions.style = pointStyle;
         break;
       case "rectangle":
         geometryType = "Circle";
@@ -324,6 +338,10 @@ export default function MapContainer({
       draw.on("drawend", (event) => {
         const feature = event.feature;
         const geometry = feature.getGeometry();
+
+        if (tool === "point") {
+          feature.setStyle(pointStyle);
+        }
 
         if (onSelectionChange) {
           onSelectionChange({
