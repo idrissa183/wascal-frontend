@@ -31,7 +31,7 @@ import VectorSource from "ol/source/Vector";
 import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
 import { Feature } from "ol";
-import { Point, Polygon } from "ol/geom";
+import { Point, Polygon, Circle as CircleGeom, Geometry } from "ol/geom";
 import { Style, Fill, Stroke, Circle as CircleStyle, Icon } from "ol/style";
 import { Draw, Modify, Select } from "ol/interaction";
 import { createBox } from "ol/interaction/Draw";
@@ -195,7 +195,7 @@ export default function MapContainer({
     const mousePositionControl = new MousePosition({
       coordinateFormat: createStringXY(4),
       projection: "EPSG:4326",
-      undefinedHTML: "&nbsp;",
+      placeholder: "&nbsp;",
       className: "custom-mouse-position",
     });
 
@@ -343,15 +343,29 @@ export default function MapContainer({
           feature.setStyle(pointStyle);
         }
 
+        let coordinates: unknown = undefined;
+        if (geometry) {
+          if (geometry instanceof Point || geometry instanceof Polygon) {
+            coordinates = geometry.getCoordinates();
+          } else if (geometry instanceof CircleGeom) {
+            coordinates = {
+              center: geometry.getCenter(),
+              radius: geometry.getRadius(),
+            };
+          }
+        }
+
         if (onSelectionChange) {
           onSelectionChange({
             type: tool,
-            geometry: geometry,
-            coordinates: geometry?.getCoordinates(),
+            geometry: geometry as Geometry,
+            coordinates: coordinates,
           });
         }
 
-        console.log(`${tool} drawn:`, geometry?.getCoordinates());
+        if (coordinates) {
+          console.log(`${tool} drawn:`, coordinates);
+        }
       });
 
       mapInstanceRef.current.addInteraction(draw);
@@ -450,12 +464,19 @@ export default function MapContainer({
                 const opacity = canvas.parentElement?.style.opacity;
                 mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
                 const transform = canvas.style.transform;
-                const matrix = transform
+                const matrixValues = transform
                   .match(/^matrix\(([^(]*)\)$/)?.[1]
                   .split(",")
                   .map(Number);
-                if (matrix) {
-                  mapContext.setTransform(...matrix);
+                if (matrixValues && matrixValues.length === 6) {
+                  mapContext.setTransform(
+                    matrixValues[0],
+                    matrixValues[1],
+                    matrixValues[2],
+                    matrixValues[3],
+                    matrixValues[4],
+                    matrixValues[5]
+                  );
                 }
                 mapContext.drawImage(canvas, 0, 0);
               }
