@@ -490,14 +490,14 @@ export default function SidebarLegacy({ isOpen, onClose }: SidebarProps) {
   const getFilteredItems = (section: keyof typeof filterData) => {
     const localizedData = getLocalizedFilterData();
     const items = localizedData[section];
-    const searchTerm = searchTerms[section].toLowerCase();
+    const searchTerm = searchTerms[section as keyof SearchTerms].toLowerCase();
 
     let filtered = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm)
     );
 
     const maxVisible = 5;
-    if (!showAll[section] && filtered.length > maxVisible) {
+    if (!showAll[section as keyof ShowAll] && filtered.length > maxVisible) {
       filtered = filtered.slice(0, maxVisible);
     }
 
@@ -507,7 +507,7 @@ export default function SidebarLegacy({ isOpen, onClose }: SidebarProps) {
   const shouldShowToggle = (section: keyof typeof filterData) => {
     const localizedData = getLocalizedFilterData();
     const items = localizedData[section];
-    const searchTerm = searchTerms[section].toLowerCase();
+    const searchTerm = searchTerms[section as keyof SearchTerms].toLowerCase();
     const filteredCount = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm)
     ).length;

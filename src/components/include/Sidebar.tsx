@@ -508,14 +508,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const getFilteredItems = (section: keyof typeof filterData) => {
     const localizedData = getLocalizedFilterData();
     const items = localizedData[section];
-    const searchTerm = searchTerms[section].toLowerCase();
+    const searchTerm = searchTerms[section as keyof SearchTerms].toLowerCase();
 
     let filtered = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm)
     );
 
     const maxVisible = 5;
-    if (!showAll[section] && filtered.length > maxVisible) {
+    if (!showAll[section as keyof ShowAll] && filtered.length > maxVisible) {
       filtered = filtered.slice(0, maxVisible);
     }
 
@@ -525,7 +525,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const shouldShowToggle = (section: keyof typeof filterData) => {
     const localizedData = getLocalizedFilterData();
     const items = localizedData[section];
-    const searchTerm = searchTerms[section].toLowerCase();
+    const searchTerm = searchTerms[section as keyof SearchTerms].toLowerCase();
     const filteredCount = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm)
     ).length;
@@ -551,7 +551,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     hasSearch = false
   ) => {
     const SectionIcon = filterSectionIcons[section];
-    const isExpanded = expandedSections[section];
+    const isExpanded = expandedSections[section as keyof ExpandedSections];
     const filteredItems = getFilteredItems(section);
 
     return (
@@ -559,7 +559,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* En-tête de section */}
         <div
           className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-          onClick={() => toggleSection(section)}
+          onClick={() => toggleSection(section as keyof ExpandedSections)}
         >
           <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
             <SectionIcon className="w-5 h-5" />
@@ -590,8 +590,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     ) || `Search ${title.toLowerCase()}...`
                   }
                   className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
-                  value={searchTerms[section]}
-                  onChange={(e) => handleSearch(section, e.target.value)}
+                  value={searchTerms[section as keyof SearchTerms]}
+                  onChange={(e) =>
+                    handleSearch(section as keyof SearchTerms, e.target.value)
+                  }
                 />
               </div>
             )}
@@ -606,8 +608,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <input
                     type="checkbox"
                     className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                    checked={selectedFilters[section].includes(item.id)}
-                    onChange={() => toggleFilter(section, item.id)}
+                    checked={selectedFilters[
+                      section as keyof SelectedFilters
+                    ].includes(item.id)}
+                    onChange={() =>
+                      toggleFilter(section as keyof SelectedFilters, item.id)
+                    }
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
@@ -631,10 +637,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Bouton Montrer plus/moins */}
             {shouldShowToggle(section) && (
               <button
-                onClick={() => toggleShowAll(section)}
+                onClick={() => toggleShowAll(section as keyof ShowAll)}
                 className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
               >
-                {showAll[section]
+                {showAll[section as keyof ShowAll]
                   ? t.sidebar?.show_less || "Show less"
                   : t.sidebar?.show_more || "Show more"}
               </button>

@@ -132,7 +132,11 @@ const staticFilterData: Record<string, FilterItem[]> = {
   ],
 };
 
-export default function SidebarNew({ isOpen, onClose, onFiltersChange }: SidebarProps) {
+export default function SidebarNew({
+  isOpen,
+  onClose,
+  onFiltersChange,
+}: SidebarProps) {
   const t = useTranslations();
   const navigate = useNavigate();
   const location = useLocation();
@@ -204,16 +208,16 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
   }, [selectedFilters, onFiltersChange]);
 
   const loadGeographicData = async () => {
-    setGeographicData(prev => ({ ...prev, loading: true, error: null }));
-    
+    setGeographicData((prev) => ({ ...prev, loading: true, error: null }));
+
     try {
       const [countries, regions, provinces, departments] = await Promise.all([
         geographicService.getCountries(),
-        geographicService.getRegions(), 
+        geographicService.getRegions(),
         geographicService.getProvinces(),
         geographicService.getDepartments(),
       ]);
-      
+
       setGeographicData({
         countries,
         regions,
@@ -223,41 +227,48 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
         error: null,
       });
     } catch (error) {
-      console.error('Erreur lors du chargement des données géographiques:', error);
-      setGeographicData(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: 'Erreur lors du chargement des données géographiques' 
+      console.error(
+        "Erreur lors du chargement des données géographiques:",
+        error
+      );
+      setGeographicData((prev) => ({
+        ...prev,
+        loading: false,
+        error: "Erreur lors du chargement des données géographiques",
       }));
     }
   };
 
   const getCurrentLanguage = () => {
     // Vous pouvez utiliser votre hook useLanguage ici
-    return 'fr'; 
+    return "fr";
   };
 
   const getFilteredRegions = (): FilterItem[] => {
     if (selectedFilters.pays.length === 0) {
-      return geographicData.regions.map(region => {
-        const country = geographicData.countries.find(c => c.id === region.country_id);
+      return geographicData.regions.map((region) => {
+        const country = geographicData.countries.find(
+          (c) => c.id === region.country_id
+        );
         return {
           id: region.id,
           label: region.shape_name,
-          pays: country?.shape_name || '',
+          pays: country?.shape_name || "",
           country_id: region.country_id,
         };
       });
     }
-    
+
     return geographicData.regions
-      .filter(region => selectedFilters.pays.includes(region.country_id))
-      .map(region => {
-        const country = geographicData.countries.find(c => c.id === region.country_id);
+      .filter((region) => selectedFilters.pays.includes(region.country_id))
+      .map((region) => {
+        const country = geographicData.countries.find(
+          (c) => c.id === region.country_id
+        );
         return {
           id: region.id,
           label: region.shape_name,
-          pays: country?.shape_name || '',
+          pays: country?.shape_name || "",
           country_id: region.country_id,
         };
       });
@@ -265,25 +276,31 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
 
   const getFilteredProvinces = (): FilterItem[] => {
     if (selectedFilters.regions.length === 0) {
-      return geographicData.provinces.map(province => {
-        const region = geographicData.regions.find(r => r.id === province.region_id);
+      return geographicData.provinces.map((province) => {
+        const region = geographicData.regions.find(
+          (r) => r.id === province.region_id
+        );
         return {
           id: province.id,
           label: province.shape_name,
-          region: region?.shape_name || '',
+          region: region?.shape_name || "",
           region_id: province.region_id,
         };
       });
     }
-    
+
     return geographicData.provinces
-      .filter(province => selectedFilters.regions.includes(province.region_id))
-      .map(province => {
-        const region = geographicData.regions.find(r => r.id === province.region_id);
+      .filter((province) =>
+        selectedFilters.regions.includes(province.region_id)
+      )
+      .map((province) => {
+        const region = geographicData.regions.find(
+          (r) => r.id === province.region_id
+        );
         return {
           id: province.id,
           label: province.shape_name,
-          region: region?.shape_name || '',
+          region: region?.shape_name || "",
           region_id: province.region_id,
         };
       });
@@ -291,25 +308,29 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
 
   const getFilteredDepartments = (): FilterItem[] => {
     if (selectedFilters.provinces.length === 0) {
-      return geographicData.departments.map(dept => {
-        const province = geographicData.provinces.find(p => p.id === dept.province_id);
+      return geographicData.departments.map((dept) => {
+        const province = geographicData.provinces.find(
+          (p) => p.id === dept.province_id
+        );
         return {
           id: dept.id,
           label: dept.shape_name,
-          province: province?.shape_name || '',
+          province: province?.shape_name || "",
           province_id: dept.province_id,
         };
       });
     }
-    
+
     return geographicData.departments
-      .filter(dept => selectedFilters.provinces.includes(dept.province_id))
-      .map(dept => {
-        const province = geographicData.provinces.find(p => p.id === dept.province_id);
+      .filter((dept) => selectedFilters.provinces.includes(dept.province_id))
+      .map((dept) => {
+        const province = geographicData.provinces.find(
+          (p) => p.id === dept.province_id
+        );
         return {
           id: dept.id,
           label: dept.shape_name,
-          province: province?.shape_name || '',
+          province: province?.shape_name || "",
           province_id: dept.province_id,
         };
       });
@@ -322,11 +343,12 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
       { id: "vegetation", label: t.geography?.vegetation || "Vegetation" },
       { id: "sol", label: t.geography?.soil || "Soil" },
     ],
-    pays: geographicData.countries.map(country => ({
+    pays: geographicData.countries.map((country) => ({
       id: country.id,
-      label: getCurrentLanguage() === 'fr' && country.shape_name_fr 
-        ? country.shape_name_fr 
-        : country.shape_name_en || country.shape_name,
+      label:
+        getCurrentLanguage() === "fr" && country.shape_name_fr
+          ? country.shape_name_fr
+          : country.shape_name_en || country.shape_name,
       capital: country.shape_city,
     })),
     regions: getFilteredRegions(),
@@ -354,60 +376,75 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
     }));
   };
 
-  const toggleFilter = (section: keyof GeographicFilters, filterId: string | number) => {
+  const toggleFilter = (
+    section: keyof GeographicFilters,
+    filterId: string | number
+  ) => {
     setSelectedFilters((prev) => {
       const currentFilters = prev[section] as (string | number)[];
       const newFilters = currentFilters.includes(filterId)
         ? currentFilters.filter((id) => id !== filterId)
         : [...currentFilters, filterId];
-      
+
       const newState = {
         ...prev,
         [section]: newFilters,
       };
-      
+
       // Nettoyer les sélections hiérarchiques
-      if (section === 'pays') {
+      if (section === "pays") {
         // Si on désélectionne un pays, supprimer ses régions/provinces/départements
         if (!newFilters.includes(filterId)) {
           const regionIdsToRemove = geographicData.regions
-            .filter(r => r.country_id === filterId)
-            .map(r => r.id);
+            .filter((r) => r.country_id === filterId)
+            .map((r) => r.id);
           const provinceIdsToRemove = geographicData.provinces
-            .filter(p => regionIdsToRemove.includes(p.region_id))
-            .map(p => p.id);
+            .filter((p) => regionIdsToRemove.includes(p.region_id))
+            .map((p) => p.id);
           const departmentIdsToRemove = geographicData.departments
-            .filter(d => provinceIdsToRemove.includes(d.province_id))
-            .map(d => d.id);
-            
-          newState.regions = prev.regions.filter(id => !regionIdsToRemove.includes(id));
-          newState.provinces = prev.provinces.filter(id => !provinceIdsToRemove.includes(id));
-          newState.departments = prev.departments.filter(id => !departmentIdsToRemove.includes(id));
+            .filter((d) => provinceIdsToRemove.includes(d.province_id))
+            .map((d) => d.id);
+
+          newState.regions = prev.regions.filter(
+            (id) => !regionIdsToRemove.includes(id)
+          );
+          newState.provinces = prev.provinces.filter(
+            (id) => !provinceIdsToRemove.includes(id)
+          );
+          newState.departments = prev.departments.filter(
+            (id) => !departmentIdsToRemove.includes(id)
+          );
         }
-      } else if (section === 'regions') {
+      } else if (section === "regions") {
         // Si on désélectionne une région, supprimer ses provinces/départements
         if (!newFilters.includes(filterId)) {
           const provinceIdsToRemove = geographicData.provinces
-            .filter(p => p.region_id === filterId)
-            .map(p => p.id);
+            .filter((p) => p.region_id === filterId)
+            .map((p) => p.id);
           const departmentIdsToRemove = geographicData.departments
-            .filter(d => provinceIdsToRemove.includes(d.province_id))
-            .map(d => d.id);
-            
-          newState.provinces = prev.provinces.filter(id => !provinceIdsToRemove.includes(id));
-          newState.departments = prev.departments.filter(id => !departmentIdsToRemove.includes(id));
+            .filter((d) => provinceIdsToRemove.includes(d.province_id))
+            .map((d) => d.id);
+
+          newState.provinces = prev.provinces.filter(
+            (id) => !provinceIdsToRemove.includes(id)
+          );
+          newState.departments = prev.departments.filter(
+            (id) => !departmentIdsToRemove.includes(id)
+          );
         }
-      } else if (section === 'provinces') {
+      } else if (section === "provinces") {
         // Si on désélectionne une province, supprimer ses départements
         if (!newFilters.includes(filterId)) {
           const departmentIdsToRemove = geographicData.departments
-            .filter(d => d.province_id === filterId)
-            .map(d => d.id);
-            
-          newState.departments = prev.departments.filter(id => !departmentIdsToRemove.includes(id));
+            .filter((d) => d.province_id === filterId)
+            .map((d) => d.id);
+
+          newState.departments = prev.departments.filter(
+            (id) => !departmentIdsToRemove.includes(id)
+          );
         }
       }
-      
+
       return newState;
     });
   };
@@ -426,27 +463,50 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
     }));
   };
 
-  const getFilteredItems = (section: keyof typeof staticFilterData | 'pays' | 'regions' | 'provinces' | 'departments') => {
+  const getFilteredItems = (
+    section:
+      | keyof typeof staticFilterData
+      | "pays"
+      | "regions"
+      | "provinces"
+      | "departments"
+  ) => {
     const localizedData = getLocalizedFilterData();
     const items = localizedData[section] || [];
-    const searchTerm = searchTerms[section]?.toLowerCase() || '';
-
+    const searchTerm =
+      searchTerms[section as keyof SearchTerms]?.toLowerCase() || "";
     let filtered = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm)
     );
 
     const maxVisible = 5;
-    if (!showAll[section] && filtered.length > maxVisible) {
+    if (!showAll[section as keyof ShowAll] && filtered.length > maxVisible) {
       filtered = filtered.slice(0, maxVisible);
     }
 
     return filtered;
   };
 
-  const shouldShowToggle = (section: keyof typeof staticFilterData | 'pays' | 'regions' | 'provinces' | 'departments') => {
+  const isFilterSelected = (
+    section: keyof GeographicFilters,
+    filterId: string | number
+  ): boolean => {
+    const currentFilters = selectedFilters[section] as (string | number)[];
+    return currentFilters.includes(filterId);
+  };
+
+  const shouldShowToggle = (
+    section:
+      | keyof typeof staticFilterData
+      | "pays"
+      | "regions"
+      | "provinces"
+      | "departments"
+  ) => {
     const localizedData = getLocalizedFilterData();
     const items = localizedData[section] || [];
-    const searchTerm = searchTerms[section]?.toLowerCase() || '';
+    const searchTerm =
+      searchTerms[section as keyof SearchTerms]?.toLowerCase() || "";
     const filteredCount = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm)
     ).length;
@@ -486,12 +546,17 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
   };
 
   const renderFilterSection = (
-    section: keyof typeof staticFilterData | 'pays' | 'regions' | 'provinces' | 'departments',
+    section:
+      | keyof typeof staticFilterData
+      | "pays"
+      | "regions"
+      | "provinces"
+      | "departments",
     title: string,
     hasSearch = false
   ) => {
     const SectionIcon = filterSectionIcons[section];
-    const isExpanded = expandedSections[section];
+    const isExpanded = expandedSections[section as keyof ExpandedSections];
     const filteredItems = getFilteredItems(section);
 
     return (
@@ -499,7 +564,7 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
         {/* En-tête de section */}
         <div
           className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-          onClick={() => toggleSection(section)}
+          onClick={() => toggleSection(section as keyof ExpandedSections)}
         >
           <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
             <SectionIcon className="w-5 h-5" />
@@ -530,8 +595,10 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
                     ) || `Search ${title.toLowerCase()}...`
                   }
                   className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
-                  value={searchTerms[section]}
-                  onChange={(e) => handleSearch(section, e.target.value)}
+                  value={searchTerms[section as keyof SearchTerms]}
+                  onChange={(e) =>
+                    handleSearch(section as keyof SearchTerms, e.target.value)
+                  }
                 />
               </div>
             )}
@@ -546,14 +613,22 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
                   <input
                     type="checkbox"
                     className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                    checked={selectedFilters[section].includes(item.id)}
-                    onChange={() => toggleFilter(section, item.id)}
+                    checked={isFilterSelected(
+                      section as keyof GeographicFilters,
+                      item.id
+                    )}
+                    onChange={() =>
+                      toggleFilter(section as keyof GeographicFilters, item.id)
+                    }
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
                       {item.label}
                     </div>
-                    {(item.capital || item.pays || item.region || item.province) && (
+                    {(item.capital ||
+                      item.pays ||
+                      item.region ||
+                      item.province) && (
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                         {item.capital &&
                           `${t.sidebar?.capital || "Capital"}: ${item.capital}`}
@@ -561,8 +636,7 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
                           `${t.sidebar?.country || "Country"}: ${item.pays}`}
                         {item.region &&
                           `${t.sidebar?.region || "Region"}: ${item.region}`}
-                        {item.province &&
-                          `Province: ${item.province}`}
+                        {item.province && `Province: ${item.province}`}
                       </div>
                     )}
                   </div>
@@ -573,10 +647,10 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
             {/* Bouton Montrer plus/moins */}
             {shouldShowToggle(section) && (
               <button
-                onClick={() => toggleShowAll(section)}
+                onClick={() => toggleShowAll(section as keyof ShowAll)}
                 className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
               >
-                {showAll[section]
+                {showAll[section as keyof ShowAll]
                   ? t.sidebar?.show_less || "Show less"
                   : t.sidebar?.show_more || "Show more"}
               </button>
@@ -840,13 +914,17 @@ export default function SidebarNew({ isOpen, onClose, onFiltersChange }: Sidebar
                     {geographicData.loading && (
                       <div className="text-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
-                        <p className="text-xs text-gray-500 mt-2">Chargement...</p>
+                        <p className="text-xs text-gray-500 mt-2">
+                          Chargement...
+                        </p>
                       </div>
                     )}
                     {geographicData.error && (
                       <div className="text-center py-4">
-                        <p className="text-xs text-red-500">{geographicData.error}</p>
-                        <button 
+                        <p className="text-xs text-red-500">
+                          {geographicData.error}
+                        </p>
+                        <button
                           onClick={loadGeographicData}
                           className="text-xs text-green-600 underline mt-1"
                         >
