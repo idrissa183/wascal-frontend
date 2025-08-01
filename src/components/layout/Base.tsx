@@ -1,93 +1,164 @@
-import React, { useState, useEffect } from "react";
-import Navbar from "../include/Navbar";
-import Sidebar from "../include/Sidebar";
-import SidebarLegacy from "../include/SidebarLegacy";
-import Footer from "../include/Footer";
-import { useRouterContext } from "../../hooks/useRouterContext";
+import React, { useState } from "react";
+import { useLanguage } from "../../hooks/useLanguage";
+import { useTheme } from "../../hooks/useTheme";
+import {
+  Bars3Icon,
+  BellIcon,
+  UserCircleIcon,
+  SunIcon,
+  MoonIcon,
+  ComputerDesktopIcon,
+  LanguageIcon,
+} from "@heroicons/react/24/outline";
+import { APP_NAME } from "../../constants";
+import { useTranslations } from "../../hooks/useTranslations";
+import { Tooltip } from "../ui/Tooltip";
+import { useAuthStore } from "../../stores/useAuthStore";
 
-interface BaseProps {
-  children: React.ReactNode;
-  showFooter?: boolean;
+interface NavbarProps {
+  onToggleSidebar: () => void;
+  sidebarOpen: boolean;
 }
 
-export default function Base({ children, showFooter = true }: BaseProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isInRouterContext = useRouterContext();
+export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
+  const { language, setLanguage } = useLanguage();
+  const { theme, setTheme } = useTheme();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const { logout } = useAuthStore();
+  const t = useTranslations();
 
-  // Responsive sidebar management
-  useEffect(() => {
-    const handleResize = () => {
-      // Close sidebar on mobile when resizing to desktop
-      if (window.innerWidth >= 1024 && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    };
+  const handleLogout = async () => {
+    setShowUserMenu(false);
+    await logout();
+    window.location.href = "/auth/login";
+  };
 
-    // Close sidebar when clicking outside on mobile
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      const sidebar = document.querySelector('aside');
-      const navbarToggle = document.querySelector('[data-sidebar-toggle]');
-      
-      if (
-        sidebarOpen &&
-        window.innerWidth < 1024 &&
-        sidebar &&
-        !sidebar.contains(target) &&
-        !navbarToggle?.contains(target)
-      ) {
-        setSidebarOpen(false);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    document.addEventListener("mousedown", handleClickOutside);
-    
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [sidebarOpen]);
+  const themeIcons = {
+    light: SunIcon,
+    dark: MoonIcon,
+    system: ComputerDesktopIcon,
+  };
 
-  // Prevent body scroll when sidebar is open on mobile
-  useEffect(() => {
-    if (sidebarOpen && window.innerWidth < 1024) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [sidebarOpen]);
+  const toggleLanguage = () => {
+    const newLang = language === "fr" ? "en" : "fr";
+    setLanguage(newLang);
+  };
+  const toggleTheme = () => {
+    const order = ["light", "dark", "system"] as const;
+    const next = order[(order.indexOf(theme) + 1) % order.length];
+    setTheme(next);
+  };
+  const ThemeIcon = themeIcons[theme];
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-x-hidden">
-      <Navbar
-        data-sidebar-toggle
-        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        sidebarOpen={sidebarOpen}
-      />
+    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 fixed w-full z-30 top-0 left-0 right-0">
+      <div className="px-3 py-3 sm:px-4 lg:px-5 lg:pl-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start">
+            <button
+              data-sidebar-toggle
+              onClick={onToggleSidebar}
+              className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 lg:hidden"
+              aria-label="Toggle sidebar"
+            >
+              <span className="sr-only">btn bars3</span>
+              <Bars3Icon className="w-6 h-6" />
+            </button>
+            <a href="/" className="flex ml-2 md:mr-24 items-center">
+              <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">EW</span>
+              </div>
+              <span className="self-center text-lg sm:text-xl lg:text-2xl font-semibold whitespace-nowrap dark:text-white ml-2 hidden xs:block">
+                {APP_NAME}
+              </span>
+            </a>
+          </div>
 
-      {isInRouterContext ? (
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      ) : (
-        <SidebarLegacy
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-      )}
+          <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-3">
+            {/* Search Bar */}
+            {/* <div className="hidden md:block">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Rechercher une zone géographique..."
+                  className="w-64 px-4 py-2 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                />
+              </div>
+            </div> */}
 
-      <div className="lg:ml-80 flex flex-col flex-1 min-w-0">
-        <main className="pt-16 flex-1 flex flex-col min-h-0">
-          <div className={`${showFooter ? "flex-1" : "flex-1 min-h-0"} px-4 sm:px-6 lg:px-8 py-4 sm:py-6`}>
-            <div className="max-w-7xl mx-auto w-full">
-            {children}
+            {/* Theme Switch */}
+            <Tooltip content={t.theme}>
+              <button
+                onClick={toggleTheme}
+                className="p-1.5 sm:p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span className="sr-only">btn theme</span>
+                <ThemeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </Tooltip>
+
+            {/* Language Switch */}
+            <Tooltip content={t.language}>
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center space-x-1 p-1.5 sm:p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span className="sr-only">btn language</span>
+                <LanguageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                {language === "fr" && (
+                  <span className="hidden sm:inline rounded bg-blue-100 dark:bg-blue-500/20 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:text-blue-300">
+                    fr
+                  </span>
+                )}
+              </button>
+            </Tooltip>
+
+            {/* Notifications */}
+            <button className="p-1.5 sm:p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 relative transition-colors">
+              <BellIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-4 h-4 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full">
+                3
+              </span>
+            </button>
+
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center p-1.5 sm:p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span className="sr-only">btn user</span>
+                <UserCircleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+              {showUserMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg dark:bg-gray-700 z-50">
+                  <div className="py-1">
+                    <a
+                      href="/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      {t.profile}
+                    </a>
+                    <a
+                      href="/settings"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      {t.settings}
+                    </a>
+                    <hr className="my-1 border-gray-200 dark:border-gray-600" />
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-600"
+                    >
+                      {t.logout}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </main>
-
-        {showFooter && <Footer />}
+        </div>
       </div>
-    </div>
+    </nav>
   );
 }

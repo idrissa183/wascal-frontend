@@ -54,21 +54,21 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <Base>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Navigation Test Component */}
         {/* <NavigationTest /> */}
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="responsive-dashboard gap-4 sm:gap-6">
           {/* Map */}
-          <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="lg:col-span-2 min-w-0">
+            <div className="responsive-card bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                   {t.map || "Carte interactive"}
                 </h3>
                 <a
                   href="/map"
-                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center space-x-1"
+                  className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center space-x-1 transition-colors"
                 >
                   <span>Plein écran</span>
                   <svg
@@ -86,14 +86,14 @@ export const DashboardPage: React.FC = () => {
                   </svg>
                 </a>
               </div>
-              {/* <div className="h-96">
+              {/* <div className="responsive-map">
                 <MapContainer />
               </div> */}
             </div>
           </div>
 
           {/* Recent Activity */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <RecentActivity />
           </div>
         </div>

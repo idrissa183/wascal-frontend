@@ -9,23 +9,23 @@ export default function Footer() {
 
   return (
     <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="container">
+        <div className="py-6 sm:py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {/* Company Info */}
-            <div className="col-span-1 md:col-span-2">
+            <div className="col-span-1 sm:col-span-2">
               <div className="flex items-center mb-4">
                 <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">EW</span>
                 </div>
-                <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
+                <span className="ml-2 text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
                   {APP_NAME}
                 </span>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-md">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 max-w-md">
                 {t.platformDescription}
               </p>
-              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 <span>
                   {t.version} {APP_VERSION}
                 </span>
@@ -34,14 +34,14 @@ export default function Footer() {
 
             {/* Quick Links */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4">
                 {t.quickLinks}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-1 sm:space-y-2">
                 <li>
                   <a
                     href="/about"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     {t.about}
                   </a>
@@ -49,7 +49,7 @@ export default function Footer() {
                 <li>
                   <a
                     href="/documentation"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     {t.documentation}
                   </a>
@@ -57,7 +57,7 @@ export default function Footer() {
                 <li>
                   <a
                     href="/support"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     {t.support}
                   </a>
@@ -65,7 +65,7 @@ export default function Footer() {
                 <li>
                   <a
                     href="/contact"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     {t.contact}
                   </a>
@@ -75,14 +75,14 @@ export default function Footer() {
 
             {/* Legal */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-3 sm:mb-4">
                 {t.legal}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-1 sm:space-y-2">
                 <li>
                   <a
                     href="/privacy"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     {t.privacy}
                   </a>
@@ -90,7 +90,7 @@ export default function Footer() {
                 <li>
                   <a
                     href="/terms"
-                    className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     {t.terms}
                   </a>
@@ -100,13 +100,13 @@ export default function Footer() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
+          <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm text-center sm:text-left">
                 © {new Date().getFullYear()} {APP_NAME}. {t.rights}.
               </p>
-              <div className="flex items-center space-x-4 mt-4 md:mt-0">
-                <span className="text-xs text-gray-400 dark:text-gray-500">
+              <div className="flex items-center space-x-4">
+                <span className="text-xs text-gray-400 dark:text-gray-500 text-center">
                   {t.builtWith} ❤️ {t.forEnvironment}
                 </span>
               </div>
