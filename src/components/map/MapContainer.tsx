@@ -40,6 +40,9 @@ import { defaults as defaultControls } from "ol/control";
 import MousePosition from "ol/control/MousePosition";
 import ScaleLine from "ol/control/ScaleLine";
 import { createStringXY } from "ol/coordinate";
+import { FaRegCircle } from "react-icons/fa";
+import { LuRectangleHorizontal } from "react-icons/lu";
+import { PiPolygonBold } from "react-icons/pi";
 
 interface MapContainerProps {
   onSelectionChange?: (selection: any) => void;
@@ -572,7 +575,7 @@ export default function MapContainer({
                 }`}
                 title="Sélection rectangulaire"
               >
-                <RectangleStackIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <LuRectangleHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => handleToolChange("polygon")}
@@ -583,7 +586,9 @@ export default function MapContainer({
                 }`}
                 title="Sélection polygonale"
               >
-                <svg
+                <PiPolygonBold className="w-3 h-3 sm:w-4 sm:h-4" />
+
+                {/* <svg
                   className="w-3 h-3 sm:w-4 sm:h-4"
                   fill="none"
                   stroke="currentColor"
@@ -595,7 +600,7 @@ export default function MapContainer({
                     strokeWidth={2}
                     d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
                   />
-                </svg>
+                </svg> */}
               </button>
               <button
                 onClick={() => handleToolChange("circle")}
@@ -606,7 +611,7 @@ export default function MapContainer({
                 }`}
                 title="Sélection circulaire"
               >
-                <StopIcon className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" />
+                <FaRegCircle className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" />
               </button>
               <button
                 onClick={handleCut}
