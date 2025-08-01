@@ -348,6 +348,9 @@ export const DatasetsPage: React.FC = () => {
               <div className="responsive-flex items-center space-x-2">
                 <FunnelIcon className="w-4 h-4 text-gray-500" />
                 <select
+                  aria-label={
+                    t.datasets_page?.filter_by_type || "Filtrer par type"
+                  }
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
                   className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
@@ -361,6 +364,9 @@ export const DatasetsPage: React.FC = () => {
 
                 <select
                   value={selectedStatus}
+                  aria-label={
+                    t.datasets_page?.filter_by_status || "Filtrer par statut"
+                  }
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 >

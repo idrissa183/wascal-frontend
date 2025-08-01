@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Base from "../layout/Base";
 import { Input } from "../ui/Input";
 import { Button } from "../ui/Button";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -9,13 +10,17 @@ interface ChatMessage {
 }
 
 export default function AIAssistantPage() {
+  const t = useTranslations();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-    const updated = [...messages, { role: "user", content: input }];
+    const updated: ChatMessage[] = [
+      ...messages,
+      { role: "user", content: input },
+    ];
     setMessages(updated);
     setInput("");
     setLoading(true);
@@ -27,7 +32,11 @@ export default function AIAssistantPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setMessages([...updated, { role: "assistant", content: data.message }]);
+        const newMessages: ChatMessage[] = [
+          ...updated,
+          { role: "assistant", content: data.message },
+        ];
+        setMessages(newMessages);
       } else {
         console.error("Chat error", await res.text());
       }
@@ -48,7 +57,7 @@ export default function AIAssistantPage() {
               className={m.role === "user" ? "text-right" : "text-left"}
             >
               <span className="font-semibold mr-1">
-                {m.role === "user" ? "You" : "AI"}:
+                {m.role === "user" ? t.chatUser : t.chatAssistant}:
               </span>
               {m.content}
             </p>
@@ -60,10 +69,10 @@ export default function AIAssistantPage() {
             className="flex-1"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask something..."
+            placeholder={t.chatPlaceholder || "Ask something..."}
           />
           <Button onClick={sendMessage} disabled={loading || !input.trim()}>
-            Send
+            {t.chatSend || "Send"}
           </Button>
         </div>
       </div>
