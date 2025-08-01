@@ -1,50 +1,58 @@
-import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuthStore } from '../../../stores/useAuthStore';
-import { authService } from '../../../services/auth.service';
-import { useTranslations } from '../../../hooks/useTranslations';
+import React, { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuthStore } from "../../../stores/useAuthStore";
+import { authService } from "../../../services/auth.service";
+import { useTranslations } from "../../../hooks/useTranslations";
 
 const LinkedinCallback: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setUser, setIsAuthenticated } = useAuthStore();
+  const { setUser, setAuthenticated } = useAuthStore();
   const t = useTranslations();
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const code = searchParams.get('code');
-        const error = searchParams.get('error');
-        
+        const code = searchParams.get("code");
+        const error = searchParams.get("error");
+
         if (error) {
-          console.error('OAuth error:', error);
-          navigate('/auth/login?error=oauth_error');
+          console.error("OAuth error:", error);
+          navigate("/auth/login?error=oauth_error");
           return;
         }
 
         if (!code) {
-          navigate('/auth/login?error=missing_code');
+          navigate("/auth/login?error=missing_code");
           return;
         }
 
-        const response = await authService.handleOAuthCallback('linkedin', code);
-        
-        if (response.success && response.data.user && response.data.token) {
-          localStorage.setItem('token', response.data.token);
-          setUser(response.data.user);
-          setIsAuthenticated(true);
-          navigate('/dashboard');
+        const response = await authService.handleOAuthCallback(
+          "linkedin",
+          code
+        );
+
+        const { user, access_token, refresh_token } = response;
+
+        if (user && access_token) {
+          localStorage.setItem("access_token", access_token);
+          if (refresh_token) {
+            localStorage.setItem("refresh_token", refresh_token);
+          }
+          setUser(user);
+          setAuthenticated(true);
+          navigate("/dashboard");
         } else {
-          navigate('/auth/login?error=callback_failed');
+          navigate("/auth/login?error=callback_failed");
         }
       } catch (error) {
-        console.error('OAuth callback error:', error);
-        navigate('/auth/login?error=oauth_error');
+        console.error("OAuth callback error:", error);
+        navigate("/auth/login?error=oauth_error");
       }
     };
 
     handleCallback();
-  }, [searchParams, navigate, setUser, setIsAuthenticated]);
+  }, [searchParams, navigate, setUser, setAuthenticated]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
