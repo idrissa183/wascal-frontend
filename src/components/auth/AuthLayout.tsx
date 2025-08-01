@@ -60,6 +60,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         <div className="relative">
           <select
             value={theme}
+            aria-label={t.toggleTheme || "Changer de thème"}
             onChange={(e) =>
               setTheme(e.target.value as "light" | "dark" | "system")
             }

@@ -41,10 +41,8 @@ export const ForgotPasswordPage: React.FC = () => {
       await requestPasswordReset(data.email);
       setSubmittedEmail(data.email);
       setIsEmailSent(true);
-      reset(); // Reset form
-    } catch (error) {
-      // L'erreur est déjà gérée dans le store
-    }
+      reset();
+    } catch (error) {}
   };
 
   const handleBackToLogin = () => {
@@ -141,13 +139,7 @@ export const ForgotPasswordPage: React.FC = () => {
   }
 
   return (
-    <AuthLayout
-    // title={t.auth?.forgot_password_title || "Mot de passe oublié"}
-    // subtitle={
-    //   t.auth?.forgot_password_subtitle ||
-    //   "Entrez votre email pour recevoir un lien de réinitialisation"
-    // }
-    >
+    <AuthLayout>
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -180,11 +172,6 @@ export const ForgotPasswordPage: React.FC = () => {
               error={errors.email?.message}
               {...register("email")}
             />
-            {/* {!errors.email && (
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Entrez l'adresse email associée à votre compte
-              </p>
-            )} */}
           </div>
 
           <Button
@@ -215,18 +202,6 @@ export const ForgotPasswordPage: React.FC = () => {
             </button>
           </div>
         </form>
-
-        {/* Aide supplémentaire */}
-        {/* <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-            Besoin d'aide ?
-          </h4>
-          <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-            <li>• Assurez-vous d'utiliser l'email de votre compte</li>
-            <li>• Vérifiez que votre email est correctement écrit</li>
-            <li>• Contactez le support si le problème persiste</li>
-          </ul>
-        </div> */}
       </div>
     </AuthLayout>
   );

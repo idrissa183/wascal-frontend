@@ -25,7 +25,7 @@ export const RegisterPage: React.FC = () => {
     setGlobalError(null);
   };
 
-  // ✅ Gestionnaire pour le succès OAuth
+  // Gestionnaire pour le succès OAuth
   const handleOAuthSuccess = () => {
     console.log("OAuth registration successful, redirecting to dashboard...");
     // Pour OAuth, redirection directe vers le dashboard (pas de vérification email)

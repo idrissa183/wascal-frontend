@@ -25,10 +25,9 @@ export const LoginPage: React.FC = () => {
     setGlobalError(null);
   };
 
-  // ✅ Gestionnaire pour le succès OAuth
+  // Gestionnaire pour le succès OAuth
   const handleOAuthSuccess = () => {
     console.log("OAuth login successful, redirecting to dashboard...");
-    // La redirection est déjà gérée dans SocialAuth
   };
 
   return (

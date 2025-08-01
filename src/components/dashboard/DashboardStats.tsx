@@ -55,28 +55,28 @@ export default function DashboardStats() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="responsive-stats-grid mb-6 sm:mb-8">
       {stats.map((stat) => (
         <div
           key={stat.name}
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+          className="responsive-card bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
                 {stat.name}
               </p>
               <div className="flex items-baseline mt-2">
-                <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
                   {stat.value}
                 </p>
-                <p className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                <p className="ml-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                   {stat.unit}
                 </p>
               </div>
               <div className="flex items-center mt-2">
                 <span
-                  className={`text-sm font-medium ${
+                  className={`text-xs sm:text-sm font-medium ${
                     stat.changeType === "positive"
                       ? "text-green-600 dark:text-green-400"
                       : "text-red-600 dark:text-red-400"
@@ -84,16 +84,16 @@ export default function DashboardStats() {
                 >
                   {stat.change}
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
+                <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 ml-1">
                   {t.vsLastMonth}
                 </span>
               </div>
             </div>
             <div
-              className={`p-3 rounded-lg ${stat.bgColor} dark:bg-opacity-20`}
+              className={`p-2 sm:p-3 rounded-lg ${stat.bgColor} dark:bg-opacity-20`}
             >
               <stat.icon
-                className={`w-6 h-6 ${stat.color} dark:text-opacity-80`}
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color} dark:text-opacity-80`}
               />
             </div>
           </div>

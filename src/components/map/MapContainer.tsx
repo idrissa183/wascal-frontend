@@ -491,10 +491,10 @@ export default function MapContainer({
   return (
     <div
       className={`relative w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden map-container ${className}`}
-      style={{ minHeight: "500px" }} // Hauteur minimale pour éviter les problèmes
+      style={{ minHeight: "400px" }}
     >
       {/* Barre de recherche */}
-      <div className="absolute top-4 left-4 z-20">
+      <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-20">
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -505,53 +505,53 @@ export default function MapContainer({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-            className="w-80 pl-10 pr-4 py-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg shadow-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+            className="w-64 sm:w-80 pl-10 pr-4 py-2 sm:py-2.5 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg shadow-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
           />
         </div>
       </div>
 
       {/* Contrôles essentiels en haut à droite */}
-      <div className="absolute top-4 right-4 z-20 flex flex-col space-y-1">
+      <div className="responsive-map-controls">
         <button
           onClick={handleFullscreen}
-          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           title="Plein écran"
         >
           {isFullscreen ? (
-            <ArrowsPointingInIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <ArrowsPointingInIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
           ) : (
-            <ArrowsPointingOutIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            <ArrowsPointingOutIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
           )}
         </button>
         <button
           onClick={resetView}
-          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           title="Vue par défaut"
         >
-          <MapIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <MapIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
       </div>
 
       {/* Barre d'outils de sélection */}
       {showToolbar && (
-        <div className="absolute top-20 left-4 z-20">
+        <div className="absolute top-16 sm:top-20 left-2 sm:left-4 z-20">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-2">
-            <div className="flex space-x-1">
+            <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-1">
               <button
                 onClick={handleZoomIn}
-                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 title="Zoom avant"
               >
-                <PlusIcon className="w-4 h-4" />
+                <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={handleZoomOut}
-                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 title="Zoom arrière"
               >
-                <MinusIcon className="w-4 h-4" />
+                <MinusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
-              <div className="border-l border-gray-300 dark:border-gray-600 mx-1"></div>
+              <div className="border-t sm:border-t-0 sm:border-l border-gray-300 dark:border-gray-600 my-1 sm:my-0 sm:mx-1"></div>
               <button
                 onClick={() => handleToolChange("point")}
                 className={`p-2 rounded-md transition-colors ${
@@ -561,7 +561,7 @@ export default function MapContainer({
                 }`}
                 title="Sélection par point"
               >
-                <CursorArrowRippleIcon className="w-4 h-4" />
+                <CursorArrowRippleIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => handleToolChange("rectangle")}
@@ -572,7 +572,7 @@ export default function MapContainer({
                 }`}
                 title="Sélection rectangulaire"
               >
-                <RectangleStackIcon className="w-4 h-4" />
+                <RectangleStackIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => handleToolChange("polygon")}
@@ -584,7 +584,7 @@ export default function MapContainer({
                 title="Sélection polygonale"
               >
                 <svg
-                  className="w-4 h-4"
+                  className="w-3 h-3 sm:w-4 sm:h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -606,21 +606,21 @@ export default function MapContainer({
                 }`}
                 title="Sélection circulaire"
               >
-                <StopIcon className="w-4 h-4 rounded-full" />
+                <StopIcon className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" />
               </button>
               <button
                 onClick={handleCut}
-                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 title="Effacer les dessins"
               >
-                <ScissorsIcon className="w-4 h-4" />
+                <ScissorsIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={handleUndo}
-                className="p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
+                className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 title="Annuler le dernier dessin"
               >
-                <ArrowUturnLeftIcon className="w-4 h-4" />
+                <ArrowUturnLeftIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             </div>
           </div>
@@ -643,9 +643,9 @@ export default function MapContainer({
 
       {/* Panneau de contrôle des couches */}
       {showLayerPanel && (
-        <div className="absolute bottom-4 left-4 z-30 w-80">
+        <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 w-72 sm:w-80">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
                 <AdjustmentsHorizontalIcon className="w-4 h-4 mr-2" />
                 Couches de données
@@ -655,9 +655,10 @@ export default function MapContainer({
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 <ChevronDownIcon className="w-4 h-4" />
+                <span className="sr-only">ChevronDownBtn</span>
               </button>
             </div>
-            <div className="p-4 max-h-80 overflow-y-auto">
+            <div className="p-3 sm:p-4 max-h-60 sm:max-h-80 overflow-y-auto">
               <div className="space-y-3">
                 {layers.map((layer) => (
                   <div key={layer.id} className="space-y-2">
@@ -682,12 +683,16 @@ export default function MapContainer({
                       </button>
                     </div>
                     {layer.visible && (
-                      <div className="ml-6">
+                      <div className="ml-4 sm:ml-6">
                         <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-500 dark:text-gray-400 w-16">
+                          <label
+                            htmlFor="input-opacity"
+                            className="text-xs text-gray-500 dark:text-gray-400 w-16"
+                          >
                             Opacité:
-                          </span>
+                          </label>
                           <input
+                            id="input-opacity"
                             type="range"
                             min="0"
                             max="100"
@@ -718,33 +723,34 @@ export default function MapContainer({
       {!showLayerPanel && (
         <button
           onClick={() => setShowLayerPanel(true)}
-          className="absolute bottom-4 left-4 z-30 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 p-2 sm:p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          <ChevronUpIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <ChevronUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
+          <span className="sr-only">ChevronUpBtn</span>
         </button>
       )}
 
       {/* Contrôles supplémentaires */}
-      <div className="absolute bottom-4 right-20 z-20 flex space-x-2">
+      <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 z-20 flex space-x-1 sm:space-x-2">
         <button
           onClick={exportMap}
-          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           title="Exporter la carte"
         >
-          <PhotoIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <PhotoIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
         <button
           onClick={() => setShowToolbar(!showToolbar)}
-          className="p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           title="Basculer la barre d'outils"
         >
-          <CogIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          <CogIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
       </div>
 
       {/* Coordonnées dynamiques en bas au milieu */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="bg-black bg-opacity-75 text-white px-3 py-1 rounded text-xs">
+      <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="bg-black bg-opacity-75 text-white px-2 sm:px-3 py-1 rounded text-xs">
           Lat: {mouseCoordinates[0].toFixed(4)}° | Lon:{" "}
           {mouseCoordinates[1].toFixed(4)}° | Zoom: {zoom}
         </div>

@@ -60,7 +60,8 @@ export const VegetationPage: React.FC = () => {
               Module en développement
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Le module de données de végétation sera bientôt disponible avec les indices NDVI, NDWI et plus encore.
+              Le module de données de végétation sera bientôt disponible avec
+              les indices NDVI, NDWI et plus encore.
             </p>
           </div>
         </div>
@@ -69,9 +70,12 @@ export const VegetationPage: React.FC = () => {
           <div className="flex items-start space-x-3">
             <InformationCircleIcon className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <h4 className="font-medium text-blue-900 dark:text-blue-200">Fonctionnalités prévues</h4>
+              <h4 className="font-medium text-blue-900 dark:text-blue-200">
+                Fonctionnalités prévues
+              </h4>
               <p className="text-blue-700 dark:text-blue-300 text-sm mt-1">
-                NDVI, NDWI, EVI, biomasse, couverture forestière, détection de changements, et analyses temporelles.
+                NDVI, NDWI, EVI, biomasse, couverture forestière, détection de
+                changements, et analyses temporelles.
               </p>
             </div>
           </div>

@@ -283,10 +283,14 @@ const FilterPanel: React.FC<{
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <FunnelIcon className="w-5 h-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="severity-filter"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Gravité:
-          </span>
+          </label>
           <select
+            id="severity-filter"
             value={selectedSeverity}
             onChange={(e) => onSeverityChange(e.target.value)}
             className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500"
@@ -301,10 +305,14 @@ const FilterPanel: React.FC<{
 
         <div className="flex items-center space-x-2">
           <ClockIcon className="w-5 h-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="status-filter"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Statut:
-          </span>
+          </label>
           <select
+            id="status-filter"
             value={selectedStatus}
             onChange={(e) => onStatusChange(e.target.value)}
             className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500"
@@ -347,6 +355,7 @@ const RulesPanel: React.FC<{
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <ChevronUpIcon className="w-5 h-5" />
+            <span className="sr-only">Masquer les règles d'alerte</span>
           </button>
         </div>
       </div>
@@ -361,12 +370,18 @@ const RulesPanel: React.FC<{
                 <button
                   onClick={() => onToggleRule(rule.id)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  title={
+                    rule.enabled ? "Désactiver la règle" : "Activer la règle"
+                  }
                 >
                   {rule.enabled ? (
                     <EyeIcon className="w-5 h-5 text-green-600" />
                   ) : (
                     <EyeSlashIcon className="w-5 h-5" />
                   )}
+                  <span className="sr-only">
+                    {rule.enabled ? "Désactiver la règle" : "Activer la règle"}
+                  </span>
                 </button>
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-white">

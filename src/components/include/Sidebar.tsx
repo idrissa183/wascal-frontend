@@ -411,6 +411,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const otherItems: MenuItem[] = [
     {
+      icon: EyeIcon,
+      label: t.overview,
+      href: "/overview",
+      active: isActiveRoute("/overview"),
+    },
+    {
+      icon: FolderIcon,
+      label: t.datasets,
+      href: "/datasets",
+      active: isActiveRoute("/datasets"),
+    },
+    {
+      icon: CloudIcon,
+      label: t.weather,
+      href: "/weather",
+      active: isActiveRoute("/weather"),
+    },
+    {
+      icon: HomeIcon,
+      label: t.users,
+      href: "/users",
+      active: isActiveRoute("/users"),
+    },
+    {
       icon: FolderIcon,
       label: t.projects,
       href: "/projects",

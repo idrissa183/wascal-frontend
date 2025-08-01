@@ -93,7 +93,7 @@ export const AuthCallbackClient: React.FC = () => {
         // Mettre à jour le store avec l'état d'authentification complet
         setUser(userData);
 
-        // ✅ FIX: Mettre à jour l'état d'authentification dans le store
+        // Mettre à jour l'état d'authentification dans le store
         const authStore = useAuthStore.getState();
         authStore.setUser(userData);
         // Marquer l'utilisateur comme authentifié
@@ -108,7 +108,7 @@ export const AuthCallbackClient: React.FC = () => {
           window.location.pathname
         );
 
-        // ✅ FIX: Redirection vers le dashboard avec délai plus court
+        // Redirection vers le dashboard avec délai plus court
         setTimeout(() => {
           const returnUrl =
             sessionStorage.getItem("oauth_return_url") || "/dashboard";

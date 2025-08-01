@@ -230,10 +230,14 @@ export const MonitoringPage: React.FC = () => {
           </div>
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <label
+                htmlFor="selected-interval"
+                className="text-sm text-gray-600 dark:text-gray-400"
+              >
                 Actualisation:
-              </span>
+              </label>
               <select
+                id="selected-interval"
                 value={refreshInterval}
                 onChange={(e) => setRefreshInterval(Number(e.target.value))}
                 className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"

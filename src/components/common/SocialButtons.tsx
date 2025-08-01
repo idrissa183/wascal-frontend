@@ -1,6 +1,5 @@
 import React from "react";
-import { useLanguage } from "../../hooks/useLanguage";
-import { FaGithub } from "react-icons/fa";
+import { FaFacebook, FaGithub, FaLinkedin } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { useTranslations } from "../../hooks/useTranslations";
 
@@ -33,6 +32,22 @@ export default function SocialButtons() {
       >
         <FaGithub className="w-5 h-5 mr-2" />
         {t.continueWith} GitHub
+      </button>
+
+      <button
+        onClick={handleGithubAuth}
+        className="cursor-pointer w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+      >
+        <FaFacebook className="w-5 h-5 mr-2" />
+        {t.continueWith} Facebook
+      </button>
+
+      <button
+        onClick={handleGithubAuth}
+        className="cursor-pointer w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+      >
+        <FaLinkedin className="w-5 h-5 mr-2" />
+        {t.continueWith} LinkedIn
       </button>
     </div>
   );

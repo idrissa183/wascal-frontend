@@ -10,7 +10,7 @@ import { useAuthStore } from "../../stores/useAuthStore";
 interface SocialAuthProps {
   mode?: "login" | "register";
   onError?: (error: string) => void;
-  onSuccess?: () => void; // Nouveau callback pour le succès
+  onSuccess?: () => void; 
 }
 
 export const SocialAuth: React.FC<SocialAuthProps> = ({

@@ -303,10 +303,14 @@ export const PredictionsPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <CpuChipIcon className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="selected-model"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Modèle:
-                </span>
+                </label>
                 <select
+                  id="selected-model"
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
                   className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
@@ -322,10 +326,14 @@ export const PredictionsPage: React.FC = () => {
 
               <div className="flex items-center space-x-2">
                 <CalendarIcon className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="selected-horizon"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Horizon:
-                </span>
+                </label>
                 <select
+                  id="selected-horizon"
                   value={selectedTimeframe}
                   onChange={(e) => setSelectedTimeframe(e.target.value)}
                   className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"

@@ -138,10 +138,14 @@ export const AnalyticsPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <CalendarIcon className="w-5 h-5 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  htmlFor="period-filter"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Période:
-                </span>
+                </label>
                 <select
+                  id="period-filter"
                   value={selectedPeriod}
                   onChange={(e) => handlePeriodChange(e.target.value)}
                   className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"

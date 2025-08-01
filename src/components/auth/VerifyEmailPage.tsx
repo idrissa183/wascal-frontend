@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AuthLayout } from "./AuthLayout";
 import { useTranslations } from "../../hooks/useTranslations";
-import { useAuthStore } from "../../stores/useAuthStore"; // ✅ Utiliser le store
+import { useAuthStore } from "../../stores/useAuthStore";
 import { Button } from "../ui/Button";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
@@ -19,7 +19,7 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
   >("loading");
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
-  const { verifyEmail, resendVerificationEmail, isLoading } = useAuthStore(); // ✅ Utiliser le store
+  const { verifyEmail, resendVerificationEmail, isLoading } = useAuthStore();
   const t = useTranslations();
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export const VerifyEmailPage: React.FC<VerifyEmailPageProps> = ({
       }
 
       try {
-        // ✅ FIX: Utiliser le store pour vérifier l'email
+        // Utiliser le store pour vérifier l'email
         await verifyEmail(token);
         setStatus("success");
         console.log("Email verification successful");

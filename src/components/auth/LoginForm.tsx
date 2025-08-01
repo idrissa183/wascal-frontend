@@ -43,16 +43,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   useEffect(() => {
     if (error) {
       onSetGlobalError(error);
-      clearError(); // Nettoyer l'erreur du store
+      clearError();
     }
   }, [error, onSetGlobalError, clearError]);
 
   const onSubmit = async (data: LoginFormData) => {
-    onClearGlobalError(); // Effacer les erreurs précédentes
+    onClearGlobalError();
     try {
       await login(data);
 
-      // ✅ FIX: Après connexion réussie, rediriger vers le dashboard
+      // Après connexion réussie, rediriger vers le dashboard
       setTimeout(() => {
         window.location.href = "/dashboard";
       }, 100);

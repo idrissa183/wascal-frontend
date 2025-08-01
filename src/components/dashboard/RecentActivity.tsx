@@ -59,34 +59,37 @@ export default function RecentActivity() {
   ];
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 h-full">
+      <div className="responsive-padding border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
             {t.recentActivity}
           </h3>
-          <button className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <button className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 transition-colors self-start sm:self-auto">
             {t.viewAll}
           </button>
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="space-y-4">
+      <div className="responsive-padding">
+        <div className="space-y-3 sm:space-y-4">
           {activities.map((activity) => (
-            <div key={activity.id} className="flex items-start space-x-4">
+            <div
+              key={activity.id}
+              className="flex items-start space-x-3 sm:space-x-4"
+            >
               <div
-                className={`p-2 rounded-lg ${activity.bgColor} dark:bg-opacity-20`}
+                className={`p-1.5 sm:p-2 rounded-lg ${activity.bgColor} dark:bg-opacity-20 flex-shrink-0`}
               >
                 <activity.icon
-                  className={`w-5 h-5 ${activity.color} dark:text-opacity-80`}
+                  className={`w-4 h-4 sm:w-5 sm:h-5 ${activity.color} dark:text-opacity-80`}
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                   {activity.title}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
                   {activity.description}
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">

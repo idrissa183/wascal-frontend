@@ -48,9 +48,14 @@ import { VegetationPage } from "./components/data/VegetationPage";
 import TemperaturePage from "./components/data/TemperaturePage";
 import PrecipitationPage from "./components/data/PrecipitationPage";
 
+// New Pages
+import { UsersPage } from "./components/users/UsersPage";
+import { DatasetsPage } from "./components/datasets/DatasetsPage";
+import { WeatherPage } from "./components/weather/WeatherPage";
+import { OverviewPage } from "./components/overview/OverviewPage";
+
 // Error Pages
 import NotFoundPage from "./components/error/NotFoundPage";
-import MapPageNew from "./components/map/MapPageNew";
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
@@ -179,7 +184,7 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <Base>
-                <MapPageNew />
+                <MapPage />
               </Base>
             </ProtectedRoute>
           }
@@ -347,6 +352,47 @@ const App: React.FC = () => {
           }
         />
 
+        {/* New routes */}
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <Base>
+                <UsersPage />
+              </Base>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/datasets"
+          element={
+            <ProtectedRoute>
+              <Base>
+                <DatasetsPage />
+              </Base>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/weather"
+          element={
+            <ProtectedRoute>
+              <Base>
+                <WeatherPage />
+              </Base>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/overview"
+          element={
+            <ProtectedRoute>
+              <Base>
+                <OverviewPage />
+              </Base>
+            </ProtectedRoute>
+          }
+        />
         {/* Root redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
