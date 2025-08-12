@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "../../hooks/useLanguage";
 import {
   HomeIcon,
@@ -155,6 +154,18 @@ const filterData: Record<string, FilterItem[]> = {
       label: "MODIS Vegetation",
       metrics: [],
       categories: ["vegetation"],
+    },
+    {
+      id: "NASA/GPM_L3/IMERG_FINAL_V07",
+      label: "GPM (précipitations)",
+      metrics: [],
+      categories: ["climat", "eau"],
+    },
+    {
+      id: "NASA/GIMPS",
+      label: "GIMPS",
+      metrics: [],
+      categories: ["climat", "sol", "eau"],
     },
   ],
   categories: [
@@ -314,9 +325,17 @@ const filterData: Record<string, FilterItem[]> = {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations();
-  const navigate = useNavigate();
-  const location = useLocation();
   const { user, getCurrentUser, isLoading, error } = useAuthStore();
+  
+  // Get current location using window.location
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
+  
+  // Navigation function
+  const navigateTo = (path: string) => {
+    if (typeof window !== 'undefined') {
+      window.location.href = path;
+    }
+  };
 
   const getLocalizedFilterData = (): Record<string, FilterItem[]> => ({
     ...filterData,
@@ -371,12 +390,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const isActiveRoute = (href: string): boolean => {
     return (
-      location.pathname === href || location.pathname.startsWith(href + "/")
+      currentPath === href || currentPath.startsWith(href + "/")
     );
   };
 
   const handleNavigation = (href: string) => {
-    navigate(href);
+    navigateTo(href);
     if (window.innerWidth < 1024) {
       onClose();
     }
