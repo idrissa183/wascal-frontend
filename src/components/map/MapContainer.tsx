@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "../../hooks/useTranslations";
+import { useGeographicStore } from "../../stores/useGeographicStore";
+import { GeographicSelections } from "./GeographicSelections";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -31,7 +33,7 @@ import VectorSource from "ol/source/Vector";
 import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
 import { Feature } from "ol";
-import { Point, Polygon, Circle as CircleGeom, Geometry } from "ol/geom";
+import { Point, Polygon, MultiPolygon, Circle as CircleGeom, Geometry } from "ol/geom";
 import { Style, Fill, Stroke, Circle as CircleStyle, Icon } from "ol/style";
 import { Draw, Modify, Select } from "ol/interaction";
 import { createBox } from "ol/interaction/Draw";
@@ -73,6 +75,10 @@ export default function MapContainer({
   const vectorSourceRef = useRef<VectorSource>(new VectorSource());
   const drawRef = useRef<Draw | null>(null);
   const t = useTranslations();
+  const { selectedEntities, isLoadingGeometry } = useGeographicStore();
+  
+  // Ref for geographic layers
+  const geographicSourceRef = useRef<VectorSource>(new VectorSource());
 
   // États pour les contrôles de la carte
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -152,6 +158,94 @@ export default function MapContainer({
     };
   }, []);
 
+  // Effect to handle geographic selections
+  useEffect(() => {
+    if (!geographicSourceRef.current) return;
+
+    // Clear existing features
+    geographicSourceRef.current.clear();
+
+    // Add features for selected entities that have geometry loaded
+    selectedEntities.forEach((entity) => {
+      if (entity.geometry && !entity.isLoading && !entity.error) {
+        try {
+          console.log(`🗺️ Processing geometry for ${entity.type} ${entity.id}:`, entity.geometry);
+          // Parse GeoJSON geometry
+          const geometryData = entity.geometry;
+          
+          // Create OpenLayers geometry from GeoJSON
+          let olGeometry: Geometry;
+          
+          if (geometryData.type === 'Polygon') {
+            // Handle Polygon: coordinates is [LinearRing, ...holes]
+            const rings = geometryData.coordinates.map((ring: [number, number][]) =>
+              ring.map((coord: [number, number]) => fromLonLat([coord[0], coord[1]]))
+            );
+            olGeometry = new Polygon(rings);
+          } else if (geometryData.type === 'MultiPolygon') {
+            // Handle MultiPolygon: coordinates is [Polygon, Polygon, ...]
+            const polygons: any[][][] = [];
+            geometryData.coordinates.forEach((polygonCoords: any) => {
+              const rings = polygonCoords.map((ring: [number, number][]) =>
+                ring.map((coord: [number, number]) => fromLonLat([coord[0], coord[1]]))
+              );
+              polygons.push(rings);
+            });
+            olGeometry = new MultiPolygon(polygons);
+          } else if (geometryData.type === 'Point') {
+            // Handle Point geometry
+            const coord = fromLonLat([geometryData.coordinates[0], geometryData.coordinates[1]]);
+            olGeometry = new Point(coord);
+          } else {
+            console.warn(`Unsupported geometry type: ${geometryData.type}`);
+            // Fallback to center point for unsupported types
+            olGeometry = new Point(fromLonLat([0, 0]));
+          }
+
+          const feature = new Feature({
+            geometry: olGeometry,
+            name: entity.name,
+            type: entity.type,
+            entityId: entity.id,
+          });
+
+          // Set style based on entity type
+          const getEntityStyle = (type: string) => {
+            const colors = {
+              country: { fill: "rgba(59, 130, 246, 0.2)", stroke: "#3b82f6" },
+              region: { fill: "rgba(16, 185, 129, 0.2)", stroke: "#10b981" },
+              province: { fill: "rgba(245, 158, 11, 0.2)", stroke: "#f59e0b" },
+            };
+            
+            const color = colors[type as keyof typeof colors] || colors.region;
+            
+            return new Style({
+              fill: new Fill({ color: color.fill }),
+              stroke: new Stroke({ color: color.stroke, width: 2 }),
+            });
+          };
+
+          feature.setStyle(getEntityStyle(entity.type));
+          geographicSourceRef.current?.addFeature(feature);
+          console.log(`✅ Successfully added feature to map for ${entity.type} ${entity.id}`);
+        } catch (error) {
+          console.error(`❌ Error adding feature for ${entity.type} ${entity.id}:`, error);
+          console.error(`📍 Geometry data:`, entity.geometry);
+        }
+      }
+    });
+
+    // Auto-zoom to fit all geographic features if any exist
+    if (geographicSourceRef.current?.getFeatures().length > 0 && mapInstanceRef.current) {
+      const extent = geographicSourceRef.current.getExtent();
+      mapInstanceRef.current.getView().fit(extent, {
+        padding: [50, 50, 50, 50],
+        maxZoom: 10,
+        duration: 1000,
+      });
+    }
+  }, [selectedEntities]);
+
   const initializeMap = () => {
     if (!mapRef.current) return;
 
@@ -207,9 +301,23 @@ export default function MapContainer({
     });
 
     // Créer la carte sans les contrôles par défaut qui sont redondants
+    // Geographic selections layer
+    const geographicLayer = new VectorLayer({
+      source: geographicSourceRef.current,
+      style: new Style({
+        fill: new Fill({
+          color: "rgba(16, 185, 129, 0.2)", // Green with transparency
+        }),
+        stroke: new Stroke({
+          color: "#10b981", // Green
+          width: 2,
+        }),
+      }),
+    });
+
     const map = new Map({
       target: mapRef.current,
-      layers: [osmLayer, satelliteLayer, vectorLayer],
+      layers: [osmLayer, satelliteLayer, vectorLayer, geographicLayer],
       view: new View({
         center: fromLonLat([-1.5197, 12.3714]), // Ouagadougou
         zoom: zoom,
@@ -791,6 +899,21 @@ export default function MapContainer({
           <CogIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
       </div>
+
+      {/* Geographic Selections Panel */}
+      <GeographicSelections />
+
+      {/* Geographic loading indicator */}
+      {isLoadingGeometry && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 px-4 py-2 flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm text-gray-700 dark:text-gray-300">
+              Loading geographic data...
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Coordonnées dynamiques en bas au milieu */}
       <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 z-20">

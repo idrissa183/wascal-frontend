@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug API Geographic</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 4px; }
+        .error { background: #ffebee; border-left: 4px solid #f44336; }
+        .success { background: #e8f5e9; border-left: 4px solid #4caf50; }
+        .info { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test de l'API Géographique</h1>
+    
+    <button onclick="testCountriesList()">Tester Liste des Pays</button>
+    <button onclick="testCountryById()">Tester Pays par ID</button>
+    <button onclick="clearLogs()">Vider les Logs</button>
+    
+    <div id="logs"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong>: ${message}`;
+            logsDiv.appendChild(logDiv);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        async function testCountriesList() {
+            log('🧪 Test: Liste des pays...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/geographic/countries');
+                log(`📡 Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Trouvé ${data.length} pays`, 'success');
+                    log(`📋 Premier pays: ${data[0]?.shape_name} (ID: ${data[0]?.id})`, 'info');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erreur: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur réseau: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+        }
+
+        async function testCountryById() {
+            log('🧪 Test: Pays par ID (ID=1)...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/geographic/countries/1');
+                log(`📡 Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Pays trouvé: ${data.shape_name}`, 'success');
+                    log(`🗺️ Géométrie: ${data.geometry?.type} avec ${data.geometry?.coordinates?.length} polygones`, 'info');
+                    
+                    // Test de processing de la géométrie
+                    if (data.geometry) {
+                        log('🔄 Test de processing géométrie...', 'info');
+                        try {
+                            if (data.geometry.type === 'MultiPolygon') {
+                                let totalCoords = 0;
+                                data.geometry.coordinates.forEach(polygon => {
+                                    polygon.forEach(ring => {
+                                        totalCoords += ring.length;
+                                    });
+                                });
+                                log(`📊 Total coordonnées: ${totalCoords}`, 'success');
+                            }
+                            log('✅ Processing géométrie réussi', 'success');
+                        } catch (geomError) {
+                            log(`❌ Erreur processing géométrie: ${geomError.message}`, 'error');
+                        }
+                    } else {
+                        log('⚠️ Aucune géométrie trouvée', 'error');
+                    }
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Erreur: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur réseau: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+        }
+
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            log('🚀 Page chargée, tests disponibles', 'info');
+        });
+    </script>
+</body>
+</html>

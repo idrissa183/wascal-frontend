@@ -75,19 +75,38 @@ class GeographicService {
   }
 
   private async makeRequest<T>(url: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      ...options,
-    });
+    console.log(`🌐 Making request to: ${url}`);
+    console.log(`🔧 Request options:`, options);
+    
+    const startTime = performance.now();
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+        ...options,
+      });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const endTime = performance.now();
+      console.log(`⏱️ Request to ${url} took ${Math.round(endTime - startTime)}ms`);
+      console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ HTTP Error Response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log(`📦 Response data:`, data);
+      return data;
+      
+    } catch (error) {
+      console.error(`❌ Request failed to ${url}:`, error);
+      throw error;
     }
-
-    return response.json();
   }
 
   // ============================
