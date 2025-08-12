@@ -22,9 +22,11 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   MagnifyingGlassIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslations } from "../../hooks/useTranslations";
 import { useAuthStore } from "../../stores/useAuthStore";
+import { geographicService, type Country, type Region, type Province } from "../../services/geographic.service";
 import type { User } from "../../types/auth";
 
 interface SidebarProps {
@@ -57,15 +59,13 @@ interface ExpandedSections {
   filters: boolean;
   datasets: boolean;
   categories: boolean;
-  pays: boolean;
-  regions: boolean;
-  provinces: boolean;
+  geographic: boolean;
 }
 
 interface SelectedFilters {
   datasets: string[];
   categories: string[];
-  pays: string[];
+  countries: string[];
   regions: string[];
   provinces: string[];
 }
@@ -73,17 +73,30 @@ interface SelectedFilters {
 interface SearchTerms {
   datasets: string;
   categories: string;
-  pays: string;
-  regions: string;
-  provinces: string;
+  geographic: string;
 }
 
 interface ShowAll {
   datasets: boolean;
   categories: boolean;
-  pays: boolean;
-  regions: boolean;
-  provinces: boolean;
+}
+
+interface ExpandedCountries {
+  [countryId: string]: boolean;
+}
+
+interface ExpandedRegions {
+  [regionId: string]: boolean;
+}
+
+interface CountryWithRegions extends Country {
+  regions?: RegionWithProvinces[];
+  isExpanded?: boolean;
+}
+
+interface RegionWithProvinces extends Region {
+  provinces?: Province[];
+  isExpanded?: boolean;
 }
 
 // Données des filtres WASCAL
@@ -337,6 +350,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   };
 
+  // Geographic data states
+  const [countries, setCountries] = useState<CountryWithRegions[]>([]);
+  const [loadingGeographic, setLoadingGeographic] = useState(false);
+  const [expandedCountries, setExpandedCountries] = useState<ExpandedCountries>({});
+  const [expandedRegions, setExpandedRegions] = useState<ExpandedRegions>({});
+
   const getLocalizedFilterData = (): Record<string, FilterItem[]> => ({
     ...filterData,
     categories: [
@@ -356,16 +375,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     filters: true,
     datasets: false,
     categories: false,
-    pays: false,
-    regions: false,
-    provinces: false,
+    geographic: false,
   });
 
   // États pour les filtres sélectionnés
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({
     datasets: [],
     categories: [],
-    pays: [],
+    countries: [],
     regions: [],
     provinces: [],
   });
@@ -374,18 +391,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [searchTerms, setSearchTerms] = useState<SearchTerms>({
     datasets: "",
     categories: "",
-    pays: "",
-    regions: "",
-    provinces: "",
+    geographic: "",
   });
 
   // États pour "Montrer plus/moins"
   const [showAll, setShowAll] = useState<ShowAll>({
     datasets: false,
     categories: false,
-    pays: false,
-    regions: false,
-    provinces: false,
   });
 
   const isActiveRoute = (href: string): boolean => {
@@ -398,6 +410,98 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     navigateTo(href);
     if (window.innerWidth < 1024) {
       onClose();
+    }
+  };
+
+  // Load geographic data on component mount
+  useEffect(() => {
+    loadCountries();
+  }, []);
+
+  const loadCountries = async () => {
+    setLoadingGeographic(true);
+    try {
+      const countriesData = await geographicService.getCountries();
+      setCountries(countriesData.map(country => ({ ...country, isExpanded: false })));
+    } catch (error) {
+      console.error('Error loading countries:', error);
+    } finally {
+      setLoadingGeographic(false);
+    }
+  };
+
+  const toggleCountryExpansion = async (countryId: number) => {
+    const country = countries.find(c => c.id === countryId);
+    if (!country) return;
+
+    if (!country.regions) {
+      // Load regions for this country
+      try {
+        const regions = await geographicService.getCountryRegions(countryId);
+        setCountries(prev => 
+          prev.map(c => 
+            c.id === countryId 
+              ? { ...c, regions: regions.map(r => ({ ...r, isExpanded: false })), isExpanded: true }
+              : c
+          )
+        );
+      } catch (error) {
+        console.error(`Error loading regions for country ${countryId}:`, error);
+      }
+    } else {
+      // Toggle expansion
+      setCountries(prev => 
+        prev.map(c => 
+          c.id === countryId 
+            ? { ...c, isExpanded: !c.isExpanded }
+            : c
+        )
+      );
+    }
+  };
+
+  const toggleRegionExpansion = async (countryId: number, regionId: number) => {
+    const country = countries.find(c => c.id === countryId);
+    const region = country?.regions?.find(r => r.id === regionId);
+    if (!country || !region) return;
+
+    if (!region.provinces) {
+      // Load provinces for this region
+      try {
+        const provinces = await geographicService.getRegionProvinces(regionId);
+        setCountries(prev => 
+          prev.map(c => 
+            c.id === countryId 
+              ? {
+                  ...c, 
+                  regions: c.regions?.map(r => 
+                    r.id === regionId 
+                      ? { ...r, provinces, isExpanded: true }
+                      : r
+                  )
+                }
+              : c
+          )
+        );
+      } catch (error) {
+        console.error(`Error loading provinces for region ${regionId}:`, error);
+      }
+    } else {
+      // Toggle expansion
+      setCountries(prev => 
+        prev.map(c => 
+          c.id === countryId 
+            ? {
+                ...c, 
+                regions: c.regions?.map(r => 
+                  r.id === regionId 
+                    ? { ...r, isExpanded: !r.isExpanded }
+                    : r
+                )
+              }
+            : c
+        )
+      );
     }
   };
 
@@ -795,16 +899,175 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     setSelectedFilters({
       datasets: [],
       categories: [],
-      pays: [],
+      countries: [],
       regions: [],
       provinces: [],
     });
+  };
+
+  const handleFilterToggle = (section: keyof SelectedFilters, itemId: string) => {
+    setSelectedFilters((prev) => ({
+      ...prev,
+      [section]: prev[section].includes(itemId)
+        ? prev[section].filter((id) => id !== itemId)
+        : [...prev[section], itemId],
+    }));
   };
 
   const getTotalSelectedFilters = () => {
     return Object.values(selectedFilters).reduce(
       (total, filters) => total + filters.length,
       0
+    );
+  };
+
+  // New function to render hierarchical geographic data
+  const renderGeographicHierarchy = () => {
+    const filteredCountries = countries.filter(country =>
+      country.shape_name.toLowerCase().includes(searchTerms.geographic.toLowerCase())
+    );
+
+    return (
+      <div className="mb-4">
+        <div
+          className="flex items-center justify-between cursor-pointer mb-2"
+          onClick={() => toggleSection("geographic")}
+        >
+          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            {t.sidebar?.geographic || "Geographic Regions"}
+          </h4>
+          {expandedSections.geographic ? (
+            <ChevronUpIcon className="w-3 h-3 text-gray-400" />
+          ) : (
+            <ChevronDownIcon className="w-3 h-3 text-gray-400" />
+          )}
+        </div>
+
+        {expandedSections.geographic && (
+          <div className="ml-2 space-y-1">
+            {/* Search */}
+            <div className="relative mb-2">
+              <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search countries, regions, provinces..."
+                value={searchTerms.geographic}
+                onChange={(e) =>
+                  setSearchTerms((prev) => ({
+                    ...prev,
+                    geographic: e.target.value,
+                  }))
+                }
+                className="w-full pl-7 pr-3 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            {loadingGeographic ? (
+              <div className="text-xs text-gray-500 dark:text-gray-400 py-2">
+                Loading countries...
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {filteredCountries.map((country) => (
+                  <div key={country.id} className="space-y-1">
+                    {/* Country Level */}
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => toggleCountryExpansion(country.id)}
+                        className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                      >
+                        {country.isExpanded ? (
+                          <ChevronDownIcon className="w-3 h-3 text-gray-400" />
+                        ) : (
+                          <ChevronRightIcon className="w-3 h-3 text-gray-400" />
+                        )}
+                      </button>
+                      <label className="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex-1">
+                        <input
+                          type="checkbox"
+                          checked={selectedFilters.countries.includes(country.id.toString())}
+                          onChange={() => handleFilterToggle('countries', country.id.toString())}
+                          className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                            {country.shape_name}
+                          </div>
+                          {/* {country.shape_iso && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {country.shape_iso}
+                            </div>
+                          )} */}
+                        </div>
+                      </label>
+                    </div>
+
+                    {/* Regions Level */}
+                    {country.isExpanded && country.regions && (
+                      <div className="ml-4 space-y-1">
+                        {country.regions.map((region) => (
+                          <div key={region.id} className="space-y-1">
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={() => toggleRegionExpansion(country.id, region.id)}
+                                className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                              >
+                                {region.isExpanded ? (
+                                  <ChevronDownIcon className="w-3 h-3 text-gray-400" />
+                                ) : (
+                                  <ChevronRightIcon className="w-3 h-3 text-gray-400" />
+                                )}
+                              </button>
+                              <label className="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedFilters.regions.includes(region.id.toString())}
+                                  onChange={() => handleFilterToggle('regions', region.id.toString())}
+                                  className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                                     {region.shape_name}
+                                  </div>
+                                </div>
+                              </label>
+                            </div>
+
+                            {/* Provinces Level */}
+                            {region.isExpanded && region.provinces && (
+                              <div className="ml-4 space-y-1">
+                                {region.provinces.map((province) => (
+                                  <label
+                                    key={province.id}
+                                    className="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                  >
+                                    <div className="w-3 h-3"></div> {/* Spacer for alignment */}
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedFilters.provinces.includes(province.id.toString())}
+                                      onChange={() => handleFilterToggle('provinces', province.id.toString())}
+                                      className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
+                                         {province.shape_name}
+                                      </div>
+                                    </div>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -874,26 +1137,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 {expandedSections.filters && (
                   <div className="space-y-1">
-                    {renderFilterSection("datasets", t.datasets, true)}
                     {renderFilterSection(
                       "categories",
                       t.sidebar?.categories || "Categories"
                     )}
-                    {renderFilterSection(
-                      "pays",
-                      t.sidebar?.countries || "WASCAL Countries",
-                      true
-                    )}
-                    {renderFilterSection(
-                      "regions",
-                      t.sidebar?.regions || "Regions",
-                      true
-                    )}
-                    {renderFilterSection(
-                      "provinces",
-                      t.sidebar?.provinces || "Provinces",
-                      true
-                    )}
+                    {renderFilterSection("datasets", t.datasets, true)}
+                    {renderGeographicHierarchy()}
                   </div>
                 )}
               </div>
