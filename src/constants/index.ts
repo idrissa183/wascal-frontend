@@ -17,7 +17,9 @@ export const getApiBaseUrl = (): string => {
   }
 
   // En production
-  return import.meta.env.VITE_API_BASE_URL || "https://wascal-backend.onrender.com";
+  return (
+    import.meta.env.VITE_API_BASE_URL || "https://wascal-backend.onrender.com"
+  );
 };
 
 // Langues supportées
@@ -34,6 +36,7 @@ export const DATA_SOURCES = {
   VEGETATION: ["MODIS", "Sentinel-2"],
   TEMPERATURE: ["MODIS", "ERA5"],
   PRECIPITATION: ["CHIRPS", "ERA5", "GPM"],
+  WATER: ["HydroSHEDS", "Global Surface Water"],
 } as const;
 
 // Configuration de la carte

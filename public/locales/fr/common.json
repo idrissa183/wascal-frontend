@@ -76,7 +76,6 @@
   "dashboard": "Tableau de bord",
   "map": "Carte interactive",
   "analytics": "Analyses",
-  "weather": "Météo",
   "reports": "Rapports",
   "users": "Utilisateurs",
   "help": "Aide",
@@ -92,6 +91,7 @@
   "vegetation": "Végétation",
   "temperature": "Température",
   "precipitation": "Précipitations",
+  "water": "Eau",
   "tools": "Outils",
   "export": "Export",
   "history": "Historique",
@@ -276,7 +276,8 @@
   "geography": {
     "climate": "Climat",
     "vegetation": "Végétation",
-    "soil": "Sol"
+    "soil": "Sol",
+    "water": "Eau"
   },
   "descriptions": {
     "map_description": "Carte interactive pour la surveillance environnementale",

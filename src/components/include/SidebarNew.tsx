@@ -54,6 +54,7 @@ interface FilterItem {
   country_id?: number;
   region_id?: number;
   province_id?: number;
+  categories?: string[];
 }
 
 interface ExpandedSections {
@@ -109,24 +110,76 @@ interface GeographicData {
 // Données statiques des filtres
 const staticFilterData: Record<string, FilterItem[]> = {
   datasets: [
-    { id: "COPERNICUS/S1_GRD", label: "Sentinel-1", metrics: [] },
-    { id: "COPERNICUS/S2_SR_HARMONIZED", label: "Sentinel-2", metrics: [] },
-    { id: "LANDSAT/LC08/C02/T1_L2", label: "Landsat 8", metrics: [] },
-    { id: "LANDSAT/LC09/C02/T1_L2", label: "Landsat 9", metrics: [] },
-    { id: "COPERNICUS/DEM/GLO30", label: "Copernicus DEM", metrics: [] },
-    { id: "ECMWF/ERA5/DAILY", label: "ERA5 Daily", metrics: [] },
-    { id: "UCSB-CHG/CHIRPS/DAILY", label: "CHIRPS", metrics: [] },
-    { id: "NASA/GPM_L3/IMERG_V07", label: "IMERG Precipitation", metrics: [] },
-    { id: "MERIT/DEM/v1_0_3", label: "MERIT DEM", metrics: [] },
+    {
+      id: "COPERNICUS/S1_GRD",
+      label: "Sentinel-1",
+      metrics: [],
+      categories: ["eau", "sol"],
+    },
+    {
+      id: "COPERNICUS/S2_SR_HARMONIZED",
+      label: "Sentinel-2",
+      metrics: [],
+      categories: ["vegetation", "sol"],
+    },
+    {
+      id: "LANDSAT/LC08/C02/T1_L2",
+      label: "Landsat 8",
+      metrics: [],
+      categories: ["vegetation", "sol"],
+    },
+    {
+      id: "LANDSAT/LC09/C02/T1_L2",
+      label: "Landsat 9",
+      metrics: [],
+      categories: ["vegetation", "sol"],
+    },
+    {
+      id: "COPERNICUS/DEM/GLO30",
+      label: "Copernicus DEM",
+      metrics: [],
+      categories: ["sol"],
+    },
+    {
+      id: "ECMWF/ERA5/DAILY",
+      label: "ERA5 Daily",
+      metrics: [],
+      categories: ["climat"],
+    },
+    {
+      id: "UCSB-CHG/CHIRPS/DAILY",
+      label: "CHIRPS",
+      metrics: [],
+      categories: ["climat", "eau"],
+    },
+    {
+      id: "NASA/GPM_L3/IMERG_V07",
+      label: "IMERG Precipitation",
+      metrics: [],
+      categories: ["climat", "eau"],
+    },
+    {
+      id: "MERIT/DEM/v1_0_3",
+      label: "MERIT DEM",
+      metrics: [],
+      categories: ["sol"],
+    },
     {
       id: "projects/soilgrids-isric/soilgrids",
       label: "SoilGrids",
       metrics: [],
+      categories: ["sol"],
     },
-    { id: "MODIS/061/MOD13Q1", label: "MODIS Vegetation", metrics: [] },
+    {
+      id: "MODIS/061/MOD13Q1",
+      label: "MODIS Vegetation",
+      metrics: [],
+      categories: ["vegetation"],
+    },
   ],
   categories: [
     { id: "climat", label: "Climat" },
+    { id: "eau", label: "Eau" },
     { id: "vegetation", label: "Végétation" },
     { id: "sol", label: "Sol" },
   ],
@@ -340,6 +393,7 @@ export default function SidebarNew({
     ...staticFilterData,
     categories: [
       { id: "climat", label: t.geography?.climate || "Climate" },
+      { id: "eau", label: t.geography?.water || "Water" },
       { id: "vegetation", label: t.geography?.vegetation || "Vegetation" },
       { id: "sol", label: t.geography?.soil || "Soil" },
     ],
@@ -472,9 +526,16 @@ export default function SidebarNew({
       | "departments"
   ) => {
     const localizedData = getLocalizedFilterData();
-    const items = localizedData[section] || [];
+    let items = localizedData[section] || [];
     const searchTerm =
       searchTerms[section as keyof SearchTerms]?.toLowerCase() || "";
+
+    if (section === "datasets" && selectedFilters.categories.length > 0) {
+      items = items.filter((item) =>
+        item.categories?.some((cat) => selectedFilters.categories.includes(cat))
+      );
+    }
+
     let filtered = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm)
     );

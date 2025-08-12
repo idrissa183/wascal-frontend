@@ -104,6 +104,20 @@ export type RequestPasswordResetFormData = z.infer<
 >;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
+// Schéma pour les éléments de filtre
+export const filterItemSchema = z.object({
+  id: z.union([z.string(), z.number()]),
+  label: z.string(),
+  capital: z.string().optional(),
+  pays: z.string().optional(),
+  region: z.string().optional(),
+  province: z.string().optional(),
+  metrics: z.array(z.string()).optional(),
+  categories: z.array(z.string()).optional(),
+});
+
+export type FilterItemData = z.infer<typeof filterItemSchema>;
+
 // Utilitaire pour valider les données
 export const validateForm = <T>(
   schema: z.ZodSchema<T>,
