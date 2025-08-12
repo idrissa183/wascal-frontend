@@ -345,7 +345,8 @@ const filterData: Record<string, FilterItem[]> = {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations();
   const { user, getCurrentUser, isLoading, error } = useAuthStore();
-  const { addSelection, removeSelection, selectedEntities } = useGeographicStore();
+  const { addSelection, removeSelection, selectedEntities } =
+    useGeographicStore();
 
   // Get current location using window.location
   const currentPath =
@@ -429,16 +430,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Sync selected entities with local filter state on mount
   useEffect(() => {
     const countries = selectedEntities
-      .filter(entity => entity.type === 'country')
-      .map(entity => entity.id);
+      .filter((entity) => entity.type === "country")
+      .map((entity) => entity.id);
     const regions = selectedEntities
-      .filter(entity => entity.type === 'region')
-      .map(entity => entity.id);
+      .filter((entity) => entity.type === "region")
+      .map((entity) => entity.id);
     const provinces = selectedEntities
-      .filter(entity => entity.type === 'province')
-      .map(entity => entity.id);
+      .filter((entity) => entity.type === "province")
+      .map((entity) => entity.id);
 
-    setSelectedFilters(prev => ({
+    setSelectedFilters((prev) => ({
       ...prev,
       countries,
       regions,
@@ -689,14 +690,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }));
   };
 
-  const toggleFilter = (section: keyof SelectedFilters, filterId: string) => {
-    setSelectedFilters((prev) => ({
-      ...prev,
-      [section]: prev[section].includes(filterId)
-        ? prev[section].filter((id) => id !== filterId)
-        : [...prev[section], filterId],
-    }));
-  };
+  // const toggleFilter = (section: keyof SelectedFilters, filterId: string) => {
+  //   setSelectedFilters((prev) => ({
+  //     ...prev,
+  //     [section]: prev[section].includes(filterId)
+  //       ? prev[section].filter((id) => id !== filterId)
+  //       : [...prev[section], filterId],
+  //   }));
+  // };
 
   const handleSearch = (section: keyof SearchTerms, term: string) => {
     setSearchTerms((prev) => ({
@@ -825,7 +826,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       section as keyof SelectedFilters
                     ].includes(item.id)}
                     onChange={() =>
-                      toggleFilter(section as keyof SelectedFilters, item.id)
+                      handleFilterToggle(
+                        section as keyof SelectedFilters,
+                        item.id
+                      )
                     }
                   />
                   <div className="flex-1 min-w-0">
@@ -925,54 +929,62 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return "U";
   };
 
-  const clearAllFilters = () => {
-    setSelectedFilters({
-      datasets: [],
-      categories: [],
-      countries: [],
-      regions: [],
-      provinces: [],
-    });
-  };
+  // const clearAllFilters = () => {
+  //   setSelectedFilters({
+  //     datasets: [],
+  //     categories: [],
+  //     countries: [],
+  //     regions: [],
+  //     provinces: [],
+  //   });
+  // };
 
   const handleFilterToggle = (
     section: keyof SelectedFilters,
     itemId: string
   ) => {
     const isSelected = selectedFilters[section].includes(itemId);
-    
+
     // Handle geographic selections with map integration
-    if (section === 'countries' || section === 'regions' || section === 'provinces') {
+    if (
+      section === "countries" ||
+      section === "regions" ||
+      section === "provinces"
+    ) {
       // Map section names to correct entity types
       const entityTypeMap = {
-        'countries': 'country',
-        'regions': 'region', 
-        'provinces': 'province'
+        countries: "country",
+        regions: "region",
+        provinces: "province",
       } as const;
       const entityType = entityTypeMap[section as keyof typeof entityTypeMap];
-      
+
       if (isSelected) {
         // Remove from both local state and geographic store
         removeSelection(itemId, entityType);
       } else {
         // Add to geographic store with proper entity data
-        let entityName = '';
-        
-        if (section === 'countries') {
-          const country = countries.find(c => c.id.toString() === itemId);
-          entityName = country?.shape_name || '';
-        } else if (section === 'regions') {
+        let entityName = "";
+
+        if (section === "countries") {
+          const country = countries.find((c) => c.id.toString() === itemId);
+          entityName = country?.shape_name || "";
+        } else if (section === "regions") {
           for (const country of countries) {
-            const region = country.regions?.find(r => r.id.toString() === itemId);
+            const region = country.regions?.find(
+              (r) => r.id.toString() === itemId
+            );
             if (region) {
               entityName = region.shape_name;
               break;
             }
           }
-        } else if (section === 'provinces') {
+        } else if (section === "provinces") {
           for (const country of countries) {
             for (const region of country.regions || []) {
-              const province = region.provinces?.find(p => p.id.toString() === itemId);
+              const province = region.provinces?.find(
+                (p) => p.id.toString() === itemId
+              );
               if (province) {
                 entityName = province.shape_name;
                 break;
@@ -980,17 +992,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             }
           }
         }
-        
+
         addSelection({
           id: itemId,
           type: entityType,
           name: entityName,
-        }).catch(error => {
-          console.error(`Failed to add selection for ${entityType} ${itemId}:`, error);
+        }).catch((error) => {
+          console.error(
+            `Failed to add selection for ${entityType} ${itemId}:`,
+            error
+          );
         });
       }
     }
-    
+
     // Update local filter state
     setSelectedFilters((prev) => ({
       ...prev,
@@ -1000,12 +1015,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }));
   };
 
-  const getTotalSelectedFilters = () => {
-    return Object.values(selectedFilters).reduce(
-      (total, filters) => total + filters.length,
-      0
-    );
-  };
+  // const getTotalSelectedFilters = () => {
+  //   return Object.values(selectedFilters).reduce(
+  //     (total, filters) => total + filters.length,
+  //     0
+  //   );
+  // };
 
   // New function to render hierarchical geographic data
   const renderGeographicHierarchy = () => {
@@ -1016,25 +1031,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     );
 
     return (
-      <div className="mb-4">
+      <div className="mb-3">
         <div
-          className="flex items-center justify-between cursor-pointer mb-2"
+          className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
           onClick={() => toggleSection("geographic")}
         >
-          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-            {t.sidebar?.geographic || "Geographic"}
-          </h4>
-          {expandedSections.geographic ? (
-            <ChevronUpIcon className="w-3 h-3 text-gray-400" />
-          ) : (
-            <ChevronDownIcon className="w-3 h-3 text-gray-400" />
-          )}
+          <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+            <GlobeAltIcon className="w-5 h-5" />
+            <span className="font-medium text-sm">
+              {t.sidebar?.geographic || "Geographic"}
+            </span>
+          </div>
+          <div className="flex items-center">
+            {expandedSections.geographic ? (
+              <ChevronUpIcon className="w-4 h-4 text-gray-400" />
+            ) : (
+              <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+            )}
+          </div>
         </div>
 
         {expandedSections.geographic && (
-          <div className="ml-2 space-y-1">
+          <div className="ml-6 mt-2 space-y-2">
             {/* Search */}
-            <div className="relative mb-2">
+            <div className="relative">
               <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
               <input
                 type="text"
@@ -1046,7 +1066,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     geographic: e.target.value,
                   }))
                 }
-                className="w-full pl-7 pr-3 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded-md focus:ring-1 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
               />
             </div>
 
@@ -1070,7 +1090,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           <ChevronRightIcon className="w-3 h-3 text-gray-400" />
                         )}
                       </button>
-                      <label className="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex-1">
+                      <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
                         <input
                           type="checkbox"
                           checked={selectedFilters.countries.includes(
@@ -1082,14 +1102,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                               country.id.toString()
                             )
                           }
-                          className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                          className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2">
                             <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
                               {country.shape_name}
                             </div>
-                            {selectedEntities.find(e => e.id === country.id.toString() && e.type === 'country')?.isLoading && (
+                            {selectedEntities.find(
+                              (e) =>
+                                e.id === country.id.toString() &&
+                                e.type === "country"
+                            )?.isLoading && (
                               <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
                             )}
                           </div>
@@ -1120,7 +1144,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                   <ChevronRightIcon className="w-3 h-3 text-gray-400" />
                                 )}
                               </button>
-                              <label className="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex-1">
+                              <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
                                 <input
                                   type="checkbox"
                                   checked={selectedFilters.regions.includes(
@@ -1132,14 +1156,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                       region.id.toString()
                                     )
                                   }
-                                  className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                                  className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                                 />
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center space-x-2">
                                     <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                                       {region.shape_name}
                                     </div>
-                                    {selectedEntities.find(e => e.id === region.id.toString() && e.type === 'region')?.isLoading && (
+                                    {selectedEntities.find(
+                                      (e) =>
+                                        e.id === region.id.toString() &&
+                                        e.type === "region"
+                                    )?.isLoading && (
                                       <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
                                     )}
                                   </div>
@@ -1151,36 +1179,41 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             {region.isExpanded && region.provinces && (
                               <div className="ml-4 space-y-1">
                                 {region.provinces.map((province) => (
-                                  <label
+                                  <div
                                     key={province.id}
-                                    className="flex items-center space-x-2 cursor-pointer p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                                    className="flex items-center space-x-1"
                                   >
-                                    <div className="w-3 h-3"></div>{" "}
-                                    {/* Spacer for alignment */}
-                                    <input
-                                      type="checkbox"
-                                      checked={selectedFilters.provinces.includes(
-                                        province.id.toString()
-                                      )}
-                                      onChange={() =>
-                                        handleFilterToggle(
-                                          "provinces",
+                                    <span className="w-3.5 h-3.5"></span>
+                                    <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedFilters.provinces.includes(
                                           province.id.toString()
-                                        )
-                                      }
-                                      className="w-3 h-3 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center space-x-2">
-                                        <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                                          {province.shape_name}
-                                        </div>
-                                        {selectedEntities.find(e => e.id === province.id.toString() && e.type === 'province')?.isLoading && (
-                                          <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
                                         )}
+                                        onChange={() =>
+                                          handleFilterToggle(
+                                            "provinces",
+                                            province.id.toString()
+                                          )
+                                        }
+                                        className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center space-x-2">
+                                          <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
+                                            {province.shape_name}
+                                          </div>
+                                          {selectedEntities.find(
+                                            (e) =>
+                                              e.id === province.id.toString() &&
+                                              e.type === "province"
+                                          )?.isLoading && (
+                                            <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                                          )}
+                                        </div>
                                       </div>
-                                    </div>
-                                  </label>
+                                    </label>
+                                  </div>
                                 ))}
                               </div>
                             )}
@@ -1249,11 +1282,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider dark:text-gray-400">
                       {t.sidebar?.filters || "Filters"}
                     </h3>
-                    {getTotalSelectedFilters() > 0 && (
+                    {/* {getTotalSelectedFilters() > 0 && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                         {getTotalSelectedFilters()}
                       </span>
-                    )}
+                    )} */}
                   </div>
                   {expandedSections.filters ? (
                     <ChevronUpIcon className="w-4 h-4 text-gray-400" />
@@ -1282,7 +1315,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* Footer avec résumé des filtres */}
-          {getTotalSelectedFilters() > 0 && (
+          {/* {getTotalSelectedFilters() > 0 && (
             <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
               <div className="mb-3">
                 <div className="flex items-center justify-between mb-2">
@@ -1314,10 +1347,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       )
                   )}
                 </div>
-              </div>
+              </div> */}
 
               {/* Actions */}
-              <div className="flex space-x-2">
+              {/* <div className="flex space-x-2">
                 <button
                   type="button"
                   onClick={clearAllFilters}
@@ -1332,8 +1365,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {t.sidebar?.apply || "Apply"}
                 </button>
               </div>
-            </div>
-          )}
+            </div> */}
+        
 
           {/* User info at bottom */}
           <div className="p-3 border-t border-gray-200 dark:border-gray-700">
