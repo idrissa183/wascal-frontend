@@ -66,12 +66,24 @@ interface ExpandedSections {
   filters: boolean;
   datasets: boolean;
   categories: boolean;
+  periodicity: boolean;
+  years: boolean;
+  months: boolean;
+  days: boolean;
+  times: boolean;
+
   geographic: boolean;
 }
 
 interface SelectedFilters {
   datasets: string[];
   categories: string[];
+  periodicity: string[];
+  years: string[];
+  months: string[];
+  days: string[];
+  times: string[];
+
   countries: string[];
   regions: string[];
   provinces: string[];
@@ -81,12 +93,23 @@ interface SelectedFilters {
 interface SearchTerms {
   datasets: string;
   categories: string;
+  periodicity: string;
+  years: string;
+  months: string;
+  days: string;
+  times: string;
+
   geographic: string;
 }
 
 interface ShowAll {
   datasets: boolean;
   categories: boolean;
+  periodicity: boolean;
+  years: boolean;
+  months: boolean;
+  days: boolean;
+  times: boolean;
 }
 
 interface ExpandedCountries {
@@ -194,6 +217,12 @@ const filterData: Record<string, FilterItem[]> = {
     { id: "eau", label: "Eau" },
     { id: "vegetation", label: "Végétation" },
     { id: "sol", label: "Sol" },
+  ],
+  periodicity: [
+    { id: "time", label: "Heure" },
+    { id: "day", label: "Jour" },
+    { id: "month", label: "Mois" },
+    { id: "year", label: "Année" },
   ],
   pays: [
     { id: "benin", label: "Bénin", capital: "Porto-Novo" },
@@ -344,6 +373,36 @@ const filterData: Record<string, FilterItem[]> = {
   ],
 };
 
+// Données temporelles
+const temporalData = {
+  years: Array.from({ length: 2025 - 1940 + 1 }, (_, i) => ({
+    id: (1940 + i).toString(),
+    label: (1940 + i).toString(),
+  })),
+  months: [
+    { id: "01", label: "January" },
+    { id: "02", label: "February" },
+    { id: "03", label: "March" },
+    { id: "04", label: "April" },
+    { id: "05", label: "May" },
+    { id: "06", label: "June" },
+    { id: "07", label: "July" },
+    { id: "08", label: "August" },
+    { id: "09", label: "September" },
+    { id: "10", label: "October" },
+    { id: "11", label: "November" },
+    { id: "12", label: "December" },
+  ],
+  days: Array.from({ length: 31 }, (_, i) => ({
+    id: String(i + 1).padStart(2, "0"),
+    label: String(i + 1).padStart(2, "0"),
+  })),
+  times: Array.from({ length: 24 }, (_, i) => ({
+    id: `${i.toString().padStart(2, "0")}:00`,
+    label: `${i.toString().padStart(2, "0")}:00`,
+  })),
+};
+
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations();
   const { user, getCurrentUser, isLoading, error } = useAuthStore();
@@ -371,8 +430,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [searchResults, setSearchResults] = useState<{
     countries: Country[];
     regionsWithCountry: (Region & { country_name?: string })[];
-    provincesWithHierarchy: (Province & { region_name?: string; country_name?: string })[];
-    departmentsWithHierarchy: (Department & { province_name?: string; region_name?: string; country_name?: string })[];
+    provincesWithHierarchy: (Province & {
+      region_name?: string;
+      country_name?: string;
+    })[];
+    departmentsWithHierarchy: (Department & {
+      province_name?: string;
+      region_name?: string;
+      country_name?: string;
+    })[];
   } | null>(null);
 
   const getLocalizedFilterData = (): Record<string, FilterItem[]> => ({
@@ -394,6 +460,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     filters: true,
     datasets: false,
     categories: false,
+    periodicity: false,
+    years: false,
+    months: false,
+    days: false,
+    times: false,
     geographic: false,
   });
 
@@ -401,6 +472,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({
     datasets: [],
     categories: [],
+    periodicity: [],
+    years: [],
+    months: [],
+    days: [],
+    times: [],
     countries: [],
     regions: [],
     provinces: [],
@@ -411,6 +487,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [searchTerms, setSearchTerms] = useState<SearchTerms>({
     datasets: "",
     categories: "",
+    periodicity: "",
+    years: "",
+    months: "",
+    days: "",
+    times: "",
     geographic: "",
   });
 
@@ -418,7 +499,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [showAll, setShowAll] = useState<ShowAll>({
     datasets: false,
     categories: false,
+    periodicity: false,
+    years: false,
+    months: false,
+    days: false,
+    times: false,
   });
+
+  // État pour la date sélectionnée
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const isActiveRoute = (href: string): boolean => {
     return currentPath === href || currentPath.startsWith(href + "/");
@@ -444,15 +533,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           setLoadingGeographic(true);
           console.log(`🔍 Starting search for: "${searchTerms.geographic}"`);
           const startTime = performance.now();
-          
-          const results = await geographicService.searchGeographic(searchTerms.geographic);
-          
+
+          const results = await geographicService.searchGeographic(
+            searchTerms.geographic
+          );
+
           const endTime = performance.now();
-          console.log(`⚡ Search completed in ${Math.round(endTime - startTime)}ms`);
-          
+          console.log(
+            `⚡ Search completed in ${Math.round(endTime - startTime)}ms`
+          );
+
           setSearchResults(results);
         } catch (error) {
-          console.error('Error searching geographic entities:', error);
+          console.error("Error searching geographic entities:", error);
           setSearchResults(null);
         } finally {
           setLoadingGeographic(false);
@@ -804,6 +897,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   > = {
     datasets: FolderIcon,
     categories: Squares2X2Icon,
+    periodicity: CalendarIcon,
     pays: GlobeAmericasIcon,
     regions: BuildingOfficeIcon,
     provinces: HomeModernIcon,
@@ -901,6 +995,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               ))}
             </div>
 
+            {section === "periodicity" && (
+              <div className="mt-2 space-y-1">
+                <label className="text-xs text-gray-700 dark:text-gray-300">
+                  {t.sidebar?.date || "Date"}
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full text-xs border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+            )}
+
             {/* Bouton Montrer plus/moins */}
             {shouldShowToggle(section) && (
               <button
@@ -910,6 +1018,159 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {showAll[section as keyof ShowAll]
                   ? t.sidebar?.show_less || "Show less"
                   : t.sidebar?.show_more || "Show more"}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Fonction spécifique pour le rendu des filtres temporels
+  const renderTemporalFilterSection = (
+    section: keyof typeof temporalData,
+    title: string
+  ) => {
+    const isExpanded = expandedSections[section as keyof ExpandedSections];
+    const items = temporalData[section];
+    const searchTerm = searchTerms[section as keyof SearchTerms];
+    const selectedItems = selectedFilters[section as keyof SelectedFilters];
+    
+    // Filtrage des éléments selon le terme de recherche
+    const filteredItems = items.filter((item) =>
+      item.label.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Limitation des éléments affichés (show more/less)
+    const itemsToShow = showAll[section as keyof ShowAll] 
+      ? filteredItems 
+      : filteredItems.slice(0, 5);
+
+    const SectionIcon = section === 'years' ? CalendarIcon 
+      : section === 'months' ? CalendarIcon
+      : section === 'days' ? CalendarIcon
+      : CalendarIcon; // icon par défaut
+
+    return (
+      <div key={section} className="mb-3">
+        {/* En-tête de section */}
+        <div
+          className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+          onClick={() => toggleSection(section as keyof ExpandedSections)}
+        >
+          <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+            <SectionIcon className="w-5 h-5" />
+            <span className="font-medium text-sm">{title}</span>
+          </div>
+          <div className="flex items-center">
+            {isExpanded ? (
+              <ChevronUpIcon className="w-4 h-4 text-gray-400" />
+            ) : (
+              <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+            )}
+          </div>
+        </div>
+
+        {/* Contenu de la section */}
+        {isExpanded && (
+          <div className="ml-6 mt-2 space-y-2">
+            {/* Contrôles "Select all" / "At least one selection must be made" */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
+                  <input
+                    type="checkbox"
+                    className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                    checked={selectedItems.length === items.length}
+                    onChange={() => {
+                      if (selectedItems.length === items.length) {
+                        // Désélectionner tout
+                        setSelectedFilters(prev => ({
+                          ...prev,
+                          [section]: []
+                        }));
+                      } else {
+                        // Sélectionner tout
+                        setSelectedFilters(prev => ({
+                          ...prev,
+                          [section]: items.map(item => item.id)
+                        }));
+                      }
+                    }}
+                  />
+                  <span>Select all</span>
+                </label>
+              </div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                At least one selection must be made
+              </div>
+              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600 pb-1">
+                {title}
+              </div>
+            </div>
+
+            {/* Barre de recherche */}
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
+              <input
+                type="text"
+                placeholder={`Search ${title.toLowerCase()}...`}
+                className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
+                value={searchTerm}
+                onChange={(e) =>
+                  setSearchTerms(prev => ({
+                    ...prev,
+                    [section]: e.target.value
+                  }))
+                }
+              />
+            </div>
+
+            {/* Liste des éléments */}
+            <div className="space-y-1 max-h-60 overflow-y-auto">
+              {itemsToShow.map((item) => (
+                <label
+                  key={item.id}
+                  className="flex items-center space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                    checked={selectedItems.includes(item.id)}
+                    onChange={() => {
+                      const isSelected = selectedItems.includes(item.id);
+                      if (isSelected) {
+                        setSelectedFilters(prev => ({
+                          ...prev,
+                          [section]: prev[section as keyof SelectedFilters].filter(id => id !== item.id)
+                        }));
+                      } else {
+                        setSelectedFilters(prev => ({
+                          ...prev,
+                          [section]: [...prev[section as keyof SelectedFilters], item.id]
+                        }));
+                      }
+                    }}
+                  />
+                  <span className="text-xs text-gray-700 dark:text-gray-300">
+                    {item.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            {/* Bouton Montrer plus/moins */}
+            {filteredItems.length > 5 && (
+              <button
+                onClick={() => setShowAll(prev => ({
+                  ...prev,
+                  [section]: !prev[section as keyof ShowAll]
+                }))}
+                className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
+              >
+                {showAll[section as keyof ShowAll]
+                  ? "Show less"
+                  : "Show more"}
               </button>
             )}
           </div>
@@ -1087,13 +1348,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // New function to render hierarchical geographic data
   const renderGeographicHierarchy = () => {
     const hasSearchTerm = searchTerms.geographic.length >= 2;
-    const displayCountries = hasSearchTerm && searchResults 
-      ? searchResults.countries 
-      : countries.filter((country) =>
-          country.shape_name
-            .toLowerCase()
-            .includes(searchTerms.geographic.toLowerCase())
-        );
+    const displayCountries =
+      hasSearchTerm && searchResults
+        ? searchResults.countries
+        : countries.filter((country) =>
+            country.shape_name
+              .toLowerCase()
+              .includes(searchTerms.geographic.toLowerCase())
+          );
 
     return (
       <div className="mb-3">
@@ -1147,18 +1409,27 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <div className="space-y-2">
                 {/* Results summary */}
                 <div className="text-xs text-gray-600 dark:text-gray-400 px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded">
-                  {(searchResults.countries.length + searchResults.regionsWithCountry.length + 
-                    searchResults.provincesWithHierarchy.length + searchResults.departmentsWithHierarchy.length)} 
+                  {searchResults.countries.length +
+                    searchResults.regionsWithCountry.length +
+                    searchResults.provincesWithHierarchy.length +
+                    searchResults.departmentsWithHierarchy.length}
                   result(s) for "{searchTerms.geographic}"
                 </div>
                 {/* Countries in search results */}
                 {searchResults.countries.map((country) => (
-                  <div key={`search-country-${country.id}`} className="space-y-1">
+                  <div
+                    key={`search-country-${country.id}`}
+                    className="space-y-1"
+                  >
                     <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
                       <input
                         type="checkbox"
-                        checked={selectedFilters.countries.includes(country.id.toString())}
-                        onChange={() => handleFilterToggle("countries", country.id.toString())}
+                        checked={selectedFilters.countries.includes(
+                          country.id.toString()
+                        )}
+                        onChange={() =>
+                          handleFilterToggle("countries", country.id.toString())
+                        }
                         className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                       />
                       <div className="flex-1 min-w-0">
@@ -1166,8 +1437,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           🌍 {country.shape_name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {country.shape_iso || country.shape_iso_2} 
-                          {country.shape_city && ` • Capital: ${country.shape_city}`}
+                          {country.shape_iso || country.shape_iso_2}
+                          {country.shape_city &&
+                            ` • Capital: ${country.shape_city}`}
                         </div>
                       </div>
                     </label>
@@ -1180,8 +1452,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
                       <input
                         type="checkbox"
-                        checked={selectedFilters.regions.includes(region.id.toString())}
-                        onChange={() => handleFilterToggle("regions", region.id.toString())}
+                        checked={selectedFilters.regions.includes(
+                          region.id.toString()
+                        )}
+                        onChange={() =>
+                          handleFilterToggle("regions", region.id.toString())
+                        }
                         className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                       />
                       <div className="flex-1 min-w-0">
@@ -1198,12 +1474,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 {/* Provinces in search results */}
                 {searchResults.provincesWithHierarchy.map((province) => (
-                  <div key={`search-province-${province.id}`} className="space-y-1">
+                  <div
+                    key={`search-province-${province.id}`}
+                    className="space-y-1"
+                  >
                     <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
                       <input
                         type="checkbox"
-                        checked={selectedFilters.provinces.includes(province.id.toString())}
-                        onChange={() => handleFilterToggle("provinces", province.id.toString())}
+                        checked={selectedFilters.provinces.includes(
+                          province.id.toString()
+                        )}
+                        onChange={() =>
+                          handleFilterToggle(
+                            "provinces",
+                            province.id.toString()
+                          )
+                        }
                         className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                       />
                       <div className="flex-1 min-w-0">
@@ -1211,7 +1497,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           🏛️ {province.shape_name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Province in {province.region_name}, {province.country_name}
+                          Province in {province.region_name},{" "}
+                          {province.country_name}
                         </div>
                       </div>
                     </label>
@@ -1220,12 +1507,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 {/* Departments in search results */}
                 {searchResults.departmentsWithHierarchy.map((department) => (
-                  <div key={`search-department-${department.id}`} className="space-y-1">
+                  <div
+                    key={`search-department-${department.id}`}
+                    className="space-y-1"
+                  >
                     <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
                       <input
                         type="checkbox"
-                        checked={selectedFilters.departments.includes(department.id.toString())}
-                        onChange={() => handleFilterToggle("departments", department.id.toString())}
+                        checked={selectedFilters.departments.includes(
+                          department.id.toString()
+                        )}
+                        onChange={() =>
+                          handleFilterToggle(
+                            "departments",
+                            department.id.toString()
+                          )
+                        }
                         className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                       />
                       <div className="flex-1 min-w-0">
@@ -1233,7 +1530,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           📌 {department.shape_name}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          Department in {department.province_name}, {department.region_name}, {department.country_name}
+                          Department in {department.province_name},{" "}
+                          {department.region_name}, {department.country_name}
                         </div>
                       </div>
                     </label>
@@ -1241,21 +1539,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 ))}
 
                 {/* No results message */}
-                {searchResults.countries.length === 0 && 
-                 searchResults.regionsWithCountry.length === 0 && 
-                 searchResults.provincesWithHierarchy.length === 0 && 
-                 searchResults.departmentsWithHierarchy.length === 0 && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 py-2 text-center">
-                    No results found for "{searchTerms.geographic}"
-                  </div>
-                )}
+                {searchResults.countries.length === 0 &&
+                  searchResults.regionsWithCountry.length === 0 &&
+                  searchResults.provincesWithHierarchy.length === 0 &&
+                  searchResults.departmentsWithHierarchy.length === 0 && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 py-2 text-center">
+                      No results found for "{searchTerms.geographic}"
+                    </div>
+                  )}
               </div>
             ) : (
               // Render hierarchical tree view when no search
               <div className="space-y-1">
                 {displayCountries.map((country) => {
                   // Find corresponding country in the hierarchy data
-                  const hierarchyCountry = countries.find(c => c.id === country.id) as CountryWithRegions | undefined;
+                  const hierarchyCountry = countries.find(
+                    (c) => c.id === country.id
+                  ) as CountryWithRegions | undefined;
                   return (
                     <div key={country.id} className="space-y-1">
                       {/* Country Level */}
@@ -1265,128 +1565,93 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                         >
                           {hierarchyCountry?.isExpanded ? (
-                          <ChevronDownIcon className="w-3 h-3 text-gray-400" />
-                        ) : (
-                          <ChevronRightIcon className="w-3 h-3 text-gray-400" />
-                        )}
-                      </button>
-                      <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
-                        <input
-                          type="checkbox"
-                          checked={selectedFilters.countries.includes(
-                            country.id.toString()
+                            <ChevronDownIcon className="w-3 h-3 text-gray-400" />
+                          ) : (
+                            <ChevronRightIcon className="w-3 h-3 text-gray-400" />
                           )}
-                          onChange={() =>
-                            handleFilterToggle(
-                              "countries",
+                        </button>
+                        <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedFilters.countries.includes(
                               country.id.toString()
-                            )
-                          }
-                          className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                              {country.shape_name}
+                            )}
+                            onChange={() =>
+                              handleFilterToggle(
+                                "countries",
+                                country.id.toString()
+                              )
+                            }
+                            className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2">
+                              <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                                {country.shape_name}
+                              </div>
+                              {selectedEntities.find(
+                                (e) =>
+                                  e.id === country.id.toString() &&
+                                  e.type === "country"
+                              )?.isLoading && (
+                                <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                              )}
                             </div>
-                            {selectedEntities.find(
-                              (e) =>
-                                e.id === country.id.toString() &&
-                                e.type === "country"
-                            )?.isLoading && (
-                              <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                            {country.shape_iso && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400">
+                                {country.shape_iso}
+                              </div>
                             )}
                           </div>
-                          {country.shape_iso && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                              {country.shape_iso}
-                            </div>
-                          )}
-                        </div>
-                      </label>
-                    </div>
+                        </label>
+                      </div>
 
-                    {/* Regions Level */}
-                    {hierarchyCountry?.isExpanded && hierarchyCountry?.regions && (
-                      <div className="ml-4 space-y-1">
-                        {hierarchyCountry.regions.map((region: RegionWithProvinces) => (
-                          <div key={region.id} className="space-y-1">
-                            <div className="flex items-center space-x-1">
-                              <button
-                                onClick={() =>
-                                  toggleRegionExpansion(country.id, region.id)
-                                }
-                                className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                              >
-                                {region.isExpanded ? (
-                                  <ChevronDownIcon className="w-3 h-3 text-gray-400" />
-                                ) : (
-                                  <ChevronRightIcon className="w-3 h-3 text-gray-400" />
-                                )}
-                              </button>
-                              <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedFilters.regions.includes(
-                                    region.id.toString()
-                                  )}
-                                  onChange={() =>
-                                    handleFilterToggle(
-                                      "regions",
-                                      region.id.toString()
-                                    )
-                                  }
-                                  className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center space-x-2">
-                                    <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                                      {region.shape_name}
-                                    </div>
-                                    {selectedEntities.find(
-                                      (e) =>
-                                        e.id === region.id.toString() &&
-                                        e.type === "region"
-                                    )?.isLoading && (
-                                      <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                                    )}
-                                  </div>
-                                </div>
-                              </label>
-                            </div>
-
-                            {/* Provinces Level */}
-                            {region.isExpanded && region.provinces && (
-                              <div className="ml-4 space-y-1">
-                                {region.provinces.map((province: Province) => (
-                                  <div
-                                    key={province.id}
-                                    className="flex items-center space-x-1"
-                                  >
-                                    <span className="w-3.5 h-3.5"></span>
+                      {/* Regions Level */}
+                      {hierarchyCountry?.isExpanded &&
+                        hierarchyCountry?.regions && (
+                          <div className="ml-4 space-y-1">
+                            {hierarchyCountry.regions.map(
+                              (region: RegionWithProvinces) => (
+                                <div key={region.id} className="space-y-1">
+                                  <div className="flex items-center space-x-1">
+                                    <button
+                                      onClick={() =>
+                                        toggleRegionExpansion(
+                                          country.id,
+                                          region.id
+                                        )
+                                      }
+                                      className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                                    >
+                                      {region.isExpanded ? (
+                                        <ChevronDownIcon className="w-3 h-3 text-gray-400" />
+                                      ) : (
+                                        <ChevronRightIcon className="w-3 h-3 text-gray-400" />
+                                      )}
+                                    </button>
                                     <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
                                       <input
                                         type="checkbox"
-                                        checked={selectedFilters.provinces.includes(
-                                          province.id.toString()
+                                        checked={selectedFilters.regions.includes(
+                                          region.id.toString()
                                         )}
                                         onChange={() =>
                                           handleFilterToggle(
-                                            "provinces",
-                                            province.id.toString()
+                                            "regions",
+                                            region.id.toString()
                                           )
                                         }
                                         className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                                       />
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center space-x-2">
-                                          <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                                            {province.shape_name}
+                                          <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                                            {region.shape_name}
                                           </div>
                                           {selectedEntities.find(
                                             (e) =>
-                                              e.id === province.id.toString() &&
-                                              e.type === "province"
+                                              e.id === region.id.toString() &&
+                                              e.type === "region"
                                           )?.isLoading && (
                                             <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
                                           )}
@@ -1394,14 +1659,58 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                       </div>
                                     </label>
                                   </div>
-                                ))}
-                              </div>
+
+                                  {/* Provinces Level */}
+                                  {region.isExpanded && region.provinces && (
+                                    <div className="ml-4 space-y-1">
+                                      {region.provinces.map(
+                                        (province: Province) => (
+                                          <div
+                                            key={province.id}
+                                            className="flex items-center space-x-1"
+                                          >
+                                            <span className="w-3.5 h-3.5"></span>
+                                            <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
+                                              <input
+                                                type="checkbox"
+                                                checked={selectedFilters.provinces.includes(
+                                                  province.id.toString()
+                                                )}
+                                                onChange={() =>
+                                                  handleFilterToggle(
+                                                    "provinces",
+                                                    province.id.toString()
+                                                  )
+                                                }
+                                                className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                                              />
+                                              <div className="flex-1 min-w-0">
+                                                <div className="flex items-center space-x-2">
+                                                  <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
+                                                    {province.shape_name}
+                                                  </div>
+                                                  {selectedEntities.find(
+                                                    (e) =>
+                                                      e.id ===
+                                                        province.id.toString() &&
+                                                      e.type === "province"
+                                                  )?.isLoading && (
+                                                    <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            </label>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )
                             )}
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                        )}
+                    </div>
                   ); // Fermeture du map pour displayCountries
                 })}
               </div>
@@ -1482,6 +1791,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       "categories",
                       t.sidebar?.categories || "Categories"
                     )}
+                    {renderFilterSection(
+                      "periodicity",
+                      t.sidebar?.periodicity || "Periodicity"
+                    )}
+                    {renderTemporalFilterSection("years", "Year")}
+                    {renderTemporalFilterSection("months", "Month")}
+                    {renderTemporalFilterSection("days", "Day")}
+                    {renderTemporalFilterSection("times", "Time")}
                     {renderFilterSection("datasets", t.datasets, true)}
                     {renderGeographicHierarchy()}
                   </div>
@@ -1530,8 +1847,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </div>
               </div> */}
 
-              {/* Actions */}
-              {/* <div className="flex space-x-2">
+          {/* Actions */}
+          {/* <div className="flex space-x-2">
                 <button
                   type="button"
                   onClick={clearAllFilters}
@@ -1547,7 +1864,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </button>
               </div>
             </div> */}
-        
 
           {/* User info at bottom */}
           <div className="p-3 border-t border-gray-200 dark:border-gray-700">
