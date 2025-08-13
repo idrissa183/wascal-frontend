@@ -67,10 +67,6 @@ interface ExpandedSections {
   datasets: boolean;
   categories: boolean;
   periodicity: boolean;
-  years: boolean;
-  months: boolean;
-  days: boolean;
-  times: boolean;
 
   geographic: boolean;
 }
@@ -461,10 +457,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     datasets: false,
     categories: false,
     periodicity: false,
-    years: false,
-    months: false,
-    days: false,
-    times: false,
     geographic: false,
   });
 
@@ -506,8 +498,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     times: false,
   });
 
-  // État pour la date sélectionnée
-  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const isActiveRoute = (href: string): boolean => {
     return currentPath === href || currentPath.startsWith(href + "/");
@@ -995,19 +985,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               ))}
             </div>
 
-            {section === "periodicity" && (
-              <div className="mt-2 space-y-1">
-                <label className="text-xs text-gray-700 dark:text-gray-300">
-                  {t.sidebar?.date || "Date"}
-                </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full text-xs border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-              </div>
-            )}
 
             {/* Bouton Montrer plus/moins */}
             {shouldShowToggle(section) && (
@@ -1173,6 +1150,45 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   : "Show more"}
               </button>
             )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Fonction pour rendre la section Periodicity avec ses sous-sections temporelles
+  const renderPeriodicitySection = () => {
+    const isExpanded = expandedSections.periodicity;
+
+    return (
+      <div className="mb-3">
+        {/* En-tête de section Periodicity */}
+        <div
+          className="flex items-center justify-between cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+          onClick={() => toggleSection("periodicity")}
+        >
+          <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+            <CalendarIcon className="w-5 h-5" />
+            <span className="font-medium text-sm">
+              {t.sidebar?.periodicity || "Periodicity"}
+            </span>
+          </div>
+          <div className="flex items-center">
+            {isExpanded ? (
+              <ChevronUpIcon className="w-4 h-4 text-gray-400" />
+            ) : (
+              <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+            )}
+          </div>
+        </div>
+
+        {/* Contenu de la section Periodicity */}
+        {isExpanded && (
+          <div className="ml-6 mt-2 space-y-3">
+            {renderTemporalFilterSection("years", "Year")}
+            {renderTemporalFilterSection("months", "Month")}
+            {renderTemporalFilterSection("days", "Day")}
+            {renderTemporalFilterSection("times", "Time")}
           </div>
         )}
       </div>
@@ -1791,14 +1807,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       "categories",
                       t.sidebar?.categories || "Categories"
                     )}
-                    {renderFilterSection(
-                      "periodicity",
-                      t.sidebar?.periodicity || "Periodicity"
-                    )}
-                    {renderTemporalFilterSection("years", "Year")}
-                    {renderTemporalFilterSection("months", "Month")}
-                    {renderTemporalFilterSection("days", "Day")}
-                    {renderTemporalFilterSection("times", "Time")}
+                    {renderPeriodicitySection()}
                     {renderFilterSection("datasets", t.datasets, true)}
                     {renderGeographicHierarchy()}
                   </div>
