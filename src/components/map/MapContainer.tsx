@@ -33,7 +33,13 @@ import VectorSource from "ol/source/Vector";
 import OSM from "ol/source/OSM";
 import XYZ from "ol/source/XYZ";
 import { Feature } from "ol";
-import { Point, Polygon, MultiPolygon, Circle as CircleGeom, Geometry } from "ol/geom";
+import {
+  Point,
+  Polygon,
+  MultiPolygon,
+  Circle as CircleGeom,
+  Geometry,
+} from "ol/geom";
 import { Style, Fill, Stroke, Circle as CircleStyle, Icon } from "ol/style";
 import { Draw, Modify, Select } from "ol/interaction";
 import { createBox } from "ol/interaction/Draw";
@@ -76,7 +82,7 @@ export default function MapContainer({
   const drawRef = useRef<Draw | null>(null);
   const t = useTranslations();
   const { selectedEntities, isLoadingGeometry } = useGeographicStore();
-  
+
   // Ref for geographic layers
   const geographicSourceRef = useRef<VectorSource>(new VectorSource());
 
@@ -169,32 +175,43 @@ export default function MapContainer({
     selectedEntities.forEach((entity) => {
       if (entity.geometry && !entity.isLoading && !entity.error) {
         try {
-          console.log(`🗺️ Processing geometry for ${entity.type} ${entity.id}:`, entity.geometry);
+          console.log(
+            `🗺️ Processing geometry for ${entity.type} ${entity.id}:`,
+            entity.geometry
+          );
           // Parse GeoJSON geometry
           const geometryData = entity.geometry;
-          
+
           // Create OpenLayers geometry from GeoJSON
           let olGeometry: Geometry;
-          
-          if (geometryData.type === 'Polygon') {
+
+          if (geometryData.type === "Polygon") {
             // Handle Polygon: coordinates is [LinearRing, ...holes]
-            const rings = geometryData.coordinates.map((ring: [number, number][]) =>
-              ring.map((coord: [number, number]) => fromLonLat([coord[0], coord[1]]))
+            const rings = geometryData.coordinates.map(
+              (ring: [number, number][]) =>
+                ring.map((coord: [number, number]) =>
+                  fromLonLat([coord[0], coord[1]])
+                )
             );
             olGeometry = new Polygon(rings);
-          } else if (geometryData.type === 'MultiPolygon') {
+          } else if (geometryData.type === "MultiPolygon") {
             // Handle MultiPolygon: coordinates is [Polygon, Polygon, ...]
             const polygons: any[][][] = [];
             geometryData.coordinates.forEach((polygonCoords: any) => {
               const rings = polygonCoords.map((ring: [number, number][]) =>
-                ring.map((coord: [number, number]) => fromLonLat([coord[0], coord[1]]))
+                ring.map((coord: [number, number]) =>
+                  fromLonLat([coord[0], coord[1]])
+                )
               );
               polygons.push(rings);
             });
             olGeometry = new MultiPolygon(polygons);
-          } else if (geometryData.type === 'Point') {
+          } else if (geometryData.type === "Point") {
             // Handle Point geometry
-            const coord = fromLonLat([geometryData.coordinates[0], geometryData.coordinates[1]]);
+            const coord = fromLonLat([
+              geometryData.coordinates[0],
+              geometryData.coordinates[1],
+            ]);
             olGeometry = new Point(coord);
           } else {
             console.warn(`Unsupported geometry type: ${geometryData.type}`);
@@ -216,9 +233,9 @@ export default function MapContainer({
               region: { fill: "rgba(16, 185, 129, 0.2)", stroke: "#10b981" },
               province: { fill: "rgba(245, 158, 11, 0.2)", stroke: "#f59e0b" },
             };
-            
+
             const color = colors[type as keyof typeof colors] || colors.region;
-            
+
             return new Style({
               fill: new Fill({ color: color.fill }),
               stroke: new Stroke({ color: color.stroke, width: 2 }),
@@ -227,16 +244,24 @@ export default function MapContainer({
 
           feature.setStyle(getEntityStyle(entity.type));
           geographicSourceRef.current?.addFeature(feature);
-          console.log(`✅ Successfully added feature to map for ${entity.type} ${entity.id}`);
+          console.log(
+            `✅ Successfully added feature to map for ${entity.type} ${entity.id}`
+          );
         } catch (error) {
-          console.error(`❌ Error adding feature for ${entity.type} ${entity.id}:`, error);
+          console.error(
+            `❌ Error adding feature for ${entity.type} ${entity.id}:`,
+            error
+          );
           console.error(`📍 Geometry data:`, entity.geometry);
         }
       }
     });
 
     // Auto-zoom to fit all geographic features if any exist
-    if (geographicSourceRef.current?.getFeatures().length > 0 && mapInstanceRef.current) {
+    if (
+      geographicSourceRef.current?.getFeatures().length > 0 &&
+      mapInstanceRef.current
+    ) {
       const extent = geographicSourceRef.current.getExtent();
       mapInstanceRef.current.getView().fit(extent, {
         padding: [50, 50, 50, 50],
@@ -362,41 +387,41 @@ export default function MapContainer({
     mapInstanceRef.current = map;
     setMapLoaded(true);
 
-    // Ajouter quelques points d'exemple
-    addSampleData();
-  };
+    //   // Ajouter quelques points d'exemple
+    //   addSampleData();
+    // };
 
-  const addSampleData = () => {
-    if (!vectorSourceRef.current) return;
+    // const addSampleData = () => {
+    //   if (!vectorSourceRef.current) return;
 
-    // Ajouter quelques stations météo d'exemple
-    const stations = [
-      { name: "Ouagadougou", coords: [-1.5197, 12.3714] },
-      { name: "Bobo-Dioulasso", coords: [-4.2945, 11.1777] },
-      { name: "Koudougou", coords: [-2.3667, 12.2533] },
-      { name: "Banfora", coords: [-4.75, 10.6333] },
-    ];
+    //   // Ajouter quelques stations météo d'exemple
+    //   const stations = [
+    //     { name: "Ouagadougou", coords: [-1.5197, 12.3714] },
+    //     { name: "Bobo-Dioulasso", coords: [-4.2945, 11.1777] },
+    //     { name: "Koudougou", coords: [-2.3667, 12.2533] },
+    //     { name: "Banfora", coords: [-4.75, 10.6333] },
+    //   ];
 
-    stations.forEach((station) => {
-      const point = new Point(fromLonLat(station.coords));
-      const feature = new Feature({
-        geometry: point,
-        name: station.name,
-        type: "station",
-      });
+    //   stations.forEach((station) => {
+    //     const point = new Point(fromLonLat(station.coords));
+    //     const feature = new Feature({
+    //       geometry: point,
+    //       name: station.name,
+    //       type: "station",
+    //     });
 
-      feature.setStyle(
-        new Style({
-          image: new CircleStyle({
-            radius: 6,
-            fill: new Fill({ color: "#3b82f6" }),
-            stroke: new Stroke({ color: "#1e40af", width: 2 }),
-          }),
-        })
-      );
+    //     feature.setStyle(
+    //       new Style({
+    //         image: new CircleStyle({
+    //           radius: 6,
+    //           fill: new Fill({ color: "#3b82f6" }),
+    //           stroke: new Stroke({ color: "#1e40af", width: 2 }),
+    //         }),
+    //       })
+    //     );
 
-      vectorSourceRef.current?.addFeature(feature);
-    });
+    //     vectorSourceRef.current?.addFeature(feature);
+    //   });
   };
 
   const handleToolChange = (tool: SelectionTool) => {
