@@ -436,13 +436,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     loadCountries();
   }, []);
 
-  // Handle geographic search with debouncing
+  // Handle geographic search with optimized debouncing
   useEffect(() => {
     const delayedSearch = setTimeout(async () => {
       if (searchTerms.geographic.length >= 2) {
         try {
           setLoadingGeographic(true);
+          console.log(`🔍 Starting search for: "${searchTerms.geographic}"`);
+          const startTime = performance.now();
+          
           const results = await geographicService.searchGeographic(searchTerms.geographic);
+          
+          const endTime = performance.now();
+          console.log(`⚡ Search completed in ${Math.round(endTime - startTime)}ms`);
+          
           setSearchResults(results);
         } catch (error) {
           console.error('Error searching geographic entities:', error);
@@ -452,10 +459,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         }
       } else {
         setSearchResults(null);
+        setLoadingGeographic(false);
       }
-    }, 300);
+    }, 200); // Réduit de 300ms à 200ms pour plus de réactivité
 
-    return () => clearTimeout(delayedSearch);
+    // Indicateur de recherche immédiat
+    if (searchTerms.geographic.length >= 2) {
+      setLoadingGeographic(true);
+    }
+
+    return () => {
+      clearTimeout(delayedSearch);
+    };
   }, [searchTerms.geographic]);
 
   // Sync selected entities with local filter state on mount
@@ -1121,12 +1136,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
 
             {loadingGeographic ? (
-              <div className="text-xs text-gray-500 dark:text-gray-400 py-2">
-                Searching...
+              <div className="flex items-center space-x-2 py-3 px-2">
+                <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Searching "{searchTerms.geographic}"...
+                </span>
               </div>
             ) : hasSearchTerm && searchResults ? (
               // Render search results
               <div className="space-y-2">
+                {/* Results summary */}
+                <div className="text-xs text-gray-600 dark:text-gray-400 px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded">
+                  {(searchResults.countries.length + searchResults.regionsWithCountry.length + 
+                    searchResults.provincesWithHierarchy.length + searchResults.departmentsWithHierarchy.length)} 
+                  result(s) for "{searchTerms.geographic}"
+                </div>
                 {/* Countries in search results */}
                 {searchResults.countries.map((country) => (
                   <div key={`search-country-${country.id}`} className="space-y-1">

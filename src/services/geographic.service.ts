@@ -69,6 +69,8 @@ export interface Department {
 
 class GeographicService {
   private baseURL: string;
+  private searchCache = new Map<string, { data: any; timestamp: number }>();
+  private cacheTimeout = 60000; // Cache pendant 1 minute
 
   constructor() {
     this.baseURL = `${getApiBaseUrl()}/api/v1/geographic`;
@@ -238,10 +240,10 @@ class GeographicService {
   }
 
   /**
-   * Recherche étendue avec filtrage hiérarchique
+   * Recherche rapide utilisant l'endpoint backend /search avec cache
    */
   async searchGeographic(query: string): Promise<{
-    countries: Country[];
+    countries: (Country & { country_name?: string })[];
     regionsWithCountry: (Region & { country_name?: string })[];
     provincesWithHierarchy: (Province & { region_name?: string; country_name?: string })[];
     departmentsWithHierarchy: (Department & { province_name?: string; region_name?: string; country_name?: string })[];
@@ -255,52 +257,116 @@ class GeographicService {
       };
     }
 
-    const searchResults = await this.searchByName(query);
-    const [allCountries, allRegions, allProvinces] = await Promise.all([
-      this.getCountries(),
-      this.getRegions(),
-      this.getProvinces(),
-    ]);
+    // Vérifier le cache
+    const cacheKey = `search_${query.toLowerCase()}`;
+    const cached = this.searchCache.get(cacheKey);
+    const now = Date.now();
 
-    // Enrichir les régions avec le nom du pays
-    const regionsWithCountry = searchResults.regions.map(region => {
-      const country = allCountries.find(c => c.id === region.country_id);
-      return {
-        ...region,
-        country_name: country?.shape_name
+    if (cached && (now - cached.timestamp < this.cacheTimeout)) {
+      console.log(`🎯 Cache hit for query: ${query}`);
+      return cached.data;
+    }
+
+    // Utiliser l'endpoint de recherche backend optimisé
+    const searchParams = new URLSearchParams({
+      q: query,
+      limit: '50' // Limiter les résultats pour la performance
+    });
+    
+    const response = await this.makeRequest<{
+      success: boolean;
+      query: string;
+      total_results: number;
+      results: Array<{
+        id: number;
+        name: string;
+        type: 'country' | 'region' | 'province' | 'department';
+        iso_code?: string;
+        parent_hierarchy: string[];
+        full_path: string;
+        relevance_score: number;
+        area_km2?: number;
+        population?: number;
+        match_type: string;
+      }>;
+    }>(`${this.baseURL}/search?${searchParams}`);
+
+    // Transformer les résultats en format attendu
+    const countries: (Country & { country_name?: string })[] = [];
+    const regionsWithCountry: (Region & { country_name?: string })[] = [];
+    const provincesWithHierarchy: (Province & { region_name?: string; country_name?: string })[] = [];
+    const departmentsWithHierarchy: (Department & { province_name?: string; region_name?: string; country_name?: string })[] = [];
+
+    response.results.forEach(result => {
+      const baseEntity = {
+        id: result.id,
+        shape_name: result.name,
+        shape_iso: result.iso_code,
+        shape_area_km2: result.area_km2,
+        shape_people: result.population,
       };
+
+      switch (result.type) {
+        case 'country':
+          countries.push({
+            ...baseEntity,
+            shape_name_en: result.name,
+            shape_iso_2: result.iso_code,
+          } as Country & { country_name?: string });
+          break;
+
+        case 'region':
+          regionsWithCountry.push({
+            ...baseEntity,
+            country_id: 0, // Sera enrichi plus tard si nécessaire
+            country_name: result.parent_hierarchy[0]
+          } as Region & { country_name?: string });
+          break;
+
+        case 'province':
+          provincesWithHierarchy.push({
+            ...baseEntity,
+            region_id: 0, // Sera enrichi plus tard si nécessaire
+            country_name: result.parent_hierarchy[0],
+            region_name: result.parent_hierarchy[1]
+          } as Province & { region_name?: string; country_name?: string });
+          break;
+
+        case 'department':
+          departmentsWithHierarchy.push({
+            ...baseEntity,
+            province_id: 0, // Sera enrichi plus tard si nécessaire
+            country_name: result.parent_hierarchy[0],
+            region_name: result.parent_hierarchy[1],
+            province_name: result.parent_hierarchy[2]
+          } as Department & { province_name?: string; region_name?: string; country_name?: string });
+          break;
+      }
     });
 
-    // Enrichir les provinces avec région et pays
-    const provincesWithHierarchy = searchResults.provinces.map(province => {
-      const region = allRegions.find(r => r.id === province.region_id);
-      const country = region ? allCountries.find(c => c.id === region.country_id) : undefined;
-      return {
-        ...province,
-        region_name: region?.shape_name,
-        country_name: country?.shape_name
-      };
-    });
-
-    // Enrichir les départements avec province, région et pays
-    const departmentsWithHierarchy = searchResults.departments.map(department => {
-      const province = allProvinces.find(p => p.id === department.province_id);
-      const region = province ? allRegions.find(r => r.id === province.region_id) : undefined;
-      const country = region ? allCountries.find(c => c.id === region.country_id) : undefined;
-      return {
-        ...department,
-        province_name: province?.shape_name,
-        region_name: region?.shape_name,
-        country_name: country?.shape_name
-      };
-    });
-
-    return {
-      countries: searchResults.countries,
+    const result = {
+      countries,
       regionsWithCountry,
       provincesWithHierarchy,
       departmentsWithHierarchy
     };
+
+    // Mettre en cache le résultat
+    this.searchCache.set(cacheKey, {
+      data: result,
+      timestamp: now
+    });
+
+    // Nettoyer le cache (garder seulement les 10 dernières recherches)
+    if (this.searchCache.size > 10) {
+      const oldestKey = this.searchCache.keys().next().value;
+      if (oldestKey) {
+        this.searchCache.delete(oldestKey);
+      }
+    }
+
+    console.log(`💾 Cached search result for query: ${query}`);
+    return result;
   }
 
   /**
