@@ -240,7 +240,7 @@ class GeographicService {
   }
 
   /**
-   * Recherche rapide utilisant l'endpoint backend /search avec cache
+   * Recherche rapide utilisant les endpoints existants avec cache
    */
   async searchGeographic(query: string): Promise<{
     countries: (Country & { country_name?: string })[];
@@ -267,106 +267,113 @@ class GeographicService {
       return cached.data;
     }
 
-    // Utiliser l'endpoint de recherche backend optimisé
-    const searchParams = new URLSearchParams({
-      q: query,
-      limit: '50' // Limiter les résultats pour la performance
-    });
-    
-    const response = await this.makeRequest<{
-      success: boolean;
-      query: string;
-      total_results: number;
-      results: Array<{
-        id: number;
-        name: string;
-        type: 'country' | 'region' | 'province' | 'department';
-        iso_code?: string;
-        parent_hierarchy: string[];
-        full_path: string;
-        relevance_score: number;
-        area_km2?: number;
-        population?: number;
-        match_type: string;
-      }>;
-    }>(`${this.baseURL}/search?${searchParams}`);
+    try {
+      // Utiliser les endpoints existants avec recherche côté client comme fallback
+      const searchParams = new URLSearchParams({
+        limit: '50' // Augmenter la limite pour compenser le filtrage côté client
+      });
 
-    // Transformer les résultats en format attendu
-    const countries: (Country & { country_name?: string })[] = [];
-    const regionsWithCountry: (Region & { country_name?: string })[] = [];
-    const provincesWithHierarchy: (Province & { region_name?: string; country_name?: string })[] = [];
-    const departmentsWithHierarchy: (Department & { province_name?: string; region_name?: string; country_name?: string })[] = [];
+      // Charger toutes les données en parallèle puis filtrer côté client
+      const [allCountries, allRegions, allProvinces, allDepartments] = await Promise.all([
+        this.makeRequest<Country[]>(`${this.baseURL}/countries?${searchParams}`),
+        this.makeRequest<Region[]>(`${this.baseURL}/regions?${searchParams}`),
+        this.makeRequest<Province[]>(`${this.baseURL}/provinces?${searchParams}`),
+        this.makeRequest<Department[]>(`${this.baseURL}/departments?${searchParams}`)
+      ]);
 
-    response.results.forEach(result => {
-      const baseEntity = {
-        id: result.id,
-        shape_name: result.name,
-        shape_iso: result.iso_code,
-        shape_area_km2: result.area_km2,
-        shape_people: result.population,
+      const searchTerm = query.toLowerCase();
+
+      // Filtrer côté client avec recherche étendue
+      const countries = allCountries.filter(country => 
+        country.shape_name?.toLowerCase().includes(searchTerm) ||
+        country.shape_name_en?.toLowerCase().includes(searchTerm) ||
+        country.shape_name_fr?.toLowerCase().includes(searchTerm) ||
+        country.shape_iso?.toLowerCase().includes(searchTerm) ||
+        country.shape_iso_2?.toLowerCase().includes(searchTerm) ||
+        country.shape_city?.toLowerCase().includes(searchTerm)
+      );
+
+      const regions = allRegions.filter(region =>
+        region.shape_name?.toLowerCase().includes(searchTerm)
+      );
+
+      const provinces = allProvinces.filter(province =>
+        province.shape_name?.toLowerCase().includes(searchTerm)
+      );
+
+      const departments = allDepartments.filter(department =>
+        department.shape_name?.toLowerCase().includes(searchTerm)
+      );
+
+      // Créer des mappings pour enrichir les données hiérarchiques
+      const countryMap = new Map(allCountries.map(c => [c.id, c.shape_name]));
+      const regionMap = new Map(allRegions.map(r => [r.id, { name: r.shape_name, country_id: r.country_id }]));
+      const provinceMap = new Map(allProvinces.map(p => [p.id, { name: p.shape_name, region_id: p.region_id }]));
+
+      // Enrichir les régions avec le nom du pays
+      const regionsWithCountry = regions.map(region => ({
+        ...region,
+        country_name: countryMap.get(region.country_id) || 'Unknown Country'
+      }));
+
+      // Enrichir les provinces avec région et pays
+      const provincesWithHierarchy = provinces.map(province => {
+        const regionInfo = regionMap.get(province.region_id);
+        const countryName = regionInfo ? countryMap.get(regionInfo.country_id) : undefined;
+        return {
+          ...province,
+          region_name: regionInfo?.name || 'Unknown Region',
+          country_name: countryName || 'Unknown Country'
+        };
+      });
+
+      // Enrichir les départements avec province, région et pays
+      const departmentsWithHierarchy = departments.map(department => {
+        const provinceInfo = provinceMap.get(department.province_id);
+        const regionInfo = provinceInfo ? regionMap.get(provinceInfo.region_id) : undefined;
+        const countryName = regionInfo ? countryMap.get(regionInfo.country_id) : undefined;
+        return {
+          ...department,
+          province_name: provinceInfo?.name || 'Unknown Province',
+          region_name: regionInfo?.name || 'Unknown Region',
+          country_name: countryName || 'Unknown Country'
+        };
+      });
+
+      const result = {
+        countries: countries.map(c => ({ ...c, country_name: c.shape_name })),
+        regionsWithCountry,
+        provincesWithHierarchy,
+        departmentsWithHierarchy
       };
 
-      switch (result.type) {
-        case 'country':
-          countries.push({
-            ...baseEntity,
-            shape_name_en: result.name,
-            shape_iso_2: result.iso_code,
-          } as Country & { country_name?: string });
-          break;
+      // Mettre en cache le résultat
+      this.searchCache.set(cacheKey, {
+        data: result,
+        timestamp: now
+      });
 
-        case 'region':
-          regionsWithCountry.push({
-            ...baseEntity,
-            country_id: 0, // Sera enrichi plus tard si nécessaire
-            country_name: result.parent_hierarchy[0]
-          } as Region & { country_name?: string });
-          break;
-
-        case 'province':
-          provincesWithHierarchy.push({
-            ...baseEntity,
-            region_id: 0, // Sera enrichi plus tard si nécessaire
-            country_name: result.parent_hierarchy[0],
-            region_name: result.parent_hierarchy[1]
-          } as Province & { region_name?: string; country_name?: string });
-          break;
-
-        case 'department':
-          departmentsWithHierarchy.push({
-            ...baseEntity,
-            province_id: 0, // Sera enrichi plus tard si nécessaire
-            country_name: result.parent_hierarchy[0],
-            region_name: result.parent_hierarchy[1],
-            province_name: result.parent_hierarchy[2]
-          } as Department & { province_name?: string; region_name?: string; country_name?: string });
-          break;
+      // Nettoyer le cache (garder seulement les 10 dernières recherches)
+      if (this.searchCache.size > 10) {
+        const oldestKey = this.searchCache.keys().next().value;
+        if (oldestKey) {
+          this.searchCache.delete(oldestKey);
+        }
       }
-    });
 
-    const result = {
-      countries,
-      regionsWithCountry,
-      provincesWithHierarchy,
-      departmentsWithHierarchy
-    };
+      console.log(`💾 Cached search result for query: ${query}`);
+      return result;
 
-    // Mettre en cache le résultat
-    this.searchCache.set(cacheKey, {
-      data: result,
-      timestamp: now
-    });
-
-    // Nettoyer le cache (garder seulement les 10 dernières recherches)
-    if (this.searchCache.size > 10) {
-      const oldestKey = this.searchCache.keys().next().value;
-      if (oldestKey) {
-        this.searchCache.delete(oldestKey);
-      }
+    } catch (error) {
+      console.error('❌ Search error:', error);
+      // Retourner des résultats vides en cas d'erreur
+      return {
+        countries: [],
+        regionsWithCountry: [],
+        provincesWithHierarchy: [],
+        departmentsWithHierarchy: []
+      };
     }
-
-    console.log(`💾 Cached search result for query: ${query}`);
-    return result;
   }
 
   /**
