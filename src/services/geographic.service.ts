@@ -221,7 +221,9 @@ class GeographicService {
         (c) =>
           c.shape_name.toLowerCase().includes(searchTerm) ||
           c.shape_name_en?.toLowerCase().includes(searchTerm) ||
-          c.shape_name_fr?.toLowerCase().includes(searchTerm)
+          c.shape_name_fr?.toLowerCase().includes(searchTerm) ||
+          c.shape_iso?.toLowerCase().includes(searchTerm) ||
+          c.shape_iso_2?.toLowerCase().includes(searchTerm)
       ),
       regions: regions.filter((r) =>
         r.shape_name.toLowerCase().includes(searchTerm)
@@ -233,6 +235,94 @@ class GeographicService {
         d.shape_name.toLowerCase().includes(searchTerm)
       ),
     };
+  }
+
+  /**
+   * Recherche étendue avec filtrage hiérarchique
+   */
+  async searchGeographic(query: string): Promise<{
+    countries: Country[];
+    regionsWithCountry: (Region & { country_name?: string })[];
+    provincesWithHierarchy: (Province & { region_name?: string; country_name?: string })[];
+    departmentsWithHierarchy: (Department & { province_name?: string; region_name?: string; country_name?: string })[];
+  }> {
+    if (!query || query.length < 2) {
+      return {
+        countries: [],
+        regionsWithCountry: [],
+        provincesWithHierarchy: [],
+        departmentsWithHierarchy: []
+      };
+    }
+
+    const searchResults = await this.searchByName(query);
+    const [allCountries, allRegions, allProvinces] = await Promise.all([
+      this.getCountries(),
+      this.getRegions(),
+      this.getProvinces(),
+    ]);
+
+    // Enrichir les régions avec le nom du pays
+    const regionsWithCountry = searchResults.regions.map(region => {
+      const country = allCountries.find(c => c.id === region.country_id);
+      return {
+        ...region,
+        country_name: country?.shape_name
+      };
+    });
+
+    // Enrichir les provinces avec région et pays
+    const provincesWithHierarchy = searchResults.provinces.map(province => {
+      const region = allRegions.find(r => r.id === province.region_id);
+      const country = region ? allCountries.find(c => c.id === region.country_id) : undefined;
+      return {
+        ...province,
+        region_name: region?.shape_name,
+        country_name: country?.shape_name
+      };
+    });
+
+    // Enrichir les départements avec province, région et pays
+    const departmentsWithHierarchy = searchResults.departments.map(department => {
+      const province = allProvinces.find(p => p.id === department.province_id);
+      const region = province ? allRegions.find(r => r.id === province.region_id) : undefined;
+      const country = region ? allCountries.find(c => c.id === region.country_id) : undefined;
+      return {
+        ...department,
+        province_name: province?.shape_name,
+        region_name: region?.shape_name,
+        country_name: country?.shape_name
+      };
+    });
+
+    return {
+      countries: searchResults.countries,
+      regionsWithCountry,
+      provincesWithHierarchy,
+      departmentsWithHierarchy
+    };
+  }
+
+  /**
+   * Recherche de pays avec support étendu (nom, ISO, capitale)
+   */
+  async searchCountries(query: string): Promise<Country[]> {
+    const countries = await this.getCountries();
+    
+    if (!query || query.length < 2) {
+      return countries;
+    }
+    
+    const searchTerm = query.toLowerCase();
+    
+    return countries.filter(country => 
+      country.shape_name.toLowerCase().includes(searchTerm) ||
+      country.shape_name_en?.toLowerCase().includes(searchTerm) ||
+      country.shape_name_fr?.toLowerCase().includes(searchTerm) ||
+      country.shape_iso?.toLowerCase().includes(searchTerm) ||
+      country.shape_iso_2?.toLowerCase().includes(searchTerm) ||
+      country.shape_city?.toLowerCase().includes(searchTerm) // capitale
+    );
   }
 
   /**

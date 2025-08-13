@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { geographicService, type Country, type Region, type Province } from '../services/geographic.service';
+import { geographicService, type Country, type Region, type Province, type Department } from '../services/geographic.service';
 
 export interface GeographicSelection {
   id: string;
-  type: 'country' | 'region' | 'province';
+  type: 'country' | 'region' | 'province' | 'department';
   name: string;
   geometry?: any; // GeoJSON geometry
   isLoading?: boolean;
@@ -114,6 +114,11 @@ export const useGeographicStore = create<GeographicState>()(
               console.log(`📡 Calling API: getProvince(${entity.id})`);
               console.log(`📍 Full URL would be: /api/v1/geographic/provinces/${entity.id}`);
               geometryData = await geographicService.getProvince(parseInt(entity.id));
+              break;
+            case 'department':
+              console.log(`📡 Calling API: getDepartment(${entity.id})`);
+              console.log(`📍 Full URL would be: /api/v1/geographic/departments/${entity.id}`);
+              geometryData = await geographicService.getDepartment(parseInt(entity.id));
               break;
             default:
               throw new Error(`Unknown entity type: ${entity.type}`);
