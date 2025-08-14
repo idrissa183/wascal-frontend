@@ -5,7 +5,6 @@ import {
   Circle, 
   Edit2, 
   Trash2, 
-  Plus,
   Eye,
   EyeOff,
   MoreVertical,
@@ -20,15 +19,13 @@ import type { UserField } from '../../services/userFields.service';
 interface UserFieldsPanelProps {
   isOpen: boolean;
   onToggle: () => void;
-  onStartDrawing: (type: 'point' | 'polygon' | 'circle' | 'rectangle') => void;
   onFieldVisibilityChange?: (fieldId: number, visible: boolean) => void;
   visibleFields?: Set<number>;
 }
 
 export function UserFieldsPanel({ 
   isOpen, 
-  onToggle, 
-  onStartDrawing,
+  onToggle,
   onFieldVisibilityChange,
   visibleFields = new Set()
 }: UserFieldsPanelProps) {
@@ -60,9 +57,6 @@ export function UserFieldsPanel({
     }
   };
 
-  const handleDrawingClick = (type: 'point' | 'polygon' | 'circle' | 'rectangle') => {
-    onStartDrawing(type);
-  };
 
   const handleEdit = (field: UserField) => {
     setEditingField(field);
@@ -116,47 +110,9 @@ export function UserFieldsPanel({
           </div>
           
           <div className="mt-3">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              Dessiner une nouvelle zone :
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Utilisez les outils de dessin à gauche pour créer une nouvelle zone, puis revenez ici pour la nommer et l'enregistrer.
             </p>
-            <div className="grid grid-cols-4 gap-2">
-              <button
-                onClick={() => handleDrawingClick('point')}
-                disabled={isDrawing}
-                className="flex flex-col items-center gap-1 p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                title="Point"
-              >
-                <MapPin className="w-4 h-4" />
-                <span className="text-xs">Point</span>
-              </button>
-              <button
-                onClick={() => handleDrawingClick('rectangle')}
-                disabled={isDrawing}
-                className="flex flex-col items-center gap-1 p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                title="Rectangle"
-              >
-                <Square className="w-4 h-4" />
-                <span className="text-xs">Rect.</span>
-              </button>
-              <button
-                onClick={() => handleDrawingClick('circle')}
-                disabled={isDrawing}
-                className="flex flex-col items-center gap-1 p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                title="Cercle"
-              >
-                <Circle className="w-4 h-4" />
-                <span className="text-xs">Cercle</span>
-              </button>
-              <button
-                onClick={() => handleDrawingClick('polygon')}
-                disabled={isDrawing}
-                className="flex flex-col items-center gap-1 p-2 rounded-md border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-                title="Polygone"
-              >
-                <PiPolygonBold className="w-4 h-4" />
-                <span className="text-xs">Poly.</span>
-              </button>
-            </div>
           </div>
         </div>
 

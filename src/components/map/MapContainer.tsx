@@ -87,13 +87,7 @@ export default function MapContainer({
   const t = useTranslations();
   const { selectedEntities, isLoadingGeometry } = useGeographicStore();
   const { 
-    userFields, 
-    isDrawing, 
-    drawingType, 
-    currentDrawnGeometry,
-    setDrawing, 
-    setCurrentDrawnGeometry, 
-    clearCurrentDrawing 
+    userFields
   } = useUserFieldsStore();
 
   // Ref for geographic layers
@@ -601,9 +595,9 @@ export default function MapContainer({
           }
         }
 
-        // Handle user field drawing
-        if (isDrawing && drawingType) {
-          handleUserFieldDrawEnd(geometry || null, drawingType);
+        // Handle user field drawing when the user fields panel is open
+        if (showUserFieldsPanel) {
+          handleUserFieldDrawEnd(geometry || null, tool);
           return;
         }
 
@@ -627,12 +621,6 @@ export default function MapContainer({
     setActiveTool(tool);
   };
 
-  // User field specific functions
-  const handleStartUserFieldDrawing = (type: 'point' | 'polygon' | 'circle' | 'rectangle') => {
-    setDrawing(true, type);
-    setShowUserFieldsPanel(false);
-    handleToolChange(type);
-  };
 
   const handleUserFieldDrawEnd = (geometry: Geometry | null, type: 'point' | 'polygon' | 'circle' | 'rectangle') => {
     if (!geometry) return;
@@ -683,10 +671,6 @@ export default function MapContainer({
     setPendingGeometry(geoJsonGeometry);
     setPendingGeometryType(type);
     setShowUserFieldForm(true);
-    
-    // Clear the drawing interaction
-    setActiveTool("none");
-    clearCurrentDrawing();
   };
 
   const handleUserFieldFormClose = () => {
@@ -1157,7 +1141,6 @@ export default function MapContainer({
       <UserFieldsPanel 
         isOpen={showUserFieldsPanel}
         onToggle={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
-        onStartDrawing={handleStartUserFieldDrawing}
         onFieldVisibilityChange={handleUserFieldVisibilityChange}
         visibleFields={visibleUserFields}
       />
@@ -1170,15 +1153,15 @@ export default function MapContainer({
         geometryType={pendingGeometryType || 'polygon'}
       />
 
-      {/* Drawing indicator */}
-      {isDrawing && (
+      {/* Drawing indicator for user fields */}
+      {showUserFieldsPanel && activeTool !== 'none' && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-blue-600 text-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2">
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <span className="text-sm">
-              Dessinez votre {drawingType === 'point' ? 'point' : 
-                           drawingType === 'rectangle' ? 'rectangle' : 
-                           drawingType === 'circle' ? 'cercle' : 'polygone'}...
+              Dessinez votre {activeTool === 'point' ? 'point' : 
+                           activeTool === 'rectangle' ? 'rectangle' : 
+                           activeTool === 'circle' ? 'cercle' : 'polygone'} pour créer un champ...
             </span>
           </div>
         </div>
