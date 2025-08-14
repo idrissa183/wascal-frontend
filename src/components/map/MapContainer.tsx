@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "../../hooks/useTranslations";
 import { useGeographicStore } from "../../stores/useGeographicStore";
+import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import { GeographicSelections } from "./GeographicSelections";
+import { UserFieldsPanel } from "./UserFieldsPanel";
+import { UserFieldForm } from "./UserFieldForm";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -21,6 +24,7 @@ import {
   CogIcon,
   ScissorsIcon,
   ArrowUturnLeftIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline";
 import "./MapContainer.css";
 
@@ -82,9 +86,20 @@ export default function MapContainer({
   const drawRef = useRef<Draw | null>(null);
   const t = useTranslations();
   const { selectedEntities, isLoadingGeometry } = useGeographicStore();
+  const { 
+    userFields, 
+    isDrawing, 
+    drawingType, 
+    currentDrawnGeometry,
+    setDrawing, 
+    setCurrentDrawnGeometry, 
+    clearCurrentDrawing 
+  } = useUserFieldsStore();
 
   // Ref for geographic layers
   const geographicSourceRef = useRef<VectorSource>(new VectorSource());
+  // Ref for user fields layers
+  const userFieldsSourceRef = useRef<VectorSource>(new VectorSource());
 
   // États pour les contrôles de la carte
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -92,6 +107,13 @@ export default function MapContainer({
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
+  
+  // États pour les champs utilisateur
+  const [showUserFieldsPanel, setShowUserFieldsPanel] = useState(false);
+  const [showUserFieldForm, setShowUserFieldForm] = useState(false);
+  const [pendingGeometry, setPendingGeometry] = useState<any>(null);
+  const [pendingGeometryType, setPendingGeometryType] = useState<'point' | 'polygon' | 'circle' | 'rectangle' | null>(null);
+  const [visibleUserFields, setVisibleUserFields] = useState<Set<number>>(new Set());
 
   // États pour les coordonnées dynamiques
   const [mouseCoordinates, setMouseCoordinates] = useState<[number, number]>([
@@ -271,6 +293,73 @@ export default function MapContainer({
     }
   }, [selectedEntities]);
 
+  // Effect to handle user fields display
+  useEffect(() => {
+    if (!userFieldsSourceRef.current) return;
+
+    // Clear existing features
+    userFieldsSourceRef.current.clear();
+
+    // Add features for visible user fields
+    userFields.forEach((field) => {
+      if (visibleUserFields.has(field.id) && field.geometry) {
+        try {
+          const geoJson = field.geometry;
+          let olGeometry: Geometry;
+
+          // Convert GeoJSON to OpenLayers geometry
+          if (geoJson.type === "Point") {
+            const coord = fromLonLat([geoJson.coordinates[0], geoJson.coordinates[1]]);
+            olGeometry = new Point(coord);
+          } else if (geoJson.type === "Polygon") {
+            const rings = geoJson.coordinates.map((ring: [number, number][]) =>
+              ring.map((coord: [number, number]) => fromLonLat([coord[0], coord[1]]))
+            );
+            olGeometry = new Polygon(rings);
+          } else if (geoJson.type === "Circle") {
+            // Handle circle geometry - assuming it has center and radius
+            const center = fromLonLat([geoJson.coordinates[0], geoJson.coordinates[1]]);
+            const radius = geoJson.radius || 1000; // default 1km radius
+            olGeometry = new CircleGeom(center, radius);
+          } else {
+            console.warn(`Unsupported user field geometry type: ${geoJson.type}`);
+            return;
+          }
+
+          const feature = new Feature({
+            geometry: olGeometry,
+            name: field.name,
+            type: 'user_field',
+            fieldId: field.id,
+            geometryType: field.geometry_type,
+          });
+
+          // Set style based on geometry type
+          const getFieldStyle = (geometryType: string) => {
+            if (geometryType === 'point') {
+              return new Style({
+                image: new CircleStyle({
+                  radius: 8,
+                  fill: new Fill({ color: "#3b82f6" }),
+                  stroke: new Stroke({ color: "white", width: 2 }),
+                }),
+              });
+            }
+            return new Style({
+              fill: new Fill({ color: "rgba(59, 130, 246, 0.3)" }),
+              stroke: new Stroke({ color: "#3b82f6", width: 2 }),
+            });
+          };
+
+          feature.setStyle(getFieldStyle(field.geometry_type));
+          userFieldsSourceRef.current?.addFeature(feature);
+        } catch (error) {
+          console.error(`Error adding user field ${field.id} to map:`, error);
+        }
+      }
+    });
+  }, [userFields, visibleUserFields]);
+
   const initializeMap = () => {
     if (!mapRef.current) return;
 
@@ -340,9 +429,33 @@ export default function MapContainer({
       }),
     });
 
+    // User fields layer
+    const userFieldsLayer = new VectorLayer({
+      source: userFieldsSourceRef.current,
+      style: new Style({
+        fill: new Fill({
+          color: "rgba(59, 130, 246, 0.3)", // Blue with transparency
+        }),
+        stroke: new Stroke({
+          color: "#3b82f6", // Blue
+          width: 2,
+        }),
+        image: new CircleStyle({
+          radius: 8,
+          fill: new Fill({
+            color: "#3b82f6",
+          }),
+          stroke: new Stroke({
+            color: "white",
+            width: 2,
+          }),
+        }),
+      }),
+    });
+
     const map = new Map({
       target: mapRef.current,
-      layers: [osmLayer, satelliteLayer, vectorLayer, geographicLayer],
+      layers: [osmLayer, satelliteLayer, vectorLayer, geographicLayer, userFieldsLayer],
       view: new View({
         center: fromLonLat([-1.5197, 12.3714]), // Ouagadougou
         zoom: zoom,
@@ -488,6 +601,12 @@ export default function MapContainer({
           }
         }
 
+        // Handle user field drawing
+        if (isDrawing && drawingType) {
+          handleUserFieldDrawEnd(geometry || null, drawingType);
+          return;
+        }
+
         if (onSelectionChange) {
           onSelectionChange({
             type: tool,
@@ -506,6 +625,89 @@ export default function MapContainer({
     }
 
     setActiveTool(tool);
+  };
+
+  // User field specific functions
+  const handleStartUserFieldDrawing = (type: 'point' | 'polygon' | 'circle' | 'rectangle') => {
+    setDrawing(true, type);
+    setShowUserFieldsPanel(false);
+    handleToolChange(type);
+  };
+
+  const handleUserFieldDrawEnd = (geometry: Geometry | null, type: 'point' | 'polygon' | 'circle' | 'rectangle') => {
+    if (!geometry) return;
+
+    // Convert OpenLayers geometry to GeoJSON
+    let geoJsonGeometry: any;
+    
+    if (geometry instanceof Point) {
+      const coord = toLonLat(geometry.getCoordinates());
+      geoJsonGeometry = {
+        type: 'Point',
+        coordinates: coord
+      };
+    } else if (geometry instanceof Polygon) {
+      const rings = geometry.getCoordinates().map(ring =>
+        ring.map(coord => toLonLat(coord))
+      );
+      geoJsonGeometry = {
+        type: 'Polygon',
+        coordinates: rings
+      };
+    } else if (geometry instanceof CircleGeom) {
+      const center = toLonLat(geometry.getCenter());
+      const radius = geometry.getRadius();
+      // For circles, we'll store center and radius
+      if (type === 'circle') {
+        geoJsonGeometry = {
+          type: 'Circle',
+          coordinates: center,
+          radius: radius
+        };
+      } else {
+        // For rectangles drawn as boxes, convert to polygon
+        const extent = geometry.getExtent();
+        const coords = [
+          [toLonLat([extent[0], extent[1]]), toLonLat([extent[2], extent[1]]), 
+           toLonLat([extent[2], extent[3]]), toLonLat([extent[0], extent[3]]), 
+           toLonLat([extent[0], extent[1]])]
+        ];
+        geoJsonGeometry = {
+          type: 'Polygon',
+          coordinates: coords
+        };
+      }
+    }
+
+    // Set pending geometry and show form
+    setPendingGeometry(geoJsonGeometry);
+    setPendingGeometryType(type);
+    setShowUserFieldForm(true);
+    
+    // Clear the drawing interaction
+    setActiveTool("none");
+    clearCurrentDrawing();
+  };
+
+  const handleUserFieldFormClose = () => {
+    setShowUserFieldForm(false);
+    setPendingGeometry(null);
+    setPendingGeometryType(null);
+    // Clear the drawn feature from the vector source
+    const features = vectorSourceRef.current?.getFeatures();
+    if (features && features.length > 0) {
+      vectorSourceRef.current?.removeFeature(features[features.length - 1]);
+    }
+  };
+
+  const handleUserFieldVisibilityChange = (fieldId: number, visible: boolean) => {
+    const newVisibleFields = new Set(visibleUserFields);
+    if (visible) {
+      newVisibleFields.add(fieldId);
+    } else {
+      newVisibleFields.delete(fieldId);
+    }
+    setVisibleUserFields(newVisibleFields);
   };
 
   const handleFullscreen = () => {
@@ -704,6 +906,17 @@ export default function MapContainer({
           title="Vue par défaut"
         >
           <MapIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
+        </button>
+        <button
+          onClick={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
+          className={`p-2 sm:p-2.5 rounded-lg shadow-lg border transition-colors ${
+            showUserFieldsPanel
+              ? "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
+              : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+          }`}
+          title="Mes Champs"
+        >
+          <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
       </div>
 
@@ -935,6 +1148,37 @@ export default function MapContainer({
             <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-sm text-gray-700 dark:text-gray-300">
               Loading geographic data...
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* User Fields Panel */}
+      <UserFieldsPanel 
+        isOpen={showUserFieldsPanel}
+        onToggle={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
+        onStartDrawing={handleStartUserFieldDrawing}
+        onFieldVisibilityChange={handleUserFieldVisibilityChange}
+        visibleFields={visibleUserFields}
+      />
+
+      {/* User Field Form */}
+      <UserFieldForm
+        isOpen={showUserFieldForm}
+        onClose={handleUserFieldFormClose}
+        geometry={pendingGeometry}
+        geometryType={pendingGeometryType || 'polygon'}
+      />
+
+      {/* Drawing indicator */}
+      {isDrawing && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-blue-600 text-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm">
+              Dessinez votre {drawingType === 'point' ? 'point' : 
+                           drawingType === 'rectangle' ? 'rectangle' : 
+                           drawingType === 'circle' ? 'cercle' : 'polygone'}...
             </span>
           </div>
         </div>
