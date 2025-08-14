@@ -220,153 +220,7 @@ const filterData: Record<string, FilterItem[]> = {
     { id: "month", label: "Mois" },
     { id: "year", label: "Année" },
   ],
-  pays: [
-    { id: "benin", label: "Bénin", capital: "Porto-Novo" },
-    { id: "burkina-faso", label: "Burkina Faso", capital: "Ouagadougou" },
-    { id: "cote-ivoire", label: "Côte d'Ivoire", capital: "Yamoussoukro" },
-    { id: "gambie", label: "Gambie", capital: "Banjul" },
-    { id: "ghana", label: "Ghana", capital: "Accra" },
-    { id: "mali", label: "Mali", capital: "Bamako" },
-    { id: "niger", label: "Niger", capital: "Niamey" },
-    { id: "nigeria", label: "Nigeria", capital: "Abuja" },
-    { id: "togo", label: "Togo", capital: "Lomé" },
-    { id: "cap-vert", label: "Cap-Vert", capital: "Praia" },
-    { id: "senegal", label: "Sénégal", capital: "Dakar" },
-    { id: "mauritanie", label: "Mauritanie", capital: "Nouakchott" },
-  ],
-  regions: [
-    { id: "centre", label: "Centre", pays: "Burkina Faso" },
-    { id: "boucle-mouhoun", label: "Boucle du Mouhoun", pays: "Burkina Faso" },
-    { id: "cascades", label: "Cascades", pays: "Burkina Faso" },
-    { id: "centre-est", label: "Centre-Est", pays: "Burkina Faso" },
-    { id: "centre-nord", label: "Centre-Nord", pays: "Burkina Faso" },
-    { id: "centre-ouest", label: "Centre-Ouest", pays: "Burkina Faso" },
-    { id: "centre-sud", label: "Centre-Sud", pays: "Burkina Faso" },
-    { id: "est", label: "Est", pays: "Burkina Faso" },
-    { id: "hauts-bassins", label: "Hauts-Bassins", pays: "Burkina Faso" },
-    { id: "nord", label: "Nord", pays: "Burkina Faso" },
-    { id: "plateau-central", label: "Plateau Central", pays: "Burkina Faso" },
-    { id: "sahel", label: "Sahel", pays: "Burkina Faso" },
-    { id: "sud-ouest", label: "Sud-Ouest", pays: "Burkina Faso" },
-    { id: "ashanti", label: "Ashanti", pays: "Ghana" },
-    { id: "greater-accra", label: "Greater Accra", pays: "Ghana" },
-    { id: "northern", label: "Northern", pays: "Ghana" },
-    { id: "western", label: "Western", pays: "Ghana" },
-    { id: "central", label: "Central", pays: "Ghana" },
-    { id: "volta", label: "Volta", pays: "Ghana" },
-    { id: "lagos", label: "Lagos", pays: "Nigeria" },
-    { id: "kano", label: "Kano", pays: "Nigeria" },
-    { id: "abuja", label: "Abuja FCT", pays: "Nigeria" },
-    { id: "rivers", label: "Rivers", pays: "Nigeria" },
-    { id: "kaduna", label: "Kaduna", pays: "Nigeria" },
-    { id: "ogun", label: "Ogun", pays: "Nigeria" },
-    { id: "dakar", label: "Dakar", pays: "Sénégal" },
-    { id: "thies", label: "Thiès", pays: "Sénégal" },
-    { id: "kaolack", label: "Kaolack", pays: "Sénégal" },
-    { id: "maritime", label: "Maritime", pays: "Togo" },
-    { id: "plateaux", label: "Plateaux", pays: "Togo" },
-    { id: "centrale", label: "Centrale", pays: "Togo" },
-    { id: "atlantique", label: "Atlantique", pays: "Bénin" },
-    { id: "littoral", label: "Littoral", pays: "Bénin" },
-    { id: "oueme", label: "Ouémé", pays: "Bénin" },
-    { id: "bamako", label: "Bamako", pays: "Mali" },
-    { id: "kayes", label: "Kayes", pays: "Mali" },
-    { id: "koulikoro", label: "Koulikoro", pays: "Mali" },
-    { id: "niamey", label: "Niamey", pays: "Niger" },
-    { id: "dosso", label: "Dosso", pays: "Niger" },
-    { id: "maradi", label: "Maradi", pays: "Niger" },
-  ],
-  provinces: [
-    { id: "kadiogo", label: "Kadiogo", region: "Centre", pays: "Burkina Faso" },
-    {
-      id: "bale",
-      label: "Balé",
-      region: "Boucle du Mouhoun",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "banwa",
-      label: "Banwa",
-      region: "Boucle du Mouhoun",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "kossi",
-      label: "Kossi",
-      region: "Boucle du Mouhoun",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "mouhoun",
-      label: "Mouhoun",
-      region: "Boucle du Mouhoun",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "nayala",
-      label: "Nayala",
-      region: "Boucle du Mouhoun",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "sourou",
-      label: "Sourou",
-      region: "Boucle du Mouhoun",
-      pays: "Burkina Faso",
-    },
-    { id: "comoe", label: "Comoé", region: "Cascades", pays: "Burkina Faso" },
-    { id: "leraba", label: "Léraba", region: "Cascades", pays: "Burkina Faso" },
-    {
-      id: "boulgou",
-      label: "Boulgou",
-      region: "Centre-Est",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "koulpelogo",
-      label: "Koulpélogo",
-      region: "Centre-Est",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "kouritenga",
-      label: "Kouritenga",
-      region: "Centre-Est",
-      pays: "Burkina Faso",
-    },
-    { id: "bam", label: "Bam", region: "Centre-Nord", pays: "Burkina Faso" },
-    {
-      id: "namentenga",
-      label: "Namentenga",
-      region: "Centre-Nord",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "sanmatenga",
-      label: "Sanmatenga",
-      region: "Centre-Nord",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "boulkiemde",
-      label: "Boulkiemdé",
-      region: "Centre-Ouest",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "sanguie",
-      label: "Sanguié",
-      region: "Centre-Ouest",
-      pays: "Burkina Faso",
-    },
-    {
-      id: "sissili",
-      label: "Sissili",
-      region: "Centre-Ouest",
-      pays: "Burkina Faso",
-    },
-    { id: "ziro", label: "Ziro", region: "Centre-Ouest", pays: "Burkina Faso" },
-  ],
+  
 };
 
 // Données temporelles
@@ -1078,12 +932,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <span>Select all</span>
                 </label>
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
+              {/* <div className="text-xs text-gray-500 dark:text-gray-400">
                 At least one selection must be made
               </div>
               <div className="text-xs font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600 pb-1">
                 {title}
-              </div>
+              </div> */}
             </div>
 
             {/* Barre de recherche */}
