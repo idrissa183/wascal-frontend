@@ -144,9 +144,14 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
             localStorage.setItem("access_token", access_token);
             localStorage.setItem("refresh_token", refresh_token);
 
-            // Mettre à jour le store
+            // Mettre à jour le store complètement
             setUser(user);
             setAuthenticated(true);
+            
+            // Also update the auth store state to ensure everything is synchronized
+            const authStore = useAuthStore.getState();
+            authStore.setUser(user);
+            useAuthStore.setState({ isAuthenticated: true });
 
             console.log(
               `${provider} OAuth successful, redirecting to dashboard...`
@@ -162,7 +167,7 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
             // Use a very short timeout to ensure state updates are complete
             setTimeout(() => {
               window.location.replace('/dashboard');
-            }, 50);
+            }, 200); // Slightly longer to ensure store updates
           } else {
             throw new Error("Données OAuth incomplètes");
           }

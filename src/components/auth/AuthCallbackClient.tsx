@@ -28,6 +28,10 @@ export const AuthCallbackClient: React.FC = () => {
         const success = urlParams.get("success");
         const error = urlParams.get("error");
         const provider = window.location.pathname.split("/").pop();
+        
+        // Detect if we're in a popup or same-tab context
+        const isPopup = window.opener && window.opener !== window;
+        console.log('OAuth callback context:', { isPopup, hasOpener: !!window.opener });
 
         console.log("OAuth callback parameters:", {
           accessToken: accessToken ? "present" : "missing",
@@ -101,29 +105,55 @@ export const AuthCallbackClient: React.FC = () => {
 
         setStatus("success");
 
-        // Nettoyer l'URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname
-        );
-
-        // Redirection vers le dashboard avec navigation améliorée
-        setTimeout(() => {
-          const returnUrl =
-            sessionStorage.getItem("oauth_return_url") || "/dashboard";
-          sessionStorage.removeItem("oauth_return_url");
-
-          const finalUrl =
-            returnUrl === "/auth/login" || returnUrl === "/auth/register"
-              ? "/dashboard"
-              : returnUrl;
-
-          console.log('OAuth success, redirecting to:', finalUrl);
+        if (isPopup) {
+          // We're in a popup - send message to parent and close
+          console.log('Popup context: sending success message to parent');
           
-          // Use location.replace for same-tab navigation
-          window.location.replace(finalUrl);
-        }, 1000);
+          if (window.opener) {
+            window.opener.postMessage(
+              {
+                type: "OAUTH_SUCCESS",
+                access_token: accessToken,
+                refresh_token: refreshToken,
+                user: userData,
+              },
+              window.location.origin
+            );
+          }
+          
+          // Close popup after short delay
+          setTimeout(() => {
+            window.close();
+          }, 500);
+          
+        } else {
+          // We're in same-tab context - redirect directly
+          console.log('Same-tab context: redirecting directly');
+          
+          // Nettoyer l'URL
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+
+          // Redirection vers le dashboard
+          setTimeout(() => {
+            const returnUrl =
+              sessionStorage.getItem("oauth_return_url") || "/dashboard";
+            sessionStorage.removeItem("oauth_return_url");
+
+            const finalUrl =
+              returnUrl === "/auth/login" || returnUrl === "/auth/register"
+                ? "/dashboard"
+                : returnUrl;
+
+            console.log('Same-tab OAuth success, redirecting to:', finalUrl);
+            
+            // Use location.replace for same-tab navigation
+            window.location.replace(finalUrl);
+          }, 1000);
+        }
       } catch (error) {
         console.error("OAuth callback error:", error);
         setError(
