@@ -18,12 +18,30 @@ const GoogleCallback: React.FC = () => {
 
         if (error) {
           console.error("OAuth error:", error);
-          navigate("/auth/login?error=oauth_error");
+          if (window.opener) {
+            window.opener.postMessage(
+              { type: "OAUTH_ERROR", error: "oauth_error" },
+              window.location.origin
+            );
+            window.close();
+          } else {
+            navigate("/auth/login?error=oauth_error");
+          }
+          // navigate("/auth/login?error=oauth_error");
           return;
         }
 
         if (!code) {
-          navigate("/auth/login?error=missing_code");
+          if (window.opener) {
+            window.opener.postMessage(
+              { type: "OAUTH_ERROR", error: "missing_code" },
+              window.location.origin
+            );
+            window.close();
+          } else {
+            navigate("/auth/login?error=missing_code");
+          }
+          // navigate("/auth/login?error=missing_code");
           return;
         }
 
@@ -38,13 +56,40 @@ const GoogleCallback: React.FC = () => {
           }
           setUser(user);
           setAuthenticated(true);
-          navigate("/dashboard");
+          if (window.opener) {
+            window.opener.postMessage(
+              { type: "OAUTH_SUCCESS", access_token, refresh_token, user },
+              window.location.origin
+            );
+            window.close();
+          } else {
+            navigate("/dashboard");
+          }
+          // navigate("/dashboard");
         } else {
-          navigate("/auth/login?error=callback_failed");
+          if (window.opener) {
+            window.opener.postMessage(
+              { type: "OAUTH_ERROR", error: "callback_failed" },
+              window.location.origin
+            );
+            window.close();
+          } else {
+            navigate("/auth/login?error=callback_failed");
+          }
+          // navigate("/auth/login?error=callback_failed");
         }
       } catch (error) {
         console.error("OAuth callback error:", error);
-        navigate("/auth/login?error=oauth_error");
+        if (window.opener) {
+          window.opener.postMessage(
+            { type: "OAUTH_ERROR", error: "oauth_error" },
+            window.location.origin
+          );
+          window.close();
+        } else {
+          navigate("/auth/login?error=oauth_error");
+        }
+        // navigate("/auth/login?error=oauth_error");
       }
     };
 
