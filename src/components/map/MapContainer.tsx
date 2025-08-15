@@ -597,6 +597,7 @@ export default function MapContainer({
 
         // Handle user field drawing when the user fields panel is open
         if (showUserFieldsPanel) {
+          console.log('🎯 User fields panel is open, creating user field:', { geometry, tool });
           handleUserFieldDrawEnd(geometry || null, tool);
           return;
         }
@@ -623,7 +624,11 @@ export default function MapContainer({
 
 
   const handleUserFieldDrawEnd = (geometry: Geometry | null, type: 'point' | 'polygon' | 'circle' | 'rectangle') => {
-    if (!geometry) return;
+    console.log('🚀 handleUserFieldDrawEnd called:', { geometry, type });
+    if (!geometry) {
+      console.log('❌ No geometry provided, returning');
+      return;
+    }
 
     // Convert OpenLayers geometry to GeoJSON
     let geoJsonGeometry: any;
@@ -668,9 +673,11 @@ export default function MapContainer({
     }
 
     // Set pending geometry and show form
+    console.log('📝 Setting pending geometry and opening form:', { geoJsonGeometry, type });
     setPendingGeometry(geoJsonGeometry);
     setPendingGeometryType(type);
     setShowUserFieldForm(true);
+    console.log('✅ Form should be open now');
   };
 
   const handleUserFieldFormClose = () => {
