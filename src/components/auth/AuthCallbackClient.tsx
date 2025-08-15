@@ -108,18 +108,22 @@ export const AuthCallbackClient: React.FC = () => {
           window.location.pathname
         );
 
-        // Redirection vers le dashboard avec délai plus court
+        // Redirection vers le dashboard avec navigation améliorée
         setTimeout(() => {
           const returnUrl =
             sessionStorage.getItem("oauth_return_url") || "/dashboard";
           sessionStorage.removeItem("oauth_return_url");
 
-          // Forcer la redirection vers le dashboard pour OAuth
-          window.location.href =
+          const finalUrl =
             returnUrl === "/auth/login" || returnUrl === "/auth/register"
               ? "/dashboard"
               : returnUrl;
-        }, 1000); // Réduire le délai à 1 seconde
+
+          console.log('OAuth success, redirecting to:', finalUrl);
+          
+          // Use location.replace for same-tab navigation
+          window.location.replace(finalUrl);
+        }, 1000);
       } catch (error) {
         console.error("OAuth callback error:", error);
         setError(
@@ -142,7 +146,7 @@ export const AuthCallbackClient: React.FC = () => {
     localStorage.removeItem("refresh_token");
     sessionStorage.removeItem("oauth_return_url");
 
-    window.location.href = "/auth/login";
+    window.location.replace("/auth/login");
   };
 
   // const handleGoToDashboard = () => {
@@ -236,7 +240,7 @@ export const AuthCallbackClient: React.FC = () => {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => (window.location.href = "/")}
+                onClick={() => window.location.replace("/")}
                 className="w-full"
               >
                 {t.auth?.back_to_home || "Retour à l'accueil"}

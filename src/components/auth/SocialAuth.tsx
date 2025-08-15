@@ -60,30 +60,55 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
       console.log(`Opening ${provider} OAuth popup...`);
 
-      // 2. Ouvrir une popup pour l'OAuth avec des paramètres optimisés
-      const popupFeatures = [
-        'width=500',
-        'height=600',
-        'scrollbars=yes',
-        'resizable=yes',
-        'noopener=yes',
-        'noreferrer=yes',
-        'location=no',
-        'toolbar=no',
-        'menubar=no',
-        'status=no'
-      ].join(',');
-
-      const popup = window.open(
-        data.auth_url,
-        `${provider}_oauth_${Date.now()}`, // Unique name to avoid conflicts
-        popupFeatures
-      );
-
-      if (!popup) {
-        throw new Error(
-          "Impossible d'ouvrir la popup. Vérifiez que les popups ne sont pas bloquées."
+      // 2. Essayer d'ouvrir une popup avec différentes stratégies
+      let popup: Window | null = null;
+      
+      try {
+        // First attempt: Try with minimal features for better compatibility
+        popup = window.open(
+          data.auth_url,
+          `${provider}_oauth_${Date.now()}`,
+          'width=500,height=600,scrollbars=yes,resizable=yes'
         );
+        
+        // Check if popup was successfully opened
+        if (!popup) {
+          throw new Error('Popup blocked');
+        }
+        
+        // Additional check for immediate closure (some popup blockers do this)
+        const checkPopupClosure = () => {
+          if (popup?.closed) {
+            console.warn('Popup was immediately closed by popup blocker');
+            // Don't throw here, just use fallback
+            const userConfirmed = window.confirm(
+              "Les popups semblent être bloquées par votre navigateur. " +
+              "Cliquez OK pour continuer l'authentification dans cet onglet."
+            );
+            
+            if (userConfirmed) {
+              window.location.href = data.auth_url;
+            }
+            return;
+          }
+        };
+        
+        setTimeout(checkPopupClosure, 100);
+        
+      } catch (error) {
+        console.warn('Popup failed, using fallback:', error);
+        
+        // Show user a message about popup blocker if needed
+        const userConfirmed = window.confirm(
+          "Les popups semblent être bloquées par votre navigateur. " +
+          "Cliquez OK pour continuer l'authentification dans cet onglet."
+        );
+        
+        if (userConfirmed) {
+          // Fallback: Use same-tab redirect if popup fails
+          window.location.href = data.auth_url;
+        }
+        return;
       }
 
       // Focus on the popup
