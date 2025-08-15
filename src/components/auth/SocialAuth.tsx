@@ -60,11 +60,24 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
       console.log(`Opening ${provider} OAuth popup...`);
 
-      // 2. Ouvrir une popup pour l'OAuth au lieu d'une redirection
+      // 2. Ouvrir une popup pour l'OAuth avec des paramètres optimisés
+      const popupFeatures = [
+        'width=500',
+        'height=600',
+        'scrollbars=yes',
+        'resizable=yes',
+        'noopener=yes',
+        'noreferrer=yes',
+        'location=no',
+        'toolbar=no',
+        'menubar=no',
+        'status=no'
+      ].join(',');
+
       const popup = window.open(
         data.auth_url,
-        `${provider}_oauth`,
-        "width=500,height=600,scrollbars=yes,resizable=yes"
+        `${provider}_oauth_${Date.now()}`, // Unique name to avoid conflicts
+        popupFeatures
       );
 
       if (!popup) {
@@ -73,7 +86,14 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         );
       }
 
-      // 3. Écouter les messages de la popup
+      // Focus on the popup
+      popup.focus();
+
+      // 3. Variables pour le nettoyage
+      let checkClosed: NodeJS.Timeout;
+      let timeoutId: NodeJS.Timeout;
+
+      // 4. Écouter les messages de la popup
       const handleMessage = async (event: MessageEvent) => {
         // Vérifier l'origine pour la sécurité
         if (event.origin !== window.location.origin) {
@@ -81,8 +101,16 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
         }
 
         if (event.data.type === "OAUTH_SUCCESS") {
+          // Clean up all timers and listeners immediately
+          clearInterval(checkClosed);
+          clearTimeout(timeoutId);
           window.removeEventListener("message", handleMessage);
-          popup.close();
+          
+          // Ensure popup is closed and focus returns to parent
+          if (!popup.closed) {
+            popup.close();
+          }
+          window.focus();
 
           const { access_token, refresh_token, user } = event.data;
 
@@ -99,18 +127,27 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
               `${provider} OAuth successful, redirecting to dashboard...`
             );
 
-            // ✅ Redirection directe vers le dashboard
-            setTimeout(() => {
-              window.location.href = "/dashboard";
-            }, 100);
-
+            // ✅ Execute callback first
             onSuccess?.();
+            
+            // Navigate in the same tab immediately
+            console.log('Current pathname:', window.location.pathname);
+            console.log('Redirecting to dashboard in same tab...');
+            
+            // Use a very short timeout to ensure state updates are complete
+            setTimeout(() => {
+              window.location.replace('/dashboard');
+            }, 50);
           } else {
             throw new Error("Données OAuth incomplètes");
           }
         } else if (event.data.type === "OAUTH_ERROR") {
+          // Clean up all timers and listeners
+          clearInterval(checkClosed);
+          clearTimeout(timeoutId);
           window.removeEventListener("message", handleMessage);
           popup.close();
+          window.focus();
           throw new Error(
             event.data.error || `Erreur d'authentification ${provider}`
           );
@@ -119,15 +156,29 @@ export const SocialAuth: React.FC<SocialAuthProps> = ({
 
       window.addEventListener("message", handleMessage);
 
-      // 4. Surveiller la fermeture de la popup
-      const checkClosed = setInterval(() => {
+      // 5. Surveiller la fermeture de la popup avec nettoyage amélioré
+      checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
+          clearTimeout(timeoutId);
           window.removeEventListener("message", handleMessage);
           setLoadingProvider(null);
+          window.focus(); // Return focus to parent window
           console.log("OAuth popup was closed by user");
         }
-      }, 1000);
+      }, 500); // Check more frequently for better UX
+      
+      // 6. Timeout de sécurité pour éviter les popups bloquées
+      timeoutId = setTimeout(() => {
+        if (!popup.closed) {
+          clearInterval(checkClosed);
+          clearTimeout(timeoutId);
+          window.removeEventListener("message", handleMessage);
+          popup.close();
+          setLoadingProvider(null);
+          onError?.("Timeout d'authentification. Veuillez réessayer.");
+        }
+      }, 300000); // 5 minutes timeout
     } catch (error) {
       const errorMessage =
         error instanceof Error
