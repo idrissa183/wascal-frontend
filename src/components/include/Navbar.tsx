@@ -79,9 +79,15 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
               <Bars3Icon className="w-6 h-6" />
             </button>
             <a href="/" className="flex ml-2 md:mr-24 items-center">
-              <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
+              {/* WASCAL Logo */}
+              <img 
+                src="/images/wascal-logo.svg" 
+                alt="WASCAL Logo" 
+                className="h-6 w-auto mr-2 sm:h-8 sm:mr-3 lg:h-10 lg:mr-4"
+              />
+              {/* <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">EW</span>
-              </div>
+              </div> */}
               <span className="self-center text-lg sm:text-xl lg:text-2xl font-semibold whitespace-nowrap dark:text-white ml-2 hidden xs:block">
                 {APP_NAME}
               </span>
