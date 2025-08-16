@@ -8,7 +8,6 @@ import {
   SunIcon,
   MoonIcon,
   ComputerDesktopIcon,
-  LanguageIcon,
 } from "@heroicons/react/24/outline";
 import { APP_NAME } from "../../constants";
 import { useTranslations } from "../../hooks/useTranslations";
@@ -31,15 +30,15 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      const userMenu = document.querySelector('[data-user-menu]');
-      
+      const userMenu = document.querySelector("[data-user-menu]");
+
       if (showUserMenu && userMenu && !userMenu.contains(target)) {
         setShowUserMenu(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showUserMenu]);
   const handleLogout = async () => {
     setShowUserMenu(false);
@@ -80,9 +79,9 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
             </button>
             <a href="/" className="flex ml-2 md:mr-24 items-center">
               {/* WASCAL Logo */}
-              <img 
-                src="/images/wascal-logo.svg" 
-                alt="WASCAL Logo" 
+              <img
+                src="/images/wascal-logo.svg"
+                alt="WASCAL Logo"
                 className="h-6 w-auto mr-2 sm:h-8 sm:mr-3 lg:h-10 lg:mr-4"
               />
               {/* <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
@@ -124,12 +123,15 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
                 className="flex items-center space-x-1 p-1.5 sm:p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
               >
                 <span className="sr-only">btn language</span>
-                <LanguageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                {language === "fr" && (
-                  <span className="hidden sm:inline rounded bg-blue-100 dark:bg-blue-500/20 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:text-blue-300">
-                    fr
-                  </span>
-                )}
+                <span 
+                  className="text-lg" 
+                  title={language === "fr" ? "Français" : "English"}
+                >
+                  {language === "fr" ? "🇫🇷" : "🇺🇸"}
+                </span>
+                <span className="hidden sm:inline text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {language === "fr" ? "FR" : "EN"}
+                </span>
               </button>
             </Tooltip>
 
