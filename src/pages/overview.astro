@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Overview - EcoWatch">
+  <div id="overview-root"></div>
+</Layout>
+
+<script>
+  import { OverviewPage } from "../components/overview/OverviewPage";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const container = document.getElementById("overview-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(OverviewPage));
+  }
+</script>

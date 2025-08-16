@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Export Tools - EcoWatch">
+  <div id="export-root"></div>
+</Layout>
+
+<script>
+  import { ExportPage } from "../components/export/ExportPage";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const container = document.getElementById("export-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(ExportPage));
+  }
+</script>

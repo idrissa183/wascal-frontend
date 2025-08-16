@@ -315,6 +315,56 @@
     "please_wait": "Veuillez patienter pendant que nous vous connectons."
   },
   "map_page":{
-    "search_placeholder": "Search a place..."
+    "search_placeholder": "Rechercher un lieu..."
+  },
+  "pages": {
+    "vegetation": {
+      "title": "Données de Végétation",
+      "description": "Surveiller et analyser les modèles de végétation et les indicateurs de santé",
+      "coming_soon": "Bientôt Disponible",
+      "content_description": "Les outils de surveillance de la végétation et l'analyse NDVI seront disponibles ici. Suivez la santé des forêts, les conditions des cultures et les changements de végétation au fil du temps.",
+      "ndvi_analysis": "Analyse NDVI",
+      "ndvi_description": "Surveillance et analyse de l'indice de végétation par différence normalisée",
+      "vegetation_health": "Santé de la Végétation",
+      "health_description": "Surveiller les indicateurs de santé des forêts et des cultures dans les régions",
+      "change_detection": "Détection des Changements",
+      "change_description": "Détecter et suivre les changements de végétation sur des périodes de temps"
+    },
+    "temperature": {
+      "title": "Données de Température",
+      "description": "Surveiller et analyser les modèles et tendances de température",
+      "coming_soon": "Bientôt Disponible",
+      "content_description": "Les outils de surveillance et d'analyse de la température seront disponibles ici. Suivez les variations de température, les modèles de chaleur et les tendances climatiques.",
+      "temperature_trends": "Tendances de Température",
+      "trends_description": "Analyser les modèles de température à long terme et les variations saisonnières",
+      "heat_maps": "Cartes de Chaleur",
+      "heatmaps_description": "Visualiser la distribution de température à travers les régions géographiques",
+      "anomaly_detection": "Détection d'Anomalies",
+      "anomaly_description": "Identifier les événements de température inhabituels et les anomalies climatiques"
+    },
+    "precipitation": {
+      "title": "Données de Précipitations",
+      "description": "Suivre les précipitations et les modèles de pluie dans les régions surveillées",
+      "coming_soon": "Bientôt Disponible",
+      "content_description": "Les outils de surveillance des précipitations et d'analyse des pluies seront disponibles ici. Suivez les modèles de pluie, les conditions de sécheresse et la dynamique du cycle de l'eau.",
+      "rainfall_analysis": "Analyse des Précipitations",
+      "rainfall_description": "Surveiller les modèles de pluie quotidiens, mensuels et saisonniers",
+      "drought_monitoring": "Surveillance de la Sécheresse",
+      "drought_description": "Suivre les conditions de sécheresse et les indicateurs de stress hydrique",
+      "flood_risk": "Évaluation du Risque d'Inondation",
+      "flood_description": "Analyser les niveaux de précipitations pour l'évaluation du risque d'inondation"
+    },
+    "export": {
+      "title": "Outils d'Export",
+      "description": "Exporter les données environnementales et générer des rapports",
+      "coming_soon": "Bientôt Disponible",
+      "content_description": "Les outils d'exportation de données et les fonctionnalités de génération de rapports seront disponibles ici. Exportez des données environnementales dans divers formats et créez des rapports personnalisés.",
+      "data_export": "Export de Données",
+      "data_description": "Exporter les données environnementales en CSV, JSON et autres formats",
+      "report_generation": "Génération de Rapports",
+      "report_description": "Générer des rapports PDF personnalisés avec graphiques et analyses",
+      "batch_processing": "Traitement par Lots",
+      "batch_description": "Traiter et exporter efficacement de grands ensembles de données"
+    }
   }
 }

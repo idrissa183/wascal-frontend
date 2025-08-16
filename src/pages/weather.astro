@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Weather - EcoWatch">
+  <div id="weather-root"></div>
+</Layout>
+
+<script>
+  import { WeatherPage } from "../components/weather/WeatherPage";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const container = document.getElementById("weather-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(React.createElement(WeatherPage));
+  }
+</script>

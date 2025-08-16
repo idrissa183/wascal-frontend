@@ -317,6 +317,56 @@
   },
   "map_page":{
     "search_placeholder": "Search a place..."
+  },
+  "pages": {
+    "vegetation": {
+      "title": "Vegetation Data",
+      "description": "Monitor and analyze vegetation patterns and health indicators",
+      "coming_soon": "Coming Soon",
+      "content_description": "Vegetation monitoring tools and NDVI analysis will be available here. Track forest health, crop conditions, and vegetation changes over time.",
+      "ndvi_analysis": "NDVI Analysis",
+      "ndvi_description": "Normalized Difference Vegetation Index monitoring and analysis",
+      "vegetation_health": "Vegetation Health",
+      "health_description": "Monitor forest and crop health indicators across regions",
+      "change_detection": "Change Detection",
+      "change_description": "Detect and track vegetation changes over time periods"
+    },
+    "temperature": {
+      "title": "Temperature Data",
+      "description": "Monitor and analyze temperature patterns and trends",
+      "coming_soon": "Coming Soon",
+      "content_description": "Temperature monitoring and analysis tools will be available here. Track temperature variations, heat patterns, and climate trends.",
+      "temperature_trends": "Temperature Trends",
+      "trends_description": "Analyze long-term temperature patterns and seasonal variations",
+      "heat_maps": "Heat Maps",
+      "heatmaps_description": "Visualize temperature distribution across geographic regions",
+      "anomaly_detection": "Anomaly Detection",
+      "anomaly_description": "Identify unusual temperature events and climate anomalies"
+    },
+    "precipitation": {
+      "title": "Precipitation Data",
+      "description": "Track rainfall and precipitation patterns across monitored regions",
+      "coming_soon": "Coming Soon",
+      "content_description": "Precipitation monitoring and rainfall analysis tools will be available here. Track rainfall patterns, drought conditions, and water cycle dynamics.",
+      "rainfall_analysis": "Rainfall Analysis",
+      "rainfall_description": "Monitor daily, monthly, and seasonal rainfall patterns",
+      "drought_monitoring": "Drought Monitoring",
+      "drought_description": "Track drought conditions and water stress indicators",
+      "flood_risk": "Flood Risk Assessment",
+      "flood_description": "Analyze precipitation levels for flood risk evaluation"
+    },
+    "export": {
+      "title": "Export Tools",
+      "description": "Export environmental data and generate reports",
+      "coming_soon": "Coming Soon",
+      "content_description": "Data export tools and report generation features will be available here. Export environmental data in various formats and create custom reports.",
+      "data_export": "Data Export",
+      "data_description": "Export environmental data in CSV, JSON, and other formats",
+      "report_generation": "Report Generation",
+      "report_description": "Generate custom PDF reports with charts and analysis",
+      "batch_processing": "Batch Processing",
+      "batch_description": "Process and export large datasets efficiently"
+    }
   }
   
 }
