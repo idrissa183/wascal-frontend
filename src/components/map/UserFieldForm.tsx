@@ -9,6 +9,7 @@ interface UserFieldFormProps {
   editField?: UserField | null;
   geometry?: any;
   geometryType?: 'point' | 'polygon' | 'circle' | 'rectangle';
+  onSuccess?: (savedField: UserField) => void;
 }
 
 export function UserFieldForm({ 
@@ -16,7 +17,8 @@ export function UserFieldForm({
   onClose, 
   editField = null, 
   geometry = null, 
-  geometryType = 'polygon' 
+  geometryType = 'polygon',
+  onSuccess
 }: UserFieldFormProps) {
   const { createUserField, updateUserField, loading, error, clearError } = useUserFieldsStore();
   const [name, setName] = useState('');
@@ -47,22 +49,31 @@ export function UserFieldForm({
     }
 
     try {
+      let savedField;
       if (editField) {
-        await updateUserField(editField.id, { 
+        savedField = await updateUserField(editField.id, { 
           name: name.trim(),
           ...(geometry && { geometry, geometry_type: geometryType })
         });
       } else {
-        await createUserField({
+        savedField = await createUserField({
           name: name.trim(),
           geometry,
           geometry_type: geometryType
         });
       }
+      
+      console.log('✅ User field saved successfully:', savedField);
+      
+      // Call the success callback if provided
+      if (onSuccess && savedField) {
+        onSuccess(savedField);
+      }
+      
       onClose();
       setName('');
     } catch (err) {
-      console.error('Error saving user field:', err);
+      console.error('❌ Error saving user field:', err);
     }
   };
 

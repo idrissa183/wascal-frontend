@@ -47,6 +47,32 @@ export const MAP_DEFAULTS = {
   MAX_ZOOM: 20,
 } as const;
 
+// WASCAL Member Countries (12 countries in West Africa)
+export const SUPPORTED_COUNTRIES = [
+  "BEN", // Benin
+  "BFA", // Burkina Faso  
+  "CIV", // Côte d'Ivoire
+  "CPV", // Cape Verde
+  "GHA", // Ghana
+  "GIN", // Guinea
+  "GMB", // Gambia
+  "LBR", // Liberia
+  "MLI", // Mali
+  "NER", // Niger
+  "NGA", // Nigeria
+  "SEN", // Senegal
+  "SLE", // Sierra Leone
+  "TGO", // Togo
+] as const;
+
+// WASCAL region bounding box (West Africa)
+export const WASCAL_BOUNDS = {
+  WEST: -25.0,  // Western boundary
+  EAST: 16.0,   // Eastern boundary  
+  SOUTH: 3.0,   // Southern boundary
+  NORTH: 25.0,  // Northern boundary
+} as const;
+
 // Couleurs des graphiques
 export const CHART_COLORS = {
   PRIMARY: "#10b981",

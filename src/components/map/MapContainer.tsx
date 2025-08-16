@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "../../hooks/useTranslations";
 import { useGeographicStore } from "../../stores/useGeographicStore";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
+import { MAP_DEFAULTS, WASCAL_BOUNDS } from "../../constants";
 import { GeographicSelections } from "./GeographicSelections";
 import { UserFieldsPanel } from "./UserFieldsPanel";
 import { UserFieldForm } from "./UserFieldForm";
@@ -111,9 +112,9 @@ export default function MapContainer({
 
   // États pour les coordonnées dynamiques
   const [mouseCoordinates, setMouseCoordinates] = useState<[number, number]>([
-    12.3714, -1.5197,
+    MAP_DEFAULTS.CENTER[0], MAP_DEFAULTS.CENTER[1],
   ]);
-  const [zoom, setZoom] = useState(7);
+  const [zoom, setZoom] = useState<number>(MAP_DEFAULTS.ZOOM);
   const locationIconUrl = `data:image/svg+xml,${encodeURIComponent(
     renderToStaticMarkup(<FaLocationDot />)
   )}`;
@@ -451,8 +452,10 @@ export default function MapContainer({
       target: mapRef.current,
       layers: [osmLayer, satelliteLayer, vectorLayer, geographicLayer, userFieldsLayer],
       view: new View({
-        center: fromLonLat([-1.5197, 12.3714]), // Ouagadougou
-        zoom: zoom,
+        center: fromLonLat([MAP_DEFAULTS.CENTER[1], MAP_DEFAULTS.CENTER[0]]), // Longitude, Latitude
+        zoom: MAP_DEFAULTS.ZOOM,
+        minZoom: MAP_DEFAULTS.MIN_ZOOM,
+        maxZoom: MAP_DEFAULTS.MAX_ZOOM,
       }),
       controls: defaultControls({
         attribution: false,
@@ -681,13 +684,19 @@ export default function MapContainer({
   };
 
   const handleUserFieldFormClose = () => {
+    console.log('🔄 Closing user field form');
     setShowUserFieldForm(false);
     setPendingGeometry(null);
     setPendingGeometryType(null);
+    
+    // Clear the current active tool
+    setActiveTool("none");
+    
     // Clear the drawn feature from the vector source
     const features = vectorSourceRef.current?.getFeatures();
     if (features && features.length > 0) {
       vectorSourceRef.current?.removeFeature(features[features.length - 1]);
+      console.log('🗑️ Removed drawn feature from vector source');
     }
   };
 
@@ -824,8 +833,8 @@ export default function MapContainer({
   const resetView = () => {
     if (mapInstanceRef.current) {
       const view = mapInstanceRef.current.getView();
-      view.setCenter(fromLonLat([-1.5197, 12.3714]));
-      view.setZoom(7);
+      view.setCenter(fromLonLat([MAP_DEFAULTS.CENTER[1], MAP_DEFAULTS.CENTER[0]]));
+      view.setZoom(MAP_DEFAULTS.ZOOM);
     }
   };
 
@@ -1158,6 +1167,14 @@ export default function MapContainer({
         onClose={handleUserFieldFormClose}
         geometry={pendingGeometry}
         geometryType={pendingGeometryType || 'polygon'}
+        onSuccess={(savedField) => {
+          // Auto-enable visibility for the new field
+          if (savedField && savedField.id) {
+            const newVisibleFields = new Set(visibleUserFields);
+            newVisibleFields.add(savedField.id);
+            setVisibleUserFields(newVisibleFields);
+          }
+        }}
       />
 
       {/* Drawing indicator for user fields */}
