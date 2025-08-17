@@ -832,3 +832,313 @@ body {
   --animation-slide-up: slideUp 0.3s ease-out;
   --animation-slide-down: slideDown 0.3s ease-out;
 }
+
+/* Modern Sidebar Styles */
+:root {
+  --sidebar-width: 16rem; /* Default expanded width (256px) */
+  --sidebar-collapsed-width: 4rem; /* Collapsed width (64px) */
+}
+
+/* Custom scrollbar for sidebar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    rgba(148, 163, 184, 0.3),
+    rgba(148, 163, 184, 0.6)
+  );
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    to bottom,
+    rgba(148, 163, 184, 0.5),
+    rgba(148, 163, 184, 0.8)
+  );
+}
+
+/* Advanced animations */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes glowPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+  }
+}
+
+/* Sidebar specific animations */
+.sidebar-item-enter {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.sidebar-section-enter {
+  animation: scaleIn 0.4s ease-out;
+}
+
+.sidebar-mobile-enter {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+/* Sidebar responsive content margin */
+@media (min-width: 1024px) {
+  .sidebar-content {
+    margin-left: var(--sidebar-width);
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Smooth transitions for all sidebar elements */
+.sidebar-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Enhanced tooltip styles */
+.sidebar-tooltip {
+  position: absolute;
+  left: calc(100% + 0.75rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.sidebar-tooltip::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #1f2937;
+}
+
+/* Dark mode tooltip */
+.dark .sidebar-tooltip {
+  background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+  color: #1f2937;
+}
+
+.dark .sidebar-tooltip::before {
+  border-right-color: #f9fafb;
+}
+
+/* Show tooltip on hover */
+.sidebar-item:hover .sidebar-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Active item glow effect */
+.sidebar-item-active {
+  position: relative;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25);
+}
+
+.sidebar-item-active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  filter: blur(8px);
+  opacity: 0.3;
+  z-index: -1;
+}
+
+/* Hover animations */
+.sidebar-item:hover {
+  transform: translateX(2px);
+}
+
+.sidebar-collapsed .sidebar-item:hover {
+  transform: translateX(0) scale(1.05);
+}
+
+/* Badge animations */
+.sidebar-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* User profile section */
+.sidebar-user-profile {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+}
+
+.dark .sidebar-user-profile {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  border: 1px solid rgba(75, 85, 99, 0.6);
+}
+
+/* Avatar gradient */
+.sidebar-avatar {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25);
+}
+
+/* Enhanced mobile sidebar */
+@media (max-width: 1023px) {
+  .sidebar-mobile-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .sidebar-mobile {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Section dividers */
+.sidebar-section-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(156, 163, 175, 0.3) 50%,
+    transparent 100%
+  );
+  margin: 1.5rem 0;
+}
+
+.dark .sidebar-section-divider {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(75, 85, 99, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+/* Loading states */
+.sidebar-loading {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(156, 163, 175, 0.3);
+  border-radius: 50%;
+  border-top-color: #10b981;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive breakpoints for sidebar */
+@media (min-width: 1280px) {
+  :root {
+    --sidebar-width: 16rem;
+  }
+}
+
+@media (max-width: 1279px) {
+  :root {
+    --sidebar-width: 4rem;
+  }
+}
+
+/* Focus states for accessibility */
+.sidebar-item:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}

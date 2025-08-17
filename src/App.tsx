@@ -27,35 +27,13 @@ import FacebookCallback from "./components/auth/callbacks/FacebookCallback";
 import LinkedinCallback from "./components/auth/callbacks/LinkedinCallback";
 
 // Main App Pages
-import { DashboardPage } from "./components/dashboard/DashboardPage";
 import MapPage from "./components/map/MapPage";
-import { AnalyticsPage } from "./components/analytics/AnalyticsPage";
-import { MonitoringPage } from "./components/monitoring/MonitoringPage";
-import { PredictionsPage } from "./components/predictions/PredictionsPage";
-import { AlertsPage } from "./components/alerts/AlertsPage";
-import AIAssistantPage from "./components/ai/AIAssistantPage";
-import ExportPage from "./components/export/ExportPage";
-import { ProjectsPage } from "./components/projects/ProjectsPage";
-import CalendarPage from "./components/calendar/CalendarPage";
-import ReportsPage from "./components/reports/ReportsPage";
-import HistoryPage from "./components/history/HistoryPage";
-import SettingsPage from "./components/settings/SettingsPage";
-import HelpPage from "./components/help/HelpPage";
 
 // Data Pages
-import { ClimatePage } from "./components/data/ClimatePage";
-import { VegetationPage } from "./components/data/VegetationPage";
-import TemperaturePage from "./components/data/TemperaturePage";
-import PrecipitationPage from "./components/data/PrecipitationPage";
 
 // New Pages
-import { UsersPage } from "./components/users/UsersPage";
 import { DatasetsPage } from "./components/datasets/DatasetsPage";
-import { WeatherPage } from "./components/weather/WeatherPage";
-import { OverviewPage } from "./components/overview/OverviewPage";
 
-// Error Pages
-import NotFoundPage from "./components/error/NotFoundPage";
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
@@ -170,16 +148,6 @@ const App: React.FC = () => {
 
         {/* Protected routes */}
         <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <DashboardPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/map"
           element={
             <ProtectedRoute>
@@ -189,210 +157,7 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/analytics"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <AnalyticsPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/monitoring"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <MonitoringPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/predictions"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <PredictionsPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/alerts"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <AlertsPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/ai-assistant"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <AIAssistantPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/export"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <ExportPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/projects"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <ProjectsPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/calendar"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <CalendarPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/reports"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <ReportsPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <HistoryPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <SettingsPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/help"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <HelpPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Data routes */}
-        <Route
-          path="/data/climate"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <ClimatePage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/data/vegetation"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <VegetationPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/data/temperature"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <TemperaturePage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/data/precipitation"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <PrecipitationPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* New routes */}
-        <Route
-          path="/users"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <UsersPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/datasets"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <DatasetsPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/weather"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <WeatherPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/overview"
-          element={
-            <ProtectedRoute>
-              <Base>
-                <OverviewPage />
-              </Base>
-            </ProtectedRoute>
-          }
-        />
+        
         {/* Root redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 

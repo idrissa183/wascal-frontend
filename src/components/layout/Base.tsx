@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../include/Navbar";
-import Sidebar from "../include/Sidebar";
 import Footer from "../include/Footer";
 import { useRouterContext } from "../../hooks/useRouterContext";
+import Sidebar from "../include/Sidebar";
 
 interface BaseProps {
   children: React.ReactNode;
@@ -67,9 +67,11 @@ export default function Base({ children, showFooter = true }: BaseProps) {
         sidebarOpen={sidebarOpen}
       />
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+      
+      />
 
-      <div className="lg:ml-80 flex flex-col flex-1 min-w-0">
+      <div className="sidebar-content flex flex-col flex-1 min-w-0">
         <main className="pt-16 flex-1 flex flex-col min-h-0">
           <div
             className={`${
