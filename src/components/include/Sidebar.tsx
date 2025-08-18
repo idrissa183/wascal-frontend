@@ -23,6 +23,7 @@ import {
   MagnifyingGlassIcon,
   ChevronRightIcon,
   XMarkIcon,
+  CalendarDateRangeIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslations } from "../../hooks/useTranslations";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -36,6 +37,7 @@ import {
 } from "../../services/geographic.service";
 import type { User } from "../../types/auth";
 import { getCountryName } from "../../utils/geophaphic";
+import { CalendarClock, CalendarDaysIcon, CalendarRange } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -964,11 +966,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const SectionIcon =
       section === "years"
-        ? CalendarIcon
+        ? CalendarRange
         : section === "months"
-        ? CalendarIcon
+        ? CalendarDateRangeIcon
         : section === "days"
-        ? CalendarIcon
+        ? CalendarDaysIcon
+        : section === "times"
+        ? CalendarClock
         : CalendarIcon; // icon par défaut
 
     return (

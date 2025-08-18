@@ -373,5 +373,14 @@
       "batch_processing": "Traitement par Lots",
       "batch_description": "Traiter et exporter efficacement de grands ensembles de données"
     }
+  },
+  "notFound": {
+    "title": "Page Non Trouvée",
+    "message": "Désolé, nous n'avons pas pu trouver la page que vous cherchez. La page a peut-être été déplacée, supprimée, ou l'URL pourrait être incorrecte.",
+    "goHome": "Aller à l'Accueil",
+    "dashboard": "Tableau de Bord",
+    "map": "Carte",
+    "helpText": "Si vous pensez qu'il s'agit d'une erreur, veuillez contacter notre équipe de support.",
+    "goBack": "Retourner à la page précédente"
   }
 }

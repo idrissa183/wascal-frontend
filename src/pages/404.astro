@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Page Not Found - EcoWatch">
+  <div id="not-found-root"></div>
+</Layout>
+
+<script>
+  import { NotFoundPage } from "../components/error/NotFoundPage";
+  import { LanguageProvider } from "../contexts/LanguageContext";
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+
+  const container = document.getElementById("not-found-root");
+  if (container) {
+    const root = createRoot(container);
+    root.render(
+      React.createElement(
+        LanguageProvider,
+        null,
+        React.createElement(NotFoundPage)
+      )
+    );
+  }
+</script>

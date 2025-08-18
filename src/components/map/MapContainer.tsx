@@ -13,9 +13,6 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
   MapIcon,
-  CursorArrowRippleIcon,
-  RectangleStackIcon,
-  StopIcon,
   ChevronUpIcon,
   ChevronDownIcon,
   EyeIcon,
@@ -58,6 +55,7 @@ import { FaLocationDot } from "react-icons/fa6";
 import { renderToStaticMarkup } from "react-dom/server";
 import { LuRectangleHorizontal } from "react-icons/lu";
 import { PiPolygonBold } from "react-icons/pi";
+import { Save } from "lucide-react";
 
 interface MapContainerProps {
   onSelectionChange?: (selection: any) => void;
@@ -916,7 +914,7 @@ export default function MapContainer({
           }`}
           title="Mes Champs"
         >
-          <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
+          <Save className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
       </div>
 
@@ -949,7 +947,7 @@ export default function MapContainer({
                 }`}
                 title="Sélection par point"
               >
-                <CursorArrowRippleIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={() => handleToolChange("rectangle")}

@@ -141,9 +141,9 @@ export function UserFieldsPanel({
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
                 Aucun champ créé
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">
+              {/* <p className="text-xs text-gray-500 dark:text-gray-500">
                 Utilisez les outils ci-dessus pour dessiner votre première zone
-              </p>
+              </p> */}
             </div>
           )}
 
