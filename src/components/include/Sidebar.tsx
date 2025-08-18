@@ -403,7 +403,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     geographicService.clearCache();
     loadCountries();
     // Force re-render of country names
-    setLanguageRenderKey(prev => prev + 1);
+    setLanguageRenderKey((prev) => prev + 1);
   }, [language]);
 
   // Force re-render when language changes by re-running search
@@ -889,7 +889,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     }
                   }}
                 />
-                <span>Select all</span>
+                <span>{t.sidebar?.select_all || "Select all"}</span>
               </label>
             </div>
 
@@ -1184,7 +1184,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     </div>
   );
 
-
   const getInitials = (user: User | null) => {
     if (user?.firstname && user?.lastname) {
       return `${user.firstname.charAt(0)}${user.lastname.charAt(
@@ -1236,9 +1235,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           const countryFromResults = searchResults?.countries.find(
             (c) => c.id.toString() === itemId
           );
-          const country = countryFromResults ||
+          const country =
+            countryFromResults ||
             countries.find((c) => c.id.toString() === itemId);
-          entityName = countryFromResults?.country_name || 
+          entityName =
+            countryFromResults?.country_name ||
             (country ? getCountryName(country, language) : "");
         } else if (section === "regions") {
           for (const country of countries) {
@@ -1545,7 +1546,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                       />
                       <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                        Select all countries
+                        {t.sidebar?.select_all || "Select all"}
                       </span>
                     </label>
                   );
@@ -1556,7 +1557,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     (c) => c.id === country.id
                   ) as CountryWithRegions | undefined;
                   return (
-                    <div key={`${country.id}-${languageRenderKey}`} className="space-y-1">
+                    <div
+                      key={`${country.id}-${languageRenderKey}`}
+                      className="space-y-1"
+                    >
                       {/* Country Level */}
                       <div className="flex items-center space-x-1">
                         <button
@@ -1627,7 +1631,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                     className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                                   />
                                   <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                                    Select all regions
+                                    {t.sidebar?.select_all || "Select all"}
                                   </span>
                                 </label>
                               );
@@ -1709,7 +1713,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                             className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                                           />
                                           <span className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                                            Select all provinces
+                                            {t.sidebar?.select_all ||
+                                              "Select all"}
                                           </span>
                                         </label>
                                       );
