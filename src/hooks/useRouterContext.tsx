@@ -1,16 +1,11 @@
-import { useLocation } from "react-router-dom";
-
 /**
- * Hook to detect if we're in a React Router context
- * Returns true if React Router is available, false otherwise
+ * Hook to detect if we're in a router context
+ * Since we're using Astro routing, this always returns false
+ * as we don't need React Router in Astro pages
  */
 export function useRouterContext(): boolean {
-  try {
-    useLocation();
-    return true;
-  } catch (error) {
-    return false;
-  }
+  // In Astro, we use native routing, not React Router
+  return false;
 }
 
 export default useRouterContext;
