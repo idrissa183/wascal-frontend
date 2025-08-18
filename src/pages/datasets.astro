@@ -8,12 +8,19 @@ import Layout from "../layouts/Layout.astro";
 
 <script>
   import { DatasetsPage } from "../components/datasets/DatasetsPage";
+  import { LanguageProvider } from "../contexts/LanguageContext";
   import React from "react";
   import { createRoot } from "react-dom/client";
 
   const container = document.getElementById("datasets-root");
   if (container) {
     const root = createRoot(container);
-    root.render(React.createElement(DatasetsPage));
+    root.render(
+      React.createElement(
+        LanguageProvider,
+        null,
+        React.createElement(DatasetsPage)
+      )
+    );
   }
 </script>

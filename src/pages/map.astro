@@ -9,6 +9,7 @@ import Layout from "../layouts/Layout.astro";
 <script>
   import MapContainer from "../components/map/MapContainer";
   import Base from "../components/layout/Base";
+  import { LanguageProvider } from "../contexts/LanguageContext";
   import React from "react";
   import { createRoot } from "react-dom/client";
 
@@ -35,6 +36,12 @@ import Layout from "../layouts/Layout.astro";
   const container = document.getElementById("map-root");
   if (container) {
     const root = createRoot(container);
-    root.render(React.createElement(MapPage));
+    root.render(
+      React.createElement(
+        LanguageProvider,
+        null,
+        React.createElement(MapPage)
+      )
+    );
   }
 </script>
