@@ -3,6 +3,7 @@
  */
 
 import { getApiBaseUrl } from '../constants/index';
+import { authService } from './auth.service';
 
 export interface Country {
   id: number;
@@ -83,9 +84,13 @@ class GeographicService {
     const startTime = performance.now();
     
     try {
+      // Obtenir les headers d'authentification
+      const authHeaders = authService.getAuthHeaders();
+      
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
+          ...authHeaders,
           ...options?.headers,
         },
         ...options,
