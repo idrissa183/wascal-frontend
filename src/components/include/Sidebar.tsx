@@ -252,6 +252,10 @@ const temporalData = {
   })),
 };
 
+const getDaysInMonth = (year: number, month: number): number => {
+  return new Date(year, month, 0).getDate();
+};
+
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations();
   const { user, getCurrentUser, isLoading, error } = useAuthStore();
@@ -328,6 +332,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     departments: [],
   });
 
+  const [availableDays, setAvailableDays] = useState<FilterItem[]>(
+    temporalData.days
+  );
+
   // États pour la recherche dans les filtres
   const [searchTerms, setSearchTerms] = useState<SearchTerms>({
     datasets: "",
@@ -361,6 +369,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       onClose();
     }
   };
+
+  useEffect(() => {
+    const year = selectedFilters.years[0]
+      ? parseInt(selectedFilters.years[0], 10)
+      : undefined;
+    const month = selectedFilters.months[0]
+      ? parseInt(selectedFilters.months[0], 10)
+      : undefined;
+    const daysInMonth = year && month ? getDaysInMonth(year, month) : 31;
+
+    const daysArray = Array.from({ length: daysInMonth }, (_, i) => ({
+      id: String(i + 1).padStart(2, "0"),
+      label: String(i + 1).padStart(2, "0"),
+    }));
+    setAvailableDays(daysArray);
+    setSelectedFilters((prev) => ({
+      ...prev,
+      days: prev.days.filter((day) => parseInt(day, 10) <= daysInMonth),
+    }));
+  }, [selectedFilters.months, selectedFilters.years]);
 
   // Load geographic data on component mount
   useEffect(() => {
@@ -882,7 +910,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     title: string
   ) => {
     const isExpanded = expandedSections[section as keyof ExpandedSections];
-    const items = temporalData[section];
+    const items = section === "days" ? availableDays : temporalData[section];
     const searchTerm = searchTerms[section as keyof SearchTerms];
     const selectedItems = selectedFilters[section as keyof SelectedFilters];
 
