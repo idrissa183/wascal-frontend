@@ -9,6 +9,7 @@ import Layout from "../../../layouts/Layout.astro";
 <script>
   import { AuthCallbackClient } from "../../../components/auth/AuthCallbackClient";
   import { TitleUpdater } from "../../../components/common/TitleUpdater";
+  import { LanguageProvider } from "../../../contexts/LanguageContext";
   import { createRoot } from "react-dom/client";
   import { createElement, Fragment } from "react";
 
@@ -17,10 +18,14 @@ import Layout from "../../../layouts/Layout.astro";
     const root = createRoot(container);
     root.render(
       createElement(
-        Fragment,
+        LanguageProvider,
         null,
-        createElement(TitleUpdater, { titleKey: "oauthGithubPageTitle" }),
-        createElement(AuthCallbackClient)
+        createElement(
+          Fragment,
+          null,
+          createElement(TitleUpdater, { titleKey: "oauthGithubPageTitle" }),
+          createElement(AuthCallbackClient)
+        )
       )
     );
   }

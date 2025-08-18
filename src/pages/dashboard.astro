@@ -10,10 +10,17 @@ import Layout from "../layouts/Layout.astro";
   import { DashboardPage } from "../components/dashboard/DashboardPage";
   import React from "react";
   import { createRoot } from "react-dom/client";
+  import { LanguageProvider } from "../contexts/LanguageContext";
 
   const container = document.getElementById("dashboard-root");
   if (container) {
     const root = createRoot(container);
-    root.render(React.createElement(DashboardPage));
+    root.render(
+      React.createElement(
+        LanguageProvider,
+        null,
+        React.createElement(DashboardPage)
+      )
+    );
   }
 </script>
