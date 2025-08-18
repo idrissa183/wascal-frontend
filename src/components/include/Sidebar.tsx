@@ -965,7 +965,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
               <input
                 type="text"
-                placeholder={`Search ${title.toLowerCase()}...`}
+                placeholder={
+                  t.sidebar?.search_placeholder?.replace(
+                    "{0}",
+                    title.toLowerCase()
+                  ) || `Search ${title.toLowerCase()}...`
+                }
                 className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
                 value={searchTerm}
                 onChange={(e) =>
@@ -999,7 +1004,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     }
                   }}
                 />
-                <span>Select all</span>
+                <span>{t.sidebar?.select_all || "Select all"}</span>
               </label>
             </div>
 
@@ -1052,7 +1057,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 }
                 className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
               >
-                {showAll[section as keyof ShowAll] ? "Show less" : "Show more"}
+                {showAll[section as keyof ShowAll]
+                  ? t.sidebar?.show_less || "Show less"
+                  : t.sidebar?.show_more || "Show more"}{" "}
               </button>
             )}
           </div>
@@ -1090,10 +1097,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Contenu de la section Periodicity */}
         {isExpanded && (
           <div className="ml-6 mt-2 space-y-3">
-            {renderTemporalFilterSection("years", "Year")}
-            {renderTemporalFilterSection("months", "Month")}
-            {renderTemporalFilterSection("days", "Day")}
-            {renderTemporalFilterSection("times", "Time")}
+            {renderTemporalFilterSection("years", t.sidebar?.year || "Year")}
+            {renderTemporalFilterSection("months", t.sidebar?.month || "Month")}
+            {renderTemporalFilterSection("days", t.sidebar?.day || "Day")}
+            {renderTemporalFilterSection("times", t.sidebar?.time || "Time")}
           </div>
         )}
       </div>

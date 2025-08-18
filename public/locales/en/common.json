@@ -278,7 +278,14 @@
     "search_placeholder": "Search {0}...",
     "capital": "Capital",
     "country": "Country",
-    "region": "Region"
+    "region": "Region",
+    "periodicity": "Periodicity",
+    "geographic": "Geographic",
+    "year": "Year",
+    "month": "Month",
+    "day": "Day",
+    "time": "Time",
+    "select_all": "Select all"
   },
   "descriptions": {
     "map_description": "Interactive map for environmental monitoring",
