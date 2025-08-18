@@ -1661,8 +1661,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       "categories",
                       t.sidebar?.categories || "Categories"
                     )}
-                    {renderPeriodicitySection()}
                     {renderFilterSection("datasets", t.datasets, true)}
+                    {renderPeriodicitySection()}
                     {renderGeographicHierarchy()}
                   </div>
                 )}
