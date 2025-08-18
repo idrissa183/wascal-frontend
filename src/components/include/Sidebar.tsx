@@ -536,18 +536,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/map",
       active: isActiveRoute("/map"),
     },
-    {
-      icon: ChartBarIcon,
-      label: t.analytics,
-      href: "/analytics",
-      active: isActiveRoute("/analytics"),
-    },
-    {
-      icon: EyeIcon,
-      label: t.monitoring,
-      href: "/monitoring",
-      active: isActiveRoute("/monitoring"),
-    },
+    // {
+    //   icon: ChartBarIcon,
+    //   label: t.analytics,
+    //   href: "/analytics",
+    //   active: isActiveRoute("/analytics"),
+    // },
+    // {
+    //   icon: EyeIcon,
+    //   label: t.monitoring,
+    //   href: "/monitoring",
+    //   active: isActiveRoute("/monitoring"),
+    // },
   ];
 
   const dataItems: MenuItem[] = [
@@ -1616,21 +1616,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 items={menuItems}
                 sectionKey="main"
               />
-              <SidebarSection
+              {/* <SidebarSection
                 title={t.dataLayers}
                 items={dataItems}
                 sectionKey="dataLayers"
-              />
-              <SidebarSection
+              /> */}
+              {/* <SidebarSection
                 title={t.tools}
                 items={toolItems}
                 sectionKey="tools"
-              />
-              <SidebarSection
+              /> */}
+              {/* <SidebarSection
                 title={t.sidebar?.management || "Management"}
                 items={otherItems}
                 sectionKey="management"
-              />
+              /> */}
 
               {/* Section Filtres WASCAL */}
               <div className="mb-6">
