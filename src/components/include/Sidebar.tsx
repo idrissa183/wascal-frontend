@@ -34,6 +34,7 @@ import {
   type Department,
 } from "../../services/geographic.service";
 import type { User } from "../../types/auth";
+import { getCountryName } from "../../utils/geophaphic";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -260,6 +261,7 @@ const getDaysInMonth = (year: number, month: number): number => {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const t = useTranslations();
+  const { language } = useLanguage();
   const { user, getCurrentUser, isLoading, error } = useAuthStore();
   const { addSelection, removeSelection, selectedEntities } =
     useGeographicStore();
@@ -279,7 +281,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [countries, setCountries] = useState<CountryWithRegions[]>([]);
   const [loadingGeographic, setLoadingGeographic] = useState(false);
   const [searchResults, setSearchResults] = useState<{
-    countries: Country[];
+    countries: (Country & { country_name?: string })[];
     regionsWithCountry: (Region & { country_name?: string })[];
     provincesWithHierarchy: (Province & {
       region_name?: string;
@@ -333,6 +335,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [availableDays, setAvailableDays] = useState<FilterItem[]>(
     temporalData.days
   );
+
+  // Force re-render key when language changes
+  const [languageRenderKey, setLanguageRenderKey] = useState(0);
 
   // États pour la recherche dans les filtres
   const [searchTerms, setSearchTerms] = useState<SearchTerms>({
@@ -391,10 +396,37 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }));
   }, [selectedFilters.months, selectedFilters.years]);
 
-  // Load geographic data on component mount
+  // Load geographic data on component mount and when language changes
   useEffect(() => {
+    // Clear cache when language changes to ensure fresh data
+    geographicService.clearCache();
     loadCountries();
-  }, []);
+    // Force re-render of country names
+    setLanguageRenderKey(prev => prev + 1);
+  }, [language]);
+
+  // Force re-render when language changes by re-running search
+  useEffect(() => {
+    if (searchTerms.geographic.length >= 2) {
+      // Re-run search with new language
+      const searchAgain = async () => {
+        try {
+          setLoadingGeographic(true);
+          const results = await geographicService.searchGeographic(
+            searchTerms.geographic,
+            language
+          );
+          setSearchResults(results);
+        } catch (error) {
+          console.error("Error re-searching after language change:", error);
+          setSearchResults(null);
+        } finally {
+          setLoadingGeographic(false);
+        }
+      };
+      searchAgain();
+    }
+  }, [language]); // This effect runs when language changes
 
   // Handle geographic search with optimized debouncing
   useEffect(() => {
@@ -406,7 +438,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           const startTime = performance.now();
 
           const results = await geographicService.searchGeographic(
-            searchTerms.geographic
+            searchTerms.geographic,
+            language
           );
 
           const endTime = performance.now();
@@ -435,7 +468,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return () => {
       clearTimeout(delayedSearch);
     };
-  }, [searchTerms.geographic]);
+  }, [searchTerms.geographic, language]);
 
   // Sync selected entities with local filter state on mount
   useEffect(() => {
@@ -1150,6 +1183,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     </div>
   );
 
+
   const getInitials = (user: User | null) => {
     if (user?.firstname && user?.lastname) {
       return `${user.firstname.charAt(0)}${user.lastname.charAt(
@@ -1198,8 +1232,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         let entityName = "";
 
         if (section === "countries") {
-          const country = countries.find((c) => c.id.toString() === itemId);
-          entityName = country?.shape_name || "";
+          const countryFromResults = searchResults?.countries.find(
+            (c) => c.id.toString() === itemId
+          );
+          const country = countryFromResults ||
+            countries.find((c) => c.id.toString() === itemId);
+          entityName = countryFromResults?.country_name || 
+            (country ? getCountryName(country, language) : "");
         } else if (section === "regions") {
           for (const country of countries) {
             const region = country.regions?.find(
@@ -1354,7 +1393,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {/* Countries in search results */}
                 {searchResults.countries.map((country) => (
                   <div
-                    key={`search-country-${country.id}`}
+                    key={`search-country-${country.id}-${languageRenderKey}`}
                     className="space-y-1"
                   >
                     <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
@@ -1370,7 +1409,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                          🌍 {country.shape_name}
+                          🌍 {getCountryName(country, language)}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {country.shape_iso || country.shape_iso_2}
@@ -1516,7 +1555,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     (c) => c.id === country.id
                   ) as CountryWithRegions | undefined;
                   return (
-                    <div key={country.id} className="space-y-1">
+                    <div key={`${country.id}-${languageRenderKey}`} className="space-y-1">
                       {/* Country Level */}
                       <div className="flex items-center space-x-1">
                         <button
@@ -1546,7 +1585,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2">
                               <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                                {country.shape_name}
+                                {getCountryName(country, language)}
                               </div>
                               {selectedEntities.find(
                                 (e) =>
