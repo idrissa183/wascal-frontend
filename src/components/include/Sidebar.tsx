@@ -3,7 +3,6 @@ import { useLanguage } from "../../hooks/useLanguage";
 import {
   HomeIcon,
   MapIcon,
-  ChartBarIcon,
   CloudIcon,
   BeakerIcon,
   BellIcon,
@@ -106,6 +105,9 @@ interface ShowAll {
   months: boolean;
   days: boolean;
   times: boolean;
+  countries: boolean;
+  regions: Record<string, boolean>;
+  provinces: Record<string, boolean>;
 }
 
 interface ExpandedCountries {
@@ -276,10 +278,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Geographic data states
   const [countries, setCountries] = useState<CountryWithRegions[]>([]);
   const [loadingGeographic, setLoadingGeographic] = useState(false);
-  const [expandedCountries, setExpandedCountries] = useState<ExpandedCountries>(
-    {}
-  );
-  const [expandedRegions, setExpandedRegions] = useState<ExpandedRegions>({});
   const [searchResults, setSearchResults] = useState<{
     countries: Country[];
     regionsWithCountry: (Region & { country_name?: string })[];
@@ -357,6 +355,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     months: false,
     days: false,
     times: false,
+    countries: false,
+    regions: {},
+    provinces: {},
   });
 
   const isActiveRoute = (href: string): boolean => {
@@ -710,11 +711,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }));
   };
 
-  const toggleShowAll = (section: keyof ShowAll) => {
-    setShowAll((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
+  const toggleShowAll = (section: keyof ShowAll, id?: string) => {
+    setShowAll((prev) => {
+      if (section === "regions" || section === "provinces") {
+        if (!id) return prev;
+        return {
+          ...prev,
+          [section]: {
+            ...(prev[section] as Record<string, boolean>),
+            [id]: !(prev[section] as Record<string, boolean>)[id],
+          },
+        };
+      }
+      return {
+        ...prev,
+        [section]: !(prev[section] as boolean),
+      };
+    });
   };
 
   const getFilteredItems = (section: keyof typeof filterData) => {
@@ -1236,6 +1249,28 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }));
   };
 
+  const handleSelectAll = (
+    section: keyof SelectedFilters,
+    itemIds: string[]
+  ) => {
+    const allSelected = itemIds.every((id) =>
+      selectedFilters[section].includes(id)
+    );
+
+    itemIds.forEach((id) => {
+      const isSelected = selectedFilters[section].includes(id);
+      if (allSelected) {
+        if (isSelected) {
+          handleFilterToggle(section, id);
+        }
+      } else {
+        if (!isSelected) {
+          handleFilterToggle(section, id);
+        }
+      }
+    });
+  };
+
   // New function to render hierarchical geographic data
   const renderGeographicHierarchy = () => {
     const hasSearchTerm = searchTerms.geographic.length >= 2;
@@ -1247,7 +1282,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               .toLowerCase()
               .includes(searchTerms.geographic.toLowerCase())
           );
-
+    const countriesToShow = showAll.countries
+      ? displayCountries
+      : displayCountries.slice(0, 5);
+    const showMoreCountries = displayCountries.length > 5;
     return (
       <div className="mb-3">
         <div
@@ -1442,7 +1480,30 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ) : (
               // Render hierarchical tree view when no search
               <div className="space-y-1">
-                {displayCountries.map((country) => {
+                {(() => {
+                  const countryIds = displayCountries.map((c) =>
+                    c.id.toString()
+                  );
+                  const allSelected = countryIds.every((id) =>
+                    selectedFilters.countries.includes(id)
+                  );
+                  return (
+                    <label className="flex items-center space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={() =>
+                          handleSelectAll("countries", countryIds)
+                        }
+                        className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                      />
+                      <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                        Select all countries
+                      </span>
+                    </label>
+                  );
+                })()}
+                {countriesToShow.map((country) => {
                   // Find corresponding country in the hierarchy data
                   const hierarchyCountry = countries.find(
                     (c) => c.id === country.id
@@ -1501,109 +1562,201 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       {hierarchyCountry?.isExpanded &&
                         hierarchyCountry?.regions && (
                           <div className="ml-4 space-y-1">
-                            {hierarchyCountry.regions.map(
-                              (region: RegionWithProvinces) => (
-                                <div key={region.id} className="space-y-1">
-                                  <div className="flex items-center space-x-1">
-                                    <button
-                                      onClick={() =>
-                                        toggleRegionExpansion(
-                                          country.id,
-                                          region.id
+                            {(() => {
+                              const regionIds = hierarchyCountry.regions.map(
+                                (r) => r.id.toString()
+                              );
+                              const allRegionsSelected = regionIds.every((id) =>
+                                selectedFilters.regions.includes(id)
+                              );
+                              return (
+                                <label className="flex items-center space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={allRegionsSelected}
+                                    onChange={() =>
+                                      handleSelectAll("regions", regionIds)
+                                    }
+                                    className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                                  />
+                                  <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                                    Select all regions
+                                  </span>
+                                </label>
+                              );
+                            })()}
+                            {(showAll.regions[country.id.toString()]
+                              ? hierarchyCountry.regions
+                              : hierarchyCountry.regions.slice(0, 5)
+                            ).map((region: RegionWithProvinces) => (
+                              <div key={region.id} className="space-y-1">
+                                <div className="flex items-center space-x-1">
+                                  <button
+                                    onClick={() =>
+                                      toggleRegionExpansion(
+                                        country.id,
+                                        region.id
+                                      )
+                                    }
+                                    className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                                  >
+                                    {region.isExpanded ? (
+                                      <ChevronDownIcon className="w-3 h-3 text-gray-400" />
+                                    ) : (
+                                      <ChevronRightIcon className="w-3 h-3 text-gray-400" />
+                                    )}
+                                  </button>
+                                  <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedFilters.regions.includes(
+                                        region.id.toString()
+                                      )}
+                                      onChange={() =>
+                                        handleFilterToggle(
+                                          "regions",
+                                          region.id.toString()
                                         )
                                       }
-                                      className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                                    >
-                                      {region.isExpanded ? (
-                                        <ChevronDownIcon className="w-3 h-3 text-gray-400" />
-                                      ) : (
-                                        <ChevronRightIcon className="w-3 h-3 text-gray-400" />
-                                      )}
-                                    </button>
-                                    <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedFilters.regions.includes(
-                                          region.id.toString()
+                                      className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center space-x-2">
+                                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                                          {region.shape_name}
+                                        </div>
+                                        {selectedEntities.find(
+                                          (e) =>
+                                            e.id === region.id.toString() &&
+                                            e.type === "region"
+                                        )?.isLoading && (
+                                          <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
                                         )}
-                                        onChange={() =>
-                                          handleFilterToggle(
-                                            "regions",
+                                      </div>
+                                    </div>
+                                  </label>
+                                </div>
+
+                                {/* Provinces Level */}
+                                {region.isExpanded && region.provinces && (
+                                  <div className="ml-4 space-y-1">
+                                    {(() => {
+                                      const provinceIds = region.provinces.map(
+                                        (p) => p.id.toString()
+                                      );
+                                      const allProvincesSelected =
+                                        provinceIds.every((id) =>
+                                          selectedFilters.provinces.includes(id)
+                                        );
+                                      return (
+                                        <label className="flex items-center space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
+                                          <input
+                                            type="checkbox"
+                                            checked={allProvincesSelected}
+                                            onChange={() =>
+                                              handleSelectAll(
+                                                "provinces",
+                                                provinceIds
+                                              )
+                                            }
+                                            className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                                          />
+                                          <span className="text-xs text-gray-500 dark:text-gray-500 font-medium">
+                                            Select all provinces
+                                          </span>
+                                        </label>
+                                      );
+                                    })()}
+                                    {(showAll.provinces[region.id.toString()]
+                                      ? region.provinces
+                                      : region.provinces.slice(0, 5)
+                                    ).map((province: Province) => (
+                                      <div
+                                        key={province.id}
+                                        className="flex items-center space-x-1"
+                                      >
+                                        <span className="w-3.5 h-3.5"></span>
+                                        <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
+                                          <input
+                                            type="checkbox"
+                                            checked={selectedFilters.provinces.includes(
+                                              province.id.toString()
+                                            )}
+                                            onChange={() =>
+                                              handleFilterToggle(
+                                                "provinces",
+                                                province.id.toString()
+                                              )
+                                            }
+                                            className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                                          />
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center space-x-2">
+                                              <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
+                                                {province.shape_name}
+                                              </div>
+                                              {selectedEntities.find(
+                                                (e) =>
+                                                  e.id ===
+                                                    province.id.toString() &&
+                                                  e.type === "province"
+                                              )?.isLoading && (
+                                                <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </label>
+                                      </div>
+                                    ))}
+                                    {region.provinces.length > 5 && (
+                                      <button
+                                        onClick={() =>
+                                          toggleShowAll(
+                                            "provinces",
                                             region.id.toString()
                                           )
                                         }
-                                        className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                                      />
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center space-x-2">
-                                          <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                                            {region.shape_name}
-                                          </div>
-                                          {selectedEntities.find(
-                                            (e) =>
-                                              e.id === region.id.toString() &&
-                                              e.type === "region"
-                                          )?.isLoading && (
-                                            <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </label>
+                                        className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                                      >
+                                        {showAll.provinces[region.id.toString()]
+                                          ? t.sidebar?.show_less || "Show less"
+                                          : t.sidebar?.show_more || "Show more"}
+                                      </button>
+                                    )}
                                   </div>
-
-                                  {/* Provinces Level */}
-                                  {region.isExpanded && region.provinces && (
-                                    <div className="ml-4 space-y-1">
-                                      {region.provinces.map(
-                                        (province: Province) => (
-                                          <div
-                                            key={province.id}
-                                            className="flex items-center space-x-1"
-                                          >
-                                            <span className="w-3.5 h-3.5"></span>
-                                            <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
-                                              <input
-                                                type="checkbox"
-                                                checked={selectedFilters.provinces.includes(
-                                                  province.id.toString()
-                                                )}
-                                                onChange={() =>
-                                                  handleFilterToggle(
-                                                    "provinces",
-                                                    province.id.toString()
-                                                  )
-                                                }
-                                                className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                                              />
-                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-center space-x-2">
-                                                  <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">
-                                                    {province.shape_name}
-                                                  </div>
-                                                  {selectedEntities.find(
-                                                    (e) =>
-                                                      e.id ===
-                                                        province.id.toString() &&
-                                                      e.type === "province"
-                                                  )?.isLoading && (
-                                                    <div className="w-3 h-3 border border-green-500 border-t-transparent rounded-full animate-spin"></div>
-                                                  )}
-                                                </div>
-                                              </div>
-                                            </label>
-                                          </div>
-                                        )
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              )
+                                )}
+                              </div>
+                            ))}
+                            {hierarchyCountry.regions.length > 5 && (
+                              <button
+                                onClick={() =>
+                                  toggleShowAll(
+                                    "regions",
+                                    country.id.toString()
+                                  )
+                                }
+                                className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                              >
+                                {showAll.regions[country.id.toString()]
+                                  ? t.sidebar?.show_less || "Show less"
+                                  : t.sidebar?.show_more || "Show more"}
+                              </button>
                             )}
                           </div>
                         )}
                     </div>
                   ); // Fermeture du map pour displayCountries
                 })}
+                {showMoreCountries && (
+                  <button
+                    onClick={() => toggleShowAll("countries")}
+                    className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                  >
+                    {showAll.countries
+                      ? t.sidebar?.show_less || "Show less"
+                      : t.sidebar?.show_more || "Show more"}
+                  </button>
+                )}
               </div>
             )}
           </div>
