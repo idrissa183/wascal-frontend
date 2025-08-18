@@ -1324,7 +1324,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       hasSearchTerm && searchResults
         ? searchResults.countries
         : countries.filter((country) =>
-            country.shape_name
+            getCountryName(country, language)
               .toLowerCase()
               .includes(searchTerms.geographic.toLowerCase())
           );

@@ -4,6 +4,7 @@
 
 import { getApiBaseUrl } from "../constants/index";
 import { authService } from "./auth.service";
+import { getCountryName } from "../utils/geophaphic";
 
 export interface Country {
   id: number;
@@ -75,18 +76,6 @@ class GeographicService {
 
   constructor() {
     this.baseURL = `${getApiBaseUrl()}/api/v1/geographic`;
-  }
-
-  private getCountryName(country: Country, language: "en" | "fr"): string {
-    if (language === "en") {
-      // Pour l'anglais: UNIQUEMENT shape_name_en (pas de fallback car shape_name est en français)
-      return country.shape_name_en || `${country.shape_name} (EN translation missing)`;
-    }
-    if (language === "fr") {
-      // Pour le français: shape_name_fr en priorité, sinon shape_name (qui est déjà en français)
-      return country.shape_name_fr || country.shape_name;
-    }
-    return country.shape_name;
   }
 
   private async makeRequest<T>(url: string, options?: RequestInit): Promise<T> {
@@ -331,7 +320,7 @@ class GeographicService {
       // Filtrer côté client avec recherche étendue
       const countries = allCountries.filter(
         (country) =>
-          this.getCountryName(country, language)
+          getCountryName(country, language)
             .toLowerCase()
             .includes(searchTerm) ||
           country.shape_iso?.toLowerCase().includes(searchTerm) ||
@@ -352,7 +341,9 @@ class GeographicService {
       );
 
       // Créer des mappings pour enrichir les données hiérarchiques
-      const countryMap = new Map(allCountries.map(c => [c.id, this.getCountryName(c, language)]));
+      const countryMap = new Map(
+        allCountries.map((c) => [c.id, getCountryName(c, language)])
+      );
       const regionMap = new Map(
         allRegions.map((r) => [
           r.id,
@@ -403,7 +394,10 @@ class GeographicService {
       });
 
       const result = {
-        countries: countries.map(c => ({ ...c, country_name: this.getCountryName(c, language) })),
+        countries: countries.map((c) => ({
+          ...c,
+          country_name: getCountryName(c, language),
+        })),
         regionsWithCountry,
         provincesWithHierarchy,
         departmentsWithHierarchy,
@@ -440,7 +434,10 @@ class GeographicService {
   /**
    * Recherche de pays avec support étendu (nom, ISO, capitale)
    */
-  async searchCountries(query: string, language: 'en' | 'fr'): Promise<Country[]> {
+  async searchCountries(
+    query: string,
+    language: "en" | "fr"
+  ): Promise<Country[]> {
     const countries = await this.getCountries();
 
     if (!query || query.length < 2) {
@@ -451,7 +448,7 @@ class GeographicService {
 
     return countries.filter(
       (country) =>
-        this.getCountryName(country, language).toLowerCase().includes(searchTerm) ||
+        getCountryName(country, language).toLowerCase().includes(searchTerm) ||
         country.shape_iso?.toLowerCase().includes(searchTerm) ||
         country.shape_iso_2?.toLowerCase().includes(searchTerm) ||
         country.shape_city?.toLowerCase().includes(searchTerm)
