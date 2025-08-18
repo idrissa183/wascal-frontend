@@ -703,15 +703,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }));
   };
 
-  // const toggleFilter = (section: keyof SelectedFilters, filterId: string) => {
-  //   setSelectedFilters((prev) => ({
-  //     ...prev,
-  //     [section]: prev[section].includes(filterId)
-  //       ? prev[section].filter((id) => id !== filterId)
-  //       : [...prev[section], filterId],
-  //   }));
-  // };
-
   const handleSearch = (section: keyof SearchTerms, term: string) => {
     setSearchTerms((prev) => ({
       ...prev,
@@ -1157,16 +1148,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     return "U";
   };
 
-  // const clearAllFilters = () => {
-  //   setSelectedFilters({
-  //     datasets: [],
-  //     categories: [],
-  //     countries: [],
-  //     regions: [],
-  //     provinces: [],
-  //   });
-  // };
-
   const handleFilterToggle = (
     section: keyof SelectedFilters,
     itemId: string
@@ -1254,13 +1235,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         : [...prev[section], itemId],
     }));
   };
-
-  // const getTotalSelectedFilters = () => {
-  //   return Object.values(selectedFilters).reduce(
-  //     (total, filters) => total + filters.length,
-  //     0
-  //   );
-  // };
 
   // New function to render hierarchical geographic data
   const renderGeographicHierarchy = () => {
@@ -1721,59 +1695,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               />
             </div>
           </div>
-
-          {/* Footer avec résumé des filtres */}
-          {/* {getTotalSelectedFilters() > 0 && (
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-700 dark:text-gray-300 text-sm">
-                    {t.sidebar?.active_filters || "Active Filters"}
-                  </h4>
-                  <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                    {getTotalSelectedFilters()}{" "}
-                    {getTotalSelectedFilters() > 1
-                      ? t.sidebar?.selected_plural || "selected"
-                      : t.sidebar?.selected || "selected"}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  {Object.entries(selectedFilters).map(
-                    ([section, items]) =>
-                      items.length > 0 && (
-                        <div
-                          key={section}
-                          className="flex justify-between text-xs"
-                        >
-                          <span className="capitalize text-gray-600 dark:text-gray-400">
-                            {section}:
-                          </span>
-                          <span className="font-medium text-green-600 dark:text-green-400">
-                            {items.length}
-                          </span>
-                        </div>
-                      )
-                  )}
-                </div>
-              </div> */}
-
-          {/* Actions */}
-          {/* <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={clearAllFilters}
-                  className="flex-1 text-xs text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium py-2 px-3 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                >
-                  {t.sidebar?.clear || "Clear"}
-                </button>
-                <button
-                  type="button"
-                  className="flex-1 text-xs text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium py-2 px-3 border border-green-200 dark:border-green-800 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                >
-                  {t.sidebar?.apply || "Apply"}
-                </button>
-              </div>
-            </div> */}
 
           {/* User info at bottom */}
           <div className="p-3 border-t border-gray-200 dark:border-gray-700">
