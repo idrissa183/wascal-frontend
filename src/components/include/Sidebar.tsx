@@ -220,7 +220,6 @@ const filterData: Record<string, FilterItem[]> = {
     { id: "month", label: "Mois" },
     { id: "year", label: "Année" },
   ],
-  
 };
 
 // Données temporelles
@@ -351,7 +350,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     days: false,
     times: false,
   });
-
 
   const isActiveRoute = (href: string): boolean => {
     return currentPath === href || currentPath.startsWith(href + "/");
@@ -800,8 +798,42 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
             )}
 
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                  checked={
+                    selectedFilters.datasets.length ===
+                    filterData.datasets.length
+                  }
+                  onChange={() => {
+                    if (
+                      selectedFilters.datasets.length ===
+                      filterData.datasets.length
+                    ) {
+                      setSelectedFilters((prev) => ({
+                        ...prev,
+                        datasets: [],
+                      }));
+                    } else {
+                      setSelectedFilters((prev) => ({
+                        ...prev,
+                        datasets: filterData.datasets.map((item) => item.id),
+                      }));
+                    }
+                  }}
+                />
+                <span>Select all</span>
+              </label>
+            </div>
+
             {/* Liste des éléments */}
-            <div className="space-y-1">
+            <div
+              className={`space-y-1 max-h-60 overflow-y-auto
+              `}
+            >
+              {" "}
               {filteredItems.map((item) => (
                 <label
                   key={item.id}
@@ -839,7 +871,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               ))}
             </div>
 
-
             {/* Bouton Montrer plus/moins */}
             {shouldShowToggle(section) && (
               <button
@@ -866,21 +897,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const items = temporalData[section];
     const searchTerm = searchTerms[section as keyof SearchTerms];
     const selectedItems = selectedFilters[section as keyof SelectedFilters];
-    
+
     // Filtrage des éléments selon le terme de recherche
     const filteredItems = items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Limitation des éléments affichés (show more/less)
-    const itemsToShow = showAll[section as keyof ShowAll] 
-      ? filteredItems 
+    const itemsToShow = showAll[section as keyof ShowAll]
+      ? filteredItems
       : filteredItems.slice(0, 5);
 
-    const SectionIcon = section === 'years' ? CalendarIcon 
-      : section === 'months' ? CalendarIcon
-      : section === 'days' ? CalendarIcon
-      : CalendarIcon; // icon par défaut
+    const SectionIcon =
+      section === "years"
+        ? CalendarIcon
+        : section === "months"
+        ? CalendarIcon
+        : section === "days"
+        ? CalendarIcon
+        : CalendarIcon; // icon par défaut
 
     return (
       <div key={section} className="mb-3">
@@ -916,15 +951,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onChange={() => {
                       if (selectedItems.length === items.length) {
                         // Désélectionner tout
-                        setSelectedFilters(prev => ({
+                        setSelectedFilters((prev) => ({
                           ...prev,
-                          [section]: []
+                          [section]: [],
                         }));
                       } else {
                         // Sélectionner tout
-                        setSelectedFilters(prev => ({
+                        setSelectedFilters((prev) => ({
                           ...prev,
-                          [section]: items.map(item => item.id)
+                          [section]: items.map((item) => item.id),
                         }));
                       }
                     }}
@@ -949,9 +984,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 className="w-full pl-7 pr-3 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400"
                 value={searchTerm}
                 onChange={(e) =>
-                  setSearchTerms(prev => ({
+                  setSearchTerms((prev) => ({
                     ...prev,
-                    [section]: e.target.value
+                    [section]: e.target.value,
                   }))
                 }
               />
@@ -971,14 +1006,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onChange={() => {
                       const isSelected = selectedItems.includes(item.id);
                       if (isSelected) {
-                        setSelectedFilters(prev => ({
+                        setSelectedFilters((prev) => ({
                           ...prev,
-                          [section]: prev[section as keyof SelectedFilters].filter(id => id !== item.id)
+                          [section]: prev[
+                            section as keyof SelectedFilters
+                          ].filter((id) => id !== item.id),
                         }));
                       } else {
-                        setSelectedFilters(prev => ({
+                        setSelectedFilters((prev) => ({
                           ...prev,
-                          [section]: [...prev[section as keyof SelectedFilters], item.id]
+                          [section]: [
+                            ...prev[section as keyof SelectedFilters],
+                            item.id,
+                          ],
                         }));
                       }
                     }}
@@ -993,15 +1033,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Bouton Montrer plus/moins */}
             {filteredItems.length > 5 && (
               <button
-                onClick={() => setShowAll(prev => ({
-                  ...prev,
-                  [section]: !prev[section as keyof ShowAll]
-                }))}
+                onClick={() =>
+                  setShowAll((prev) => ({
+                    ...prev,
+                    [section]: !prev[section as keyof ShowAll],
+                  }))
+                }
                 className="text-green-600 dark:text-green-400 text-xs font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors"
               >
-                {showAll[section as keyof ShowAll]
-                  ? "Show less"
-                  : "Show more"}
+                {showAll[section as keyof ShowAll] ? "Show less" : "Show more"}
               </button>
             )}
           </div>
