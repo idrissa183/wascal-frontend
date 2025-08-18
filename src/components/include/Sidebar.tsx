@@ -22,6 +22,7 @@ import {
   ChevronUpIcon,
   MagnifyingGlassIcon,
   ChevronRightIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslations } from "../../hooks/useTranslations";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -1828,6 +1829,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         } lg:translate-x-0`}
       >
         <div className="h-full flex flex-col">
+          {/* Mobile close button */}
+          <div className="lg:hidden flex justify-end p-3 border-b border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-white transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              aria-label="Close sidebar"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+          </div>
+
           {/* Contenu principal - scrollable */}
           <div className="flex-1 overflow-y-auto px-3 py-4">
             <div className="space-y-2">

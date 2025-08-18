@@ -13,12 +13,12 @@ export function useTranslations(): Translations {
   useEffect(() => {
     let isMounted = true;
 
-    const loadTranslations = async (lang: string) => {
+    const loadTranslations = async () => {
       try {
         setIsLoading(true);
 
         // Construire l'URL complète pour les traductions
-        const translationUrl = `/locales/${lang}/common.json`;
+        const translationUrl = `/locales/${language}/common.json`;
         const response = await fetch(translationUrl);
 
         if (!response.ok) {
@@ -39,20 +39,10 @@ export function useTranslations(): Translations {
       }
     };
 
-    // Charger les traductions initiales
-    loadTranslations(language);
-
-    // Écouter les changements de langue globaux
-    const handleLanguageChange = (event: Event) => {
-      const newLang = (event as CustomEvent).detail.language;
-      loadTranslations(newLang);
-    };
-
-    window.addEventListener("languageChanged", handleLanguageChange);
+    loadTranslations();
 
     return () => {
       isMounted = false;
-      window.removeEventListener("languageChanged", handleLanguageChange);
     };
   }, [language]);
 

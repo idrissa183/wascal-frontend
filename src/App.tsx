@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useAuthStore } from "./stores/useAuthStore";
-import { useLanguage } from "./hooks/useLanguage";
+// import { useLanguage } from "./hooks/useLanguage";
 import { useTheme } from "./hooks/useTheme";
 
 // Layout Components
@@ -79,7 +79,7 @@ const App: React.FC = () => {
   const { getCurrentUser } = useAuthStore();
 
   // Initialize language and theme hooks to ensure they're available globally
-  useLanguage();
+  // useLanguage();
   useTheme();
 
   // Initialize auth state on app start
