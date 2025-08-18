@@ -753,6 +753,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const SectionIcon = filterSectionIcons[section];
     const isExpanded = expandedSections[section as keyof ExpandedSections];
     const filteredItems = getFilteredItems(section);
+    const key = section as keyof SelectedFilters;
 
     return (
       <div key={section} className="mb-3">
@@ -804,22 +805,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   type="checkbox"
                   className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
                   checked={
-                    selectedFilters.datasets.length ===
-                    filterData.datasets.length
+                    selectedFilters[key].length === filterData[section].length
                   }
                   onChange={() => {
                     if (
-                      selectedFilters.datasets.length ===
-                      filterData.datasets.length
+                      selectedFilters[key].length === filterData[section].length
                     ) {
                       setSelectedFilters((prev) => ({
                         ...prev,
-                        datasets: [],
+                        [key]: [],
                       }));
                     } else {
                       setSelectedFilters((prev) => ({
                         ...prev,
-                        datasets: filterData.datasets.map((item) => item.id),
+                        [key]: filterData[section].map((item) => item.id),
                       }));
                     }
                   }}
@@ -829,11 +828,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
 
             {/* Liste des éléments */}
-            <div
-              className={`space-y-1 max-h-60 overflow-y-auto
-              `}
-            >
-              {" "}
+            <div className={`space-y-1 max-h-60 overflow-y-auto`}>
               {filteredItems.map((item) => (
                 <label
                   key={item.id}
@@ -842,15 +837,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   <input
                     type="checkbox"
                     className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                    checked={selectedFilters[
-                      section as keyof SelectedFilters
-                    ].includes(item.id)}
-                    onChange={() =>
-                      handleFilterToggle(
-                        section as keyof SelectedFilters,
-                        item.id
-                      )
-                    }
+                    checked={selectedFilters[key].includes(item.id)}
+                    onChange={() => handleFilterToggle(key, item.id)}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
@@ -940,41 +928,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Contenu de la section */}
         {isExpanded && (
           <div className="ml-6 mt-2 space-y-2">
-            {/* Contrôles "Select all" / "At least one selection must be made" */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                  <input
-                    type="checkbox"
-                    className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                    checked={selectedItems.length === items.length}
-                    onChange={() => {
-                      if (selectedItems.length === items.length) {
-                        // Désélectionner tout
-                        setSelectedFilters((prev) => ({
-                          ...prev,
-                          [section]: [],
-                        }));
-                      } else {
-                        // Sélectionner tout
-                        setSelectedFilters((prev) => ({
-                          ...prev,
-                          [section]: items.map((item) => item.id),
-                        }));
-                      }
-                    }}
-                  />
-                  <span>Select all</span>
-                </label>
-              </div>
-              {/* <div className="text-xs text-gray-500 dark:text-gray-400">
-                At least one selection must be made
-              </div>
-              <div className="text-xs font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600 pb-1">
-                {title}
-              </div> */}
-            </div>
-
             {/* Barre de recherche */}
             <div className="relative">
               <MagnifyingGlassIcon className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
@@ -990,6 +943,32 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   }))
                 }
               />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
+                <input
+                  type="checkbox"
+                  className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                  checked={selectedItems.length === items.length}
+                  onChange={() => {
+                    if (selectedItems.length === items.length) {
+                      // Désélectionner tout
+                      setSelectedFilters((prev) => ({
+                        ...prev,
+                        [section]: [],
+                      }));
+                    } else {
+                      // Sélectionner tout
+                      setSelectedFilters((prev) => ({
+                        ...prev,
+                        [section]: items.map((item) => item.id),
+                      }));
+                    }
+                  }}
+                />
+                <span>Select all</span>
+              </label>
             </div>
 
             {/* Liste des éléments */}
