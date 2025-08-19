@@ -418,7 +418,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       const searchAgain = async () => {
         try {
           setLoadingGeographic(true);
-          const results = await geographicService.searchHierarchy(
+          const results = await geographicService.searchHierarchyFromBackend(
             searchTerms.geographic,
             language
           );
@@ -449,7 +449,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           console.log(`🔍 Starting search for: "${searchTerms.geographic}"`);
           const startTime = performance.now();
 
-          const results = await geographicService.searchHierarchy(
+          const results = await geographicService.searchHierarchyFromBackend(
             searchTerms.geographic,
             language
           );

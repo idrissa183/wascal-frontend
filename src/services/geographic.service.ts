@@ -502,6 +502,53 @@ class GeographicService {
   }
 
   /**
+   * Recherche hiérarchique utilisant l'endpoint backend /hierarchy-search
+   */
+  async searchHierarchyFromBackend(
+    query: string,
+    language: "en" | "fr"
+  ): Promise<HierarchyCountry[]> {
+    if (!query || query.length < 2) {
+      return [];
+    }
+
+    // Vérifier le cache
+    const cacheKey = `hierarchy_search_${language}_${query.toLowerCase()}`;
+    const cached = this.searchCache.get(cacheKey);
+    const now = Date.now();
+
+    if (cached && now - cached.timestamp < this.cacheTimeout) {
+      console.log(`🎯 Cache hit for hierarchy search: ${query}`);
+      return cached.data;
+    }
+
+    try {
+      const searchParams = new URLSearchParams({
+        query: query,
+        language: language
+      });
+
+      const result = await this.makeRequest<HierarchyCountry[]>(
+        `${this.baseURL}/hierarchy-search?${searchParams}`
+      );
+
+      // Mettre en cache le résultat
+      this.searchCache.set(cacheKey, {
+        data: result,
+        timestamp: now,
+      });
+
+      console.log(`💾 Cached hierarchy search result for query: ${query}`);
+      return result;
+    } catch (error) {
+      console.error("❌ Hierarchy search error:", error);
+      // En cas d'erreur avec l'endpoint backend, utiliser le fallback client-side
+      console.log("🔄 Falling back to client-side hierarchy search");
+      return this.searchHierarchy(query, language);
+    }
+  }
+
+  /**
    * Recherche de pays avec support étendu (nom, ISO, capitale)
    */
   async searchCountries(
