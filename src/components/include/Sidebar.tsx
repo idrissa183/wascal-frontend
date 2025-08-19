@@ -1673,6 +1673,55 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ) : hasSearchTerm && searchResults ? (
               searchResults.length > 0 ? (
                 <div className="space-y-2">
+                  {(() => {
+                    // Collect all available IDs from search results
+                    const allCountryIds: string[] = [];
+                    const allRegionIds: string[] = [];
+                    const allProvinceIds: string[] = [];
+
+                    searchResults.forEach((country) => {
+                      allCountryIds.push(country.id.toString());
+                      country.regions?.forEach((region) => {
+                        allRegionIds.push(region.id.toString());
+                        region.provinces?.forEach((province) => {
+                          allProvinceIds.push(province.id.toString());
+                        });
+                      });
+                    });
+
+                    const allIds = [...allCountryIds, ...allRegionIds, ...allProvinceIds];
+                    const allSelected = allIds.every((id) =>
+                      selectedFilters.countries.includes(id) ||
+                      selectedFilters.regions.includes(id) ||
+                      selectedFilters.provinces.includes(id)
+                    );
+
+                    return allIds.length > 0 ? (
+                      <label className="flex items-center space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          onChange={() => {
+                            if (allSelected) {
+                              // Deselect all
+                              handleSelectAll("countries", []);
+                              handleSelectAll("regions", []);
+                              handleSelectAll("provinces", []);
+                            } else {
+                              // Select all
+                              handleSelectAll("countries", allCountryIds);
+                              handleSelectAll("regions", allRegionIds);
+                              handleSelectAll("provinces", allProvinceIds);
+                            }
+                          }}
+                          className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                        />
+                        <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                          {t.sidebar?.select_all || "Select all"}
+                        </span>
+                      </label>
+                    ) : null;
+                  })()}
                   {renderSearchNodes(searchResults)}
                 </div>
               ) : null
