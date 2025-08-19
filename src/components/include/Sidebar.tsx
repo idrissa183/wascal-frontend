@@ -1700,17 +1700,111 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <input
                           type="checkbox"
                           checked={allSelected}
-                          onChange={() => {
+                          onChange={async () => {
                             if (allSelected) {
-                              // Deselect all - pass the currently selected IDs to deselect them
-                              handleSelectAll("countries", allCountryIds);
-                              handleSelectAll("regions", allRegionIds);
-                              handleSelectAll("provinces", allProvinceIds);
+                              // Deselect all - remove from map and filters
+                              // Remove countries from map
+                              for (const id of allCountryIds) {
+                                if (selectedFilters.countries.includes(id)) {
+                                  removeSelection(id, "country");
+                                }
+                              }
+                              // Remove regions from map
+                              for (const id of allRegionIds) {
+                                if (selectedFilters.regions.includes(id)) {
+                                  removeSelection(id, "region");
+                                }
+                              }
+                              // Remove provinces from map
+                              for (const id of allProvinceIds) {
+                                if (selectedFilters.provinces.includes(id)) {
+                                  removeSelection(id, "province");
+                                }
+                              }
+                              // Update filters
+                              setSelectedFilters((prev) => ({
+                                ...prev,
+                                countries: prev.countries.filter(id => !allCountryIds.includes(id)),
+                                regions: prev.regions.filter(id => !allRegionIds.includes(id)),
+                                provinces: prev.provinces.filter(id => !allProvinceIds.includes(id)),
+                              }));
                             } else {
-                              // Select all
-                              handleSelectAll("countries", allCountryIds);
-                              handleSelectAll("regions", allRegionIds);
-                              handleSelectAll("provinces", allProvinceIds);
+                              // Select all - add to map and filters
+                              // Add countries to map
+                              for (const id of allCountryIds) {
+                                if (!selectedFilters.countries.includes(id)) {
+                                  const country = searchResults.find(c => c.id.toString() === id);
+                                  if (country) {
+                                    try {
+                                      await addSelection({
+                                        id: id,
+                                        type: "country",
+                                        name: country.name,
+                                      });
+                                    } catch (error) {
+                                      console.error(`Failed to add country ${id}:`, error);
+                                    }
+                                  }
+                                }
+                              }
+                              // Add regions to map
+                              for (const id of allRegionIds) {
+                                if (!selectedFilters.regions.includes(id)) {
+                                  let regionName = "";
+                                  for (const country of searchResults) {
+                                    const region = country.regions?.find(r => r.id.toString() === id);
+                                    if (region) {
+                                      regionName = region.name;
+                                      break;
+                                    }
+                                  }
+                                  if (regionName) {
+                                    try {
+                                      await addSelection({
+                                        id: id,
+                                        type: "region", 
+                                        name: regionName,
+                                      });
+                                    } catch (error) {
+                                      console.error(`Failed to add region ${id}:`, error);
+                                    }
+                                  }
+                                }
+                              }
+                              // Add provinces to map
+                              for (const id of allProvinceIds) {
+                                if (!selectedFilters.provinces.includes(id)) {
+                                  let provinceName = "";
+                                  for (const country of searchResults) {
+                                    for (const region of country.regions || []) {
+                                      const province = region.provinces?.find(p => p.id.toString() === id);
+                                      if (province) {
+                                        provinceName = province.name;
+                                        break;
+                                      }
+                                    }
+                                    if (provinceName) break;
+                                  }
+                                  if (provinceName) {
+                                    try {
+                                      await addSelection({
+                                        id: id,
+                                        type: "province",
+                                        name: provinceName,
+                                      });
+                                    } catch (error) {
+                                      console.error(`Failed to add province ${id}:`, error);
+                                    }
+                                  }
+                                }
+                              }
+                              // Update filters
+                              setSelectedFilters((prev) => ({
+                                ...prev,
+                                countries: [...new Set([...prev.countries, ...allCountryIds])],
+                                regions: [...new Set([...prev.regions, ...allRegionIds])],
+                                provinces: [...new Set([...prev.provinces, ...allProvinceIds])],
+                              }));
                             }
                           }}
                           className="w-3.5 h-3.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
