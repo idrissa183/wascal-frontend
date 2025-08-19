@@ -1690,11 +1690,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     });
 
                     const allIds = [...allCountryIds, ...allRegionIds, ...allProvinceIds];
-                    const allSelected = allIds.every((id) =>
-                      selectedFilters.countries.includes(id) ||
-                      selectedFilters.regions.includes(id) ||
-                      selectedFilters.provinces.includes(id)
-                    );
+                    const allSelected = 
+                      allCountryIds.every((id) => selectedFilters.countries.includes(id)) &&
+                      allRegionIds.every((id) => selectedFilters.regions.includes(id)) &&
+                      allProvinceIds.every((id) => selectedFilters.provinces.includes(id));
 
                     return allIds.length > 0 ? (
                       <label className="flex items-center space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer">
@@ -1703,10 +1702,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           checked={allSelected}
                           onChange={() => {
                             if (allSelected) {
-                              // Deselect all
-                              handleSelectAll("countries", []);
-                              handleSelectAll("regions", []);
-                              handleSelectAll("provinces", []);
+                              // Deselect all - pass the currently selected IDs to deselect them
+                              handleSelectAll("countries", allCountryIds);
+                              handleSelectAll("regions", allRegionIds);
+                              handleSelectAll("provinces", allProvinceIds);
                             } else {
                               // Select all
                               handleSelectAll("countries", allCountryIds);
