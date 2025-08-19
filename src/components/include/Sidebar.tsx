@@ -883,33 +883,35 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                <input
-                  type="checkbox"
-                  className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                  checked={
-                    selectedFilters[key].length === filterData[section].length
-                  }
-                  onChange={() => {
-                    if (
+            {filteredItems.length > 0 && (
+              <div className="flex items-center justify-between">
+                <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
+                  <input
+                    type="checkbox"
+                    className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                    checked={
                       selectedFilters[key].length === filterData[section].length
-                    ) {
-                      setSelectedFilters((prev) => ({
-                        ...prev,
-                        [key]: [],
-                      }));
-                    } else {
-                      setSelectedFilters((prev) => ({
-                        ...prev,
-                        [key]: filterData[section].map((item) => item.id),
-                      }));
                     }
-                  }}
-                />
-                <span>{t.sidebar?.select_all || "Select all"}</span>
-              </label>
-            </div>
+                    onChange={() => {
+                      if (
+                        selectedFilters[key].length === filterData[section].length
+                      ) {
+                        setSelectedFilters((prev) => ({
+                          ...prev,
+                          [key]: [],
+                        }));
+                      } else {
+                        setSelectedFilters((prev) => ({
+                          ...prev,
+                          [key]: filterData[section].map((item) => item.id),
+                        }));
+                      }
+                    }}
+                  />
+                  <span>{t.sidebar?.select_all || "Select all"}</span>
+                </label>
+              </div>
+            )}
 
             {/* Liste des éléments */}
             <div className={`space-y-1 max-h-60 overflow-y-auto`}>
@@ -1036,31 +1038,33 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
-                <input
-                  type="checkbox"
-                  className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
-                  checked={selectedItems.length === items.length}
-                  onChange={() => {
-                    if (selectedItems.length === items.length) {
-                      // Désélectionner tout
-                      setSelectedFilters((prev) => ({
-                        ...prev,
-                        [section]: [],
-                      }));
-                    } else {
-                      // Sélectionner tout
-                      setSelectedFilters((prev) => ({
-                        ...prev,
-                        [section]: items.map((item) => item.id),
-                      }));
-                    }
-                  }}
-                />
-                <span>{t.sidebar?.select_all || "Select all"}</span>
-              </label>
-            </div>
+            {filteredItems.length > 0 && (
+              <div className="flex items-center justify-between">
+                <label className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
+                  <input
+                    type="checkbox"
+                    className="w-3 h-3 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                    checked={selectedItems.length === items.length}
+                    onChange={() => {
+                      if (selectedItems.length === items.length) {
+                        // Désélectionner tout
+                        setSelectedFilters((prev) => ({
+                          ...prev,
+                          [section]: [],
+                        }));
+                      } else {
+                        // Sélectionner tout
+                        setSelectedFilters((prev) => ({
+                          ...prev,
+                          [section]: items.map((item) => item.id),
+                        }));
+                      }
+                    }}
+                  />
+                  <span>{t.sidebar?.select_all || "Select all"}</span>
+                </label>
+              </div>
+            )}
 
             {/* Liste des éléments */}
             <div className="space-y-1 max-h-60 overflow-y-auto">
