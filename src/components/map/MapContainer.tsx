@@ -43,7 +43,7 @@ import {
   Geometry,
 } from "ol/geom";
 import { Style, Fill, Stroke, Circle as CircleStyle, Icon } from "ol/style";
-import { Draw, Modify, Select } from "ol/interaction";
+import { Draw, Modify, Select, Translate } from "ol/interaction";
 import { createBox } from "ol/interaction/Draw";
 import { fromLonLat, toLonLat } from "ol/proj";
 import { defaults as defaultControls } from "ol/control";
@@ -56,6 +56,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { LuRectangleHorizontal } from "react-icons/lu";
 import { PiPolygonBold } from "react-icons/pi";
 import { Save } from "lucide-react";
+import Overlay from "ol/Overlay";
+import { getArea } from "ol/sphere";
+
 
 interface MapContainerProps {
   onSelectionChange?: (selection: any) => void;
@@ -83,11 +86,13 @@ export default function MapContainer({
   const mapInstanceRef = useRef<Map | null>(null);
   const vectorSourceRef = useRef<VectorSource>(new VectorSource());
   const drawRef = useRef<Draw | null>(null);
+  const modifyRef = useRef<Modify | null>(null);
+  const selectRef = useRef<Select | null>(null);
+  const translateRef = useRef<Translate | null>(null);
+  const userFieldOverlayRef = useRef<Overlay | null>(null);
   const t = useTranslations();
   const { selectedEntities, isLoadingGeometry } = useGeographicStore();
-  const { 
-    userFields
-  } = useUserFieldsStore();
+  const { userFields } = useUserFieldsStore();
 
   // Ref for geographic layers
   const geographicSourceRef = useRef<VectorSource>(new VectorSource());
@@ -100,17 +105,22 @@ export default function MapContainer({
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
-  
+
   // États pour les champs utilisateur
   const [showUserFieldsPanel, setShowUserFieldsPanel] = useState(false);
   const [showUserFieldForm, setShowUserFieldForm] = useState(false);
   const [pendingGeometry, setPendingGeometry] = useState<any>(null);
-  const [pendingGeometryType, setPendingGeometryType] = useState<'point' | 'polygon' | 'circle' | 'rectangle' | null>(null);
-  const [visibleUserFields, setVisibleUserFields] = useState<Set<number>>(new Set());
+  const [pendingGeometryType, setPendingGeometryType] = useState<
+    "point" | "polygon" | "circle" | "rectangle" | null
+  >(null);
+  const [visibleUserFields, setVisibleUserFields] = useState<Set<number>>(
+    new Set()
+  );
 
   // États pour les coordonnées dynamiques
   const [mouseCoordinates, setMouseCoordinates] = useState<[number, number]>([
-    MAP_DEFAULTS.CENTER[0], MAP_DEFAULTS.CENTER[1],
+    MAP_DEFAULTS.CENTER[0],
+    MAP_DEFAULTS.CENTER[1],
   ]);
   const [zoom, setZoom] = useState<number>(MAP_DEFAULTS.ZOOM);
   const locationIconUrl = `data:image/svg+xml,${encodeURIComponent(
@@ -286,6 +296,15 @@ export default function MapContainer({
     }
   }, [selectedEntities]);
 
+  // Create SVG icon data URL for map pin
+  const createMapPinIcon = (color: string = "#3b82f6", size: number = 32) => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" width="${size}" height="${size}">
+      <path fill="${color}" stroke="white" stroke-width="2" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+      <path fill="${color}" stroke="white" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z"/>
+    </svg>`;
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
+
   // Effect to handle user fields display
   useEffect(() => {
     if (!userFieldsSourceRef.current) return;
@@ -302,39 +321,51 @@ export default function MapContainer({
 
           // Convert GeoJSON to OpenLayers geometry
           if (geoJson.type === "Point") {
-            const coord = fromLonLat([geoJson.coordinates[0], geoJson.coordinates[1]]);
+            const coord = fromLonLat([
+              geoJson.coordinates[0],
+              geoJson.coordinates[1],
+            ]);
             olGeometry = new Point(coord);
           } else if (geoJson.type === "Polygon") {
             const rings = geoJson.coordinates.map((ring: [number, number][]) =>
-              ring.map((coord: [number, number]) => fromLonLat([coord[0], coord[1]]))
+              ring.map((coord: [number, number]) =>
+                fromLonLat([coord[0], coord[1]])
+              )
             );
             olGeometry = new Polygon(rings);
           } else if (geoJson.type === "Circle") {
             // Handle circle geometry - assuming it has center and radius
-            const center = fromLonLat([geoJson.coordinates[0], geoJson.coordinates[1]]);
+            const center = fromLonLat([
+              geoJson.coordinates[0],
+              geoJson.coordinates[1],
+            ]);
             const radius = geoJson.radius || 1000; // default 1km radius
             olGeometry = new CircleGeom(center, radius);
           } else {
-            console.warn(`Unsupported user field geometry type: ${geoJson.type}`);
+            console.warn(
+              `Unsupported user field geometry type: ${geoJson.type}`
+            );
             return;
           }
 
           const feature = new Feature({
             geometry: olGeometry,
             name: field.name,
-            type: 'user_field',
+            type: "user_field",
             fieldId: field.id,
             geometryType: field.geometry_type,
           });
 
           // Set style based on geometry type
           const getFieldStyle = (geometryType: string) => {
-            if (geometryType === 'point') {
+            if (geometryType === "point") {
               return new Style({
-                image: new CircleStyle({
-                  radius: 8,
-                  fill: new Fill({ color: "#3b82f6" }),
-                  stroke: new Stroke({ color: "white", width: 2 }),
+                image: new Icon({
+                  src: createMapPinIcon("#3b82f6", 32),
+                  anchor: [0.5, 1], // Anchor at bottom center of the pin
+                  anchorXUnits: "fraction",
+                  anchorYUnits: "fraction",
+                  scale: 1,
                 }),
               });
             }
@@ -448,7 +479,13 @@ export default function MapContainer({
 
     const map = new Map({
       target: mapRef.current,
-      layers: [osmLayer, satelliteLayer, vectorLayer, geographicLayer, userFieldsLayer],
+      layers: [
+        osmLayer,
+        satelliteLayer,
+        vectorLayer,
+        geographicLayer,
+        userFieldsLayer,
+      ],
       view: new View({
         center: fromLonLat([MAP_DEFAULTS.CENTER[1], MAP_DEFAULTS.CENTER[0]]), // Longitude, Latitude
         zoom: MAP_DEFAULTS.ZOOM,
@@ -475,6 +512,29 @@ export default function MapContainer({
         setZoom(Math.round(currentZoom));
       }
     });
+
+    // Interactions for editing features
+    const modify = new Modify({
+      source: vectorSourceRef.current,
+      style: new Style({
+        image: new CircleStyle({
+          radius: 6,
+          fill: new Fill({ color: "#ffffff" }),
+          stroke: new Stroke({ color: "#ffcc33", width: 2 }),
+        }),
+      }),
+    });
+    const select = new Select();
+    const translate = new Translate({ features: select.getFeatures() });
+    map.addInteraction(select);
+    map.addInteraction(translate);
+    map.addInteraction(modify);
+    modify.setActive(true);
+    select.setActive(true);
+    translate.setActive(true);
+    modifyRef.current = modify;
+    selectRef.current = select;
+    translateRef.current = translate;
 
     // Mettre à jour les références des couches
     setLayers((prev) =>
@@ -541,10 +601,23 @@ export default function MapContainer({
       drawRef.current = null;
     }
 
+    if (userFieldOverlayRef.current) {
+      mapInstanceRef.current.removeOverlay(userFieldOverlayRef.current);
+      userFieldOverlayRef.current = null;
+    }
+
     if (tool === activeTool || tool === "none") {
       setActiveTool("none");
+      modifyRef.current?.setActive(true);
+      selectRef.current?.setActive(true);
+      translateRef.current?.setActive(true);
       return;
     }
+
+    // Disable editing interactions while drawing
+    modifyRef.current?.setActive(false);
+    selectRef.current?.setActive(false);
+    translateRef.current?.setActive(false);
 
     let geometryType: string | undefined;
     const drawOptions: any = {
@@ -576,6 +649,48 @@ export default function MapContainer({
         type: geometryType as any,
       });
 
+      draw.on("drawstart", (event) => {
+        const overlayElement = document.createElement("div");
+        overlayElement.className = "measure-overlay";
+        const overlay = new Overlay({
+          element: overlayElement,
+          positioning: "bottom-center",
+          offset: [0, -7],
+        });
+        userFieldOverlayRef.current = overlay;
+        mapInstanceRef.current?.addOverlay(overlay);
+
+        const geometry = event.feature.getGeometry();
+        if (!geometry) {
+          return;
+        }
+        const updateArea = () => {
+          let area = 0;
+          let position: number[] | undefined;
+          if (geometry instanceof Polygon) {
+            area = getArea(geometry);
+            position = geometry.getInteriorPoint().getCoordinates();
+          } else if (geometry instanceof CircleGeom) {
+            const radius = geometry.getRadius();
+            area = Math.PI * radius * radius;
+            position = geometry.getCenter();
+          }
+          overlayElement.innerHTML = `${(area / 1e6).toFixed(2)} km²`;
+          if (position) {
+            overlay.setPosition(position);
+          }
+        };
+
+        geometry.on("change", updateArea);
+
+        draw.once("drawend", () => {
+          updateArea();
+          geometry.un("change", updateArea);
+          mapInstanceRef.current?.removeOverlay(overlay);
+          userFieldOverlayRef.current = null;
+        });
+      });
+
       draw.on("drawend", (event) => {
         const feature = event.feature;
         const geometry = feature.getGeometry();
@@ -596,12 +711,8 @@ export default function MapContainer({
           }
         }
 
-        // Handle user field drawing when the user fields panel is open
-        if (showUserFieldsPanel) {
-          console.log('🎯 User fields panel is open, creating user field:', { geometry, tool });
-          handleUserFieldDrawEnd(geometry || null, tool);
-          return;
-        }
+        handleUserFieldDrawEnd(geometry || null, tool);
+        setShowUserFieldsPanel(true);
 
         if (onSelectionChange) {
           onSelectionChange({
@@ -614,6 +725,17 @@ export default function MapContainer({
         if (coordinates) {
           console.log(`${tool} drawn:`, coordinates);
         }
+        // Reactivate editing interactions and select the drawn feature
+        modifyRef.current?.setActive(true);
+        selectRef.current?.setActive(true);
+        translateRef.current?.setActive(true);
+        selectRef.current?.getFeatures().clear();
+        selectRef.current?.getFeatures().push(feature);
+
+        // Remove draw interaction to allow modification of the geometry
+        mapInstanceRef.current?.removeInteraction(draw);
+        drawRef.current = null;
+        setActiveTool("none");
       });
 
       mapInstanceRef.current.addInteraction(draw);
@@ -623,82 +745,142 @@ export default function MapContainer({
     setActiveTool(tool);
   };
 
-
-  const handleUserFieldDrawEnd = (geometry: Geometry | null, type: 'point' | 'polygon' | 'circle' | 'rectangle') => {
-    console.log('🚀 handleUserFieldDrawEnd called:', { geometry, type });
+  const handleUserFieldDrawEnd = (
+    geometry: Geometry | null,
+    type: "point" | "polygon" | "circle" | "rectangle"
+  ) => {
+    console.log("🚀 handleUserFieldDrawEnd called:", { geometry, type });
     if (!geometry) {
-      console.log('❌ No geometry provided, returning');
+      console.log("❌ No geometry provided, returning");
       return;
     }
 
     // Convert OpenLayers geometry to GeoJSON
     let geoJsonGeometry: any;
-    
+
     if (geometry instanceof Point) {
       const coord = toLonLat(geometry.getCoordinates());
       geoJsonGeometry = {
-        type: 'Point',
-        coordinates: coord
+        type: "Point",
+        coordinates: coord,
       };
     } else if (geometry instanceof Polygon) {
-      const rings = geometry.getCoordinates().map(ring =>
-        ring.map(coord => toLonLat(coord))
-      );
+      const rings = geometry
+        .getCoordinates()
+        .map((ring) => ring.map((coord) => toLonLat(coord)));
       geoJsonGeometry = {
-        type: 'Polygon',
-        coordinates: rings
+        type: "Polygon",
+        coordinates: rings,
       };
     } else if (geometry instanceof CircleGeom) {
       const center = toLonLat(geometry.getCenter());
       const radius = geometry.getRadius();
       // For circles, we'll store center and radius
-      if (type === 'circle') {
+      if (type === "circle") {
         geoJsonGeometry = {
-          type: 'Circle',
+          type: "Circle",
           coordinates: center,
-          radius: radius
+          radius: radius,
         };
       } else {
         // For rectangles drawn as boxes, convert to polygon
         const extent = geometry.getExtent();
         const coords = [
-          [toLonLat([extent[0], extent[1]]), toLonLat([extent[2], extent[1]]), 
-           toLonLat([extent[2], extent[3]]), toLonLat([extent[0], extent[3]]), 
-           toLonLat([extent[0], extent[1]])]
+          [
+            toLonLat([extent[0], extent[1]]),
+            toLonLat([extent[2], extent[1]]),
+            toLonLat([extent[2], extent[3]]),
+            toLonLat([extent[0], extent[3]]),
+            toLonLat([extent[0], extent[1]]),
+          ],
         ];
         geoJsonGeometry = {
-          type: 'Polygon',
-          coordinates: coords
+          type: "Polygon",
+          coordinates: coords,
         };
       }
     }
 
-    // Set pending geometry and show form
-    console.log('📝 Setting pending geometry and opening form:', { geoJsonGeometry, type });
-    setPendingGeometry(geoJsonGeometry);
-    setPendingGeometryType(type);
-    setShowUserFieldForm(true);
-    console.log('✅ Form should be open now');
+    // Create overlay with save icon
+    if (userFieldOverlayRef.current) {
+      mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
+      userFieldOverlayRef.current = null;
+    }
+
+    const overlayElement = document.createElement('button');
+    overlayElement.className =
+      'p-1 bg-white rounded-full border border-gray-300 shadow-lg cursor-pointer';
+    overlayElement.innerHTML = renderToStaticMarkup(
+      <Save className="w-4 h-4 text-blue-600" />
+    );
+
+    overlayElement.addEventListener('click', () => {
+      setPendingGeometry(geoJsonGeometry);
+      setPendingGeometryType(type);
+      setShowUserFieldForm(true);
+    });
+
+    const overlay = new Overlay({
+      element: overlayElement,
+      positioning: 'center-center',
+      stopEvent: true,
+    });
+
+    let overlayCoord;
+    if (geometry instanceof Point) {
+      overlayCoord = geometry.getCoordinates();
+    } else if (geometry instanceof Polygon) {
+      overlayCoord = geometry.getInteriorPoint().getCoordinates();
+    } else if (geometry instanceof CircleGeom) {
+      overlayCoord = geometry.getCenter();
+    }
+
+    if (overlayCoord) {
+      overlay.setPosition(overlayCoord);
+    }
+
+    mapInstanceRef.current?.addOverlay(overlay);
+    userFieldOverlayRef.current = overlay;
+    console.log('✅ Save overlay added for drawn feature');
+
+    // // Set pending geometry and show form
+    // console.log("📝 Setting pending geometry and opening form:", {
+    //   geoJsonGeometry,
+    //   type,
+    // });
+    // setPendingGeometry(geoJsonGeometry);
+    // setPendingGeometryType(type);
+    // setShowUserFieldForm(true);
+    // console.log("✅ Form should be open now");
+
   };
 
   const handleUserFieldFormClose = () => {
-    console.log('🔄 Closing user field form');
+    console.log("🔄 Closing user field form");
     setShowUserFieldForm(false);
     setPendingGeometry(null);
     setPendingGeometryType(null);
-    
+
+    if (userFieldOverlayRef.current) {
+      mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
+      userFieldOverlayRef.current = null;
+    }
+
     // Clear the current active tool
     setActiveTool("none");
-    
+
     // Clear the drawn feature from the vector source
     const features = vectorSourceRef.current?.getFeatures();
     if (features && features.length > 0) {
       vectorSourceRef.current?.removeFeature(features[features.length - 1]);
-      console.log('🗑️ Removed drawn feature from vector source');
+      console.log("🗑️ Removed drawn feature from vector source");
     }
   };
 
-  const handleUserFieldVisibilityChange = (fieldId: number, visible: boolean) => {
+  const handleUserFieldVisibilityChange = (
+    fieldId: number,
+    visible: boolean
+  ) => {
     const newVisibleFields = new Set(visibleUserFields);
     if (visible) {
       newVisibleFields.add(fieldId);
@@ -831,7 +1013,9 @@ export default function MapContainer({
   const resetView = () => {
     if (mapInstanceRef.current) {
       const view = mapInstanceRef.current.getView();
-      view.setCenter(fromLonLat([MAP_DEFAULTS.CENTER[1], MAP_DEFAULTS.CENTER[0]]));
+      view.setCenter(
+        fromLonLat([MAP_DEFAULTS.CENTER[1], MAP_DEFAULTS.CENTER[0]])
+      );
       view.setZoom(MAP_DEFAULTS.ZOOM);
     }
   };
@@ -1152,7 +1336,7 @@ export default function MapContainer({
       )}
 
       {/* User Fields Panel */}
-      <UserFieldsPanel 
+      <UserFieldsPanel
         isOpen={showUserFieldsPanel}
         onToggle={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
         onFieldVisibilityChange={handleUserFieldVisibilityChange}
@@ -1164,7 +1348,7 @@ export default function MapContainer({
         isOpen={showUserFieldForm}
         onClose={handleUserFieldFormClose}
         geometry={pendingGeometry}
-        geometryType={pendingGeometryType || 'polygon'}
+        geometryType={pendingGeometryType || "polygon"}
         onSuccess={(savedField) => {
           // Auto-enable visibility for the new field
           if (savedField && savedField.id) {
@@ -1176,14 +1360,20 @@ export default function MapContainer({
       />
 
       {/* Drawing indicator for user fields */}
-      {showUserFieldsPanel && activeTool !== 'none' && (
+      {showUserFieldsPanel && activeTool !== "none" && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-blue-600 text-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2">
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <span className="text-sm">
-              Dessinez votre {activeTool === 'point' ? 'point' : 
-                           activeTool === 'rectangle' ? 'rectangle' : 
-                           activeTool === 'circle' ? 'cercle' : 'polygone'} pour créer un champ...
+              Dessinez votre{" "}
+              {activeTool === "point"
+                ? "point"
+                : activeTool === "rectangle"
+                ? "rectangle"
+                : activeTool === "circle"
+                ? "cercle"
+                : "polygone"}{" "}
+              pour créer un champ...
             </span>
           </div>
         </div>

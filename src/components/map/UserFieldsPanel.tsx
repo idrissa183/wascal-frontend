@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  MapPin, 
-  Square, 
-  Circle, 
-  Edit2, 
-  Trash2, 
+import React, { useState, useEffect } from "react";
+import {
+  MapPin,
+  Square,
+  Circle,
+  Edit2,
+  Trash2,
   Eye,
   EyeOff,
   MoreVertical,
   Calendar,
-  Ruler
-} from 'lucide-react';
-import { PiPolygonBold } from 'react-icons/pi';
-import { useUserFieldsStore } from '../../stores/useUserFieldsStore';
-import { UserFieldForm } from './UserFieldForm';
-import type { UserField } from '../../services/userFields.service';
+  Ruler,
+} from "lucide-react";
+import { PiPolygonBold } from "react-icons/pi";
+import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
+import { UserFieldForm } from "./UserFieldForm";
+import type { UserField } from "../../services/userFields.service";
 
 interface UserFieldsPanelProps {
   isOpen: boolean;
@@ -23,20 +23,20 @@ interface UserFieldsPanelProps {
   visibleFields?: Set<number>;
 }
 
-export function UserFieldsPanel({ 
-  isOpen, 
+export function UserFieldsPanel({
+  isOpen,
   onToggle,
   onFieldVisibilityChange,
-  visibleFields = new Set()
+  visibleFields = new Set(),
 }: UserFieldsPanelProps) {
-  const { 
-    userFields, 
-    loading, 
-    error, 
-    fetchUserFields, 
+  const {
+    userFields,
+    loading,
+    error,
+    fetchUserFields,
     deleteUserField,
     isDrawing,
-    clearError
+    clearError,
   } = useUserFieldsStore();
 
   const [showForm, setShowForm] = useState(false);
@@ -49,14 +49,18 @@ export function UserFieldsPanel({
 
   const getGeometryIcon = (type: string) => {
     switch (type) {
-      case 'point': return MapPin;
-      case 'polygon': return PiPolygonBold;
-      case 'circle': return Circle;
-      case 'rectangle': return Square;
-      default: return MapPin;
+      case "point":
+        return MapPin;
+      case "polygon":
+        return PiPolygonBold;
+      case "circle":
+        return Circle;
+      case "rectangle":
+        return Square;
+      default:
+        return MapPin;
     }
   };
-
 
   const handleEdit = (field: UserField) => {
     setEditingField(field);
@@ -65,12 +69,14 @@ export function UserFieldsPanel({
   };
 
   const handleDelete = async (field: UserField) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer "${field.name}" ?`)) {
+    if (
+      window.confirm(`Êtes-vous sûr de vouloir supprimer "${field.name}" ?`)
+    ) {
       try {
         await deleteUserField(field.id);
         setActiveDropdown(null);
       } catch (err) {
-        console.error('Error deleting field:', err);
+        console.error("Error deleting field:", err);
       }
     }
   };
@@ -82,11 +88,11 @@ export function UserFieldsPanel({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR');
+    return new Date(dateString).toLocaleDateString("fr-FR");
   };
 
   const formatArea = (area: number | undefined) => {
-    if (!area) return 'N/A';
+    if (!area) return "N/A";
     if (area < 1) return `${(area * 1000000).toFixed(0)} m²`;
     return `${area.toFixed(2)} km²`;
   };
@@ -108,11 +114,16 @@ export function UserFieldsPanel({
               ×
             </button>
           </div>
-          
+
           <div className="mt-3">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Utilisez les outils de dessin à gauche pour créer une nouvelle zone, puis revenez ici pour la nommer et l'enregistrer.
+              Utilisez les outils de dessin à gauche pour créer une nouvelle
+              zone. Le formulaire apparaîtra automatiquement à la fin du dessin
+              pour vous permettre de la nommer et de l'enregistrer.
             </p>
+            {/* <p className="text-sm text-gray-600 dark:text-gray-400">
+              Utilisez les outils de dessin à gauche pour créer une nouvelle zone, puis revenez ici pour la nommer et l'enregistrer.
+            </p> */}
           </div>
         </div>
 
@@ -120,7 +131,9 @@ export function UserFieldsPanel({
           {loading && (
             <div className="p-4 text-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">Chargement...</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Chargement...
+              </p>
             </div>
           )}
 
@@ -151,7 +164,7 @@ export function UserFieldsPanel({
             {userFields.map((field) => {
               const Icon = getGeometryIcon(field.geometry_type);
               const isVisible = visibleFields.has(field.id);
-              
+
               return (
                 <div
                   key={field.id}
@@ -165,7 +178,7 @@ export function UserFieldsPanel({
                           {field.name}
                         </h4>
                       </div>
-                      
+
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                           <Ruler className="w-3 h-3" />
@@ -180,7 +193,11 @@ export function UserFieldsPanel({
 
                     <div className="relative">
                       <button
-                        onClick={() => setActiveDropdown(activeDropdown === field.id ? null : field.id)}
+                        onClick={() =>
+                          setActiveDropdown(
+                            activeDropdown === field.id ? null : field.id
+                          )
+                        }
                         className="p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       >
                         <MoreVertical className="w-4 h-4 text-gray-500" />
@@ -192,8 +209,12 @@ export function UserFieldsPanel({
                             onClick={() => handleVisibilityToggle(field)}
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
-                            {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                            {isVisible ? 'Masquer' : 'Afficher'}
+                            {isVisible ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                            {isVisible ? "Masquer" : "Afficher"}
                           </button>
                           <button
                             onClick={() => handleEdit(field)}
@@ -230,7 +251,7 @@ export function UserFieldsPanel({
       />
 
       {activeDropdown && (
-        <div 
+        <div
           className="fixed inset-0 z-30"
           onClick={() => setActiveDropdown(null)}
         />

@@ -34,3 +34,13 @@
   font-size: 0.75rem !important;
   font-family: monospace !important;
 }
+
+.map-container .measure-overlay {
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 2px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  font-family: monospace;
+}
