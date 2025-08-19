@@ -69,6 +69,23 @@ export interface Department {
   geometry?: any;
 }
 
+export interface HierarchyProvince {
+  id: number;
+  name: string;
+}
+
+export interface HierarchyRegion {
+  id: number;
+  name: string;
+  provinces: HierarchyProvince[];
+}
+
+export interface HierarchyCountry {
+  id: number;
+  name: string;
+  regions: HierarchyRegion[];
+}
+
 class GeographicService {
   private baseURL: string;
   private searchCache = new Map<string, { data: any; timestamp: number }>();
@@ -429,6 +446,59 @@ class GeographicService {
         departmentsWithHierarchy: [],
       };
     }
+  }
+
+  async searchHierarchy(
+    query: string,
+    language: "en" | "fr"
+  ): Promise<HierarchyCountry[]> {
+    if (!query || query.length < 2) {
+      return [];
+    }
+    const results = await this.searchGeographic(query, language);
+    const countryMap = new Map<number, HierarchyCountry>();
+    const regionCountryMap = new Map<number, number>();
+
+    results.countries.forEach((c) => {
+      countryMap.set(c.id, {
+        id: c.id,
+        name: c.country_name || getCountryName(c, language),
+        regions: [],
+      });
+    });
+
+    results.regionsWithCountry.forEach((r) => {
+      regionCountryMap.set(r.id, r.country_id);
+      let country = countryMap.get(r.country_id);
+      if (!country) {
+        country = {
+          id: r.country_id,
+          name: r.country_name || "Unknown Country",
+          regions: [],
+        };
+        countryMap.set(r.country_id, country);
+      }
+      country.regions.push({ id: r.id, name: r.shape_name, provinces: [] });
+    });
+
+    results.provincesWithHierarchy.forEach((p) => {
+      const countryId = regionCountryMap.get(p.region_id);
+      if (countryId == null) return;
+      const country = countryMap.get(countryId);
+      if (!country) return;
+      let region = country.regions.find((r) => r.id === p.region_id);
+      if (!region) {
+        region = {
+          id: p.region_id,
+          name: p.region_name || "Unknown Region",
+          provinces: [],
+        };
+        country.regions.push(region);
+      }
+      region.provinces.push({ id: p.id, name: p.shape_name });
+    });
+
+    return Array.from(countryMap.values());
   }
 
   /**

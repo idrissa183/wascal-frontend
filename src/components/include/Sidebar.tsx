@@ -33,7 +33,9 @@ import {
   type Country,
   type Region,
   type Province,
-  type Department,
+  type HierarchyCountry,
+  type HierarchyRegion,
+  type HierarchyProvince,
 } from "../../services/geographic.service";
 import type { User } from "../../types/auth";
 import { getCountryName } from "../../utils/geophaphic";
@@ -132,13 +134,16 @@ interface RegionWithProvinces extends Region {
   isExpanded?: boolean;
 }
 
-interface GeographicNode {
-  id: number;
-  name: string;
-  type: "country" | "region" | "province";
-  children?: GeographicNode[];
+type HierarchyProvinceNode = HierarchyProvince;
+
+type HierarchyRegionNode = HierarchyRegion & {
   isExpanded?: boolean;
-}
+};
+
+type HierarchyCountryNode = Omit<HierarchyCountry, "regions"> & {
+  isExpanded?: boolean;
+  regions: HierarchyRegionNode[];
+};
 
 // Données des filtres WASCAL
 const filterData: Record<string, FilterItem[]> = {
@@ -291,22 +296,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Geographic data states
   const [countries, setCountries] = useState<CountryWithRegions[]>([]);
   const [loadingGeographic, setLoadingGeographic] = useState(false);
-  const [searchResults, setSearchResults] = useState<GeographicNode[] | null>(
-    null
-  );
-  // const [searchResults, setSearchResults] = useState<{
-  //   countries: (Country & { country_name?: string })[];
-  //   regionsWithCountry: (Region & { country_name?: string })[];
-  //   provincesWithHierarchy: (Province & {
-  //     region_name?: string;
-  //     country_name?: string;
-  //   })[];
-  //   departmentsWithHierarchy: (Department & {
-  //     province_name?: string;
-  //     region_name?: string;
-  //     country_name?: string;
-  //   })[];
-  // } | null>(null);
+  const [searchResults, setSearchResults] = useState<
+    HierarchyCountryNode[] | null
+  >(null);
 
   const getLocalizedFilterData = (): Record<string, FilterItem[]> => ({
     ...filterData,
@@ -426,12 +418,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       const searchAgain = async () => {
         try {
           setLoadingGeographic(true);
-          const results = await geographicService.searchGeographic(
+          const results = await geographicService.searchHierarchy(
             searchTerms.geographic,
             language
           );
-          setSearchResults(buildSearchTree(results));
-          // setSearchResults(results);
+          setSearchResults(
+            results.map((c) => ({
+              ...c,
+              isExpanded: true,
+              regions: c.regions.map((r) => ({ ...r, isExpanded: true })),
+            }))
+          );
         } catch (error) {
           console.error("Error re-searching after language change:", error);
           setSearchResults(null);
@@ -452,7 +449,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           console.log(`🔍 Starting search for: "${searchTerms.geographic}"`);
           const startTime = performance.now();
 
-          const results = await geographicService.searchGeographic(
+          const results = await geographicService.searchHierarchy(
             searchTerms.geographic,
             language
           );
@@ -462,8 +459,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             `⚡ Search completed in ${Math.round(endTime - startTime)}ms`
           );
 
-          setSearchResults(buildSearchTree(results));
-          // setSearchResults(results);
+          setSearchResults(
+            results.map((c) => ({
+              ...c,
+              isExpanded: true,
+              regions: c.regions.map((r) => ({ ...r, isExpanded: true })),
+            }))
+          );
         } catch (error) {
           console.error("Error searching geographic entities:", error);
           setSearchResults(null);
@@ -1220,17 +1222,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const findNodeInTree = (
-    nodes: GeographicNode[] | null,
+    nodes: HierarchyCountryNode[] | null,
     type: "country" | "region" | "province",
     id: string
-  ): GeographicNode | null => {
+  ): { id: number; name: string } | null => {
     if (!nodes) return null;
-    for (const node of nodes) {
-      if (node.type === type && node.id.toString() === id) {
-        return node;
+    for (const country of nodes) {
+      if (type === "country" && country.id.toString() === id) {
+        return { id: country.id, name: country.name };
       }
-      const child = findNodeInTree(node.children || null, type, id);
-      if (child) return child;
+      for (const region of country.regions || []) {
+        if (type === "region" && region.id.toString() === id) {
+          return { id: region.id, name: region.name };
+        }
+        for (const province of region.provinces || []) {
+          if (type === "province" && province.id.toString() === id) {
+            return { id: province.id, name: province.name };
+          }
+        }
+      }
     }
     return null;
   };
@@ -1349,123 +1359,126 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     });
   };
 
-  const buildSearchTree = (results: any): GeographicNode[] => {
-    if (Array.isArray(results)) {
-      return results as GeographicNode[];
-    }
+  // const buildSearchTree = (results: any): GeographicNode[] => {
+  //   if (Array.isArray(results)) {
+  //     return results as GeographicNode[];
+  //   }
 
-    const countryMap = new Map<number, GeographicNode>();
-    const regionCountryMap = new Map<number, number>();
+  //   const countryMap = new Map<number, GeographicNode>();
+  //   const regionCountryMap = new Map<number, number>();
 
-    results.countries.forEach((c: any) => {
-      countryMap.set(c.id, {
-        id: c.id,
-        name: c.country_name || getCountryName(c, language),
-        type: "country",
-        children: [],
-        isExpanded: true,
-      });
-    });
+  //   results.countries.forEach((c: any) => {
+  //     countryMap.set(c.id, {
+  //       id: c.id,
+  //       name: c.country_name || getCountryName(c, language),
+  //       type: "country",
+  //       children: [],
+  //       isExpanded: true,
+  //     });
+  //   });
 
-    results.regionsWithCountry.forEach((r: any) => {
-      regionCountryMap.set(r.id, r.country_id);
-      let countryNode = countryMap.get(r.country_id);
-      if (!countryNode) {
-        countryNode = {
-          id: r.country_id,
-          name: r.country_name || "Unknown Country",
-          type: "country",
-          children: [],
-          isExpanded: true,
-        };
-        countryMap.set(r.country_id, countryNode);
-      }
-      countryNode.children?.push({
-        id: r.id,
-        name: r.shape_name,
-        type: "region",
-        children: [],
-        isExpanded: true,
-      });
-    });
+  //   results.regionsWithCountry.forEach((r: any) => {
+  //     regionCountryMap.set(r.id, r.country_id);
+  //     let countryNode = countryMap.get(r.country_id);
+  //     if (!countryNode) {
+  //       countryNode = {
+  //         id: r.country_id,
+  //         name: r.country_name || "Unknown Country",
+  //         type: "country",
+  //         children: [],
+  //         isExpanded: true,
+  //       };
+  //       countryMap.set(r.country_id, countryNode);
+  //     }
+  //     countryNode.children?.push({
+  //       id: r.id,
+  //       name: r.shape_name,
+  //       type: "region",
+  //       children: [],
+  //       isExpanded: true,
+  //     });
+  //   });
 
-    results.provincesWithHierarchy.forEach((p: any) => {
-      const countryId = regionCountryMap.get(p.region_id);
-      if (countryId == null) return;
-      let countryNode = countryMap.get(countryId);
-      if (!countryNode) {
-        countryNode = {
-          id: countryId,
-          name: p.country_name || "Unknown Country",
-          type: "country",
-          children: [],
-          isExpanded: true,
-        };
-        countryMap.set(countryId, countryNode);
-      }
-      let regionNode = countryNode.children?.find(
-        (c) => c.type === "region" && c.id === p.region_id
-      );
-      if (!regionNode) {
-        regionNode = {
-          id: p.region_id,
-          name: p.region_name || "Unknown Region",
-          type: "region",
-          children: [],
-          isExpanded: true,
-        };
-        countryNode.children?.push(regionNode);
-      }
-      regionNode.children = regionNode.children || [];
-      regionNode.children.push({
-        id: p.id,
-        name: p.shape_name,
-        type: "province",
-      });
-    });
+  //   results.provincesWithHierarchy.forEach((p: any) => {
+  //     const countryId = regionCountryMap.get(p.region_id);
+  //     if (countryId == null) return;
+  //     let countryNode = countryMap.get(countryId);
+  //     if (!countryNode) {
+  //       countryNode = {
+  //         id: countryId,
+  //         name: p.country_name || "Unknown Country",
+  //         type: "country",
+  //         children: [],
+  //         isExpanded: true,
+  //       };
+  //       countryMap.set(countryId, countryNode);
+  //     }
+  //     let regionNode = countryNode.children?.find(
+  //       (c) => c.type === "region" && c.id === p.region_id
+  //     );
+  //     if (!regionNode) {
+  //       regionNode = {
+  //         id: p.region_id,
+  //         name: p.region_name || "Unknown Region",
+  //         type: "region",
+  //         children: [],
+  //         isExpanded: true,
+  //       };
+  //       countryNode.children?.push(regionNode);
+  //     }
+  //     regionNode.children = regionNode.children || [];
+  //     regionNode.children.push({
+  //       id: p.id,
+  //       name: p.shape_name,
+  //       type: "province",
+  //     });
+  //   });
 
-    return Array.from(countryMap.values());
-  };
+  //   return Array.from(countryMap.values());
+  // };
 
   const toggleSearchNodeExpansion = (
     type: "country" | "region",
     id: number
   ) => {
-    const toggle = (nodes: GeographicNode[]): GeographicNode[] =>
-      nodes.map((n) => {
-        if (n.type === type && n.id === id) {
-          return { ...n, isExpanded: !n.isExpanded };
-        }
-        if (n.children) {
-          return { ...n, children: toggle(n.children) };
-        }
-        return n;
-      });
-    setSearchResults((prev) => (prev ? toggle(prev) : prev));
+    setSearchResults((prev) =>
+      prev
+        ? prev.map((country) => {
+            if (type === "country" && country.id === id) {
+              return { ...country, isExpanded: !country.isExpanded };
+            }
+            if (type === "region") {
+              return {
+                ...country,
+                regions: country.regions?.map((region) =>
+                  region.id === id
+                    ? { ...region, isExpanded: !region.isExpanded }
+                    : region
+                ),
+              };
+            }
+            return country;
+          })
+        : prev
+    );
   };
 
-  const renderSearchNodes = (nodes: GeographicNode[]): React.ReactNode => {
-    return nodes.map((node) => {
-      const section =
-        node.type === "country"
-          ? "countries"
-          : node.type === "region"
-          ? "regions"
-          : "provinces";
-      const isSelected = selectedFilters[
-        section as keyof SelectedFilters
-      ].includes(node.id.toString());
+  const renderSearchNodes = (
+    countries: HierarchyCountryNode[]
+  ): React.ReactNode => {
+    return countries.map((country) => {
+      const countrySelected = selectedFilters.countries.includes(
+        country.id.toString()
+      );
       return (
-        <div key={`${node.type}-${node.id}`} className="space-y-1">
+        <div key={`country-${country.id}`} className="space-y-1">
           <div className="flex items-center space-x-1">
-            {node.children && node.children.length > 0 && (
+            {country.regions && country.regions.length > 0 && (
               <button
-                onClick={() =>
-                  toggleSearchNodeExpansion(node.type as any, node.id)
-                }
+                onClick={() => toggleSearchNodeExpansion("country", country.id)}
                 className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
               >
-                {node.isExpanded ? (
+                {country.isExpanded ? (
                   <ChevronDownIcon className="w-3 h-3 text-gray-400" />
                 ) : (
                   <ChevronRightIcon className="w-3 h-3 text-gray-400" />
@@ -1475,30 +1488,125 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
               <input
                 type="checkbox"
-                checked={isSelected}
+                checked={countrySelected}
                 onChange={() =>
-                  handleFilterToggle(
-                    section as keyof SelectedFilters,
-                    node.id.toString()
-                  )
+                  handleFilterToggle("countries", country.id.toString())
                 }
                 className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
               />
               <div className="flex-1 min-w-0">
                 <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                  {node.name}
+                  {country.name}
                 </div>
               </div>
             </label>
           </div>
-          {node.isExpanded && node.children && node.children.length > 0 && (
-            <div className="ml-4 space-y-1">
-              {renderSearchNodes(node.children)}
-            </div>
-          )}
+          {country.isExpanded &&
+            country.regions &&
+            country.regions.length > 0 && (
+              <div className="ml-4 space-y-1">
+                {country.regions.map((region) => {
+                  const regionSelected = selectedFilters.regions.includes(
+                    region.id.toString()
+                  );
+                  return (
+                    <div key={`region-${region.id}`} className="space-y-1">
+                      <div className="flex items-center space-x-1">
+                        {region.provinces && region.provinces.length > 0 && (
+                          <button
+                            onClick={() =>
+                              toggleSearchNodeExpansion("region", region.id)
+                            }
+                            className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          >
+                            {region.isExpanded ? (
+                              <ChevronDownIcon className="w-3 h-3 text-gray-400" />
+                            ) : (
+                              <ChevronRightIcon className="w-3 h-3 text-gray-400" />
+                            )}
+                          </button>
+                        )}
+                        <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
+                          <input
+                            type="checkbox"
+                            checked={regionSelected}
+                            onChange={() =>
+                              handleFilterToggle(
+                                "regions",
+                                region.id.toString()
+                              )
+                            }
+                            className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                              {region.name}
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                      {region.isExpanded &&
+                        region.provinces &&
+                        region.provinces.length > 0 && (
+                          <div className="ml-4 space-y-1">
+                            {region.provinces.map((province) => {
+                              const provinceSelected =
+                                selectedFilters.provinces.includes(
+                                  province.id.toString()
+                                );
+                              return (
+                                <div
+                                  key={`province-${province.id}`}
+                                  className="space-y-1"
+                                >
+                                  <div className="flex items-center space-x-1">
+                                    <span className="w-3.5 h-3.5"></span>
+                                    <label className="flex items-start space-x-2 p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer flex-1">
+                                      <input
+                                        type="checkbox"
+                                        checked={provinceSelected}
+                                        onChange={() =>
+                                          handleFilterToggle(
+                                            "provinces",
+                                            province.id.toString()
+                                          )
+                                        }
+                                        className="w-3.5 h-3.5 mt-0.5 text-green-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-800"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <div className="text-xs text-gray-700 dark:text-gray-300 font-medium">
+                                          {province.name}
+                                        </div>
+                                      </div>
+                                    </label>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
         </div>
       );
     });
+  };
+
+  const countNodes = (countries: HierarchyCountryNode[]): number => {
+    let count = 0;
+    countries.forEach((country) => {
+      count += 1;
+      country.regions?.forEach((region) => {
+        count += 1;
+        region.provinces?.forEach(() => {
+          count += 1;
+        });
+      });
+    });
+    return count;
   };
 
   // New function to render hierarchical geographic data
