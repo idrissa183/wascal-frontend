@@ -1,4 +1,4 @@
-// src/constants/index.ts - Version corrigée
+// src/constants/index.ts
 export const APP_NAME = "EcoWatch";
 export const APP_VERSION = "1.0.0";
 
@@ -50,7 +50,7 @@ export const MAP_DEFAULTS = {
 // WASCAL Member Countries (12 countries in West Africa)
 export const SUPPORTED_COUNTRIES = [
   "BEN", // Benin
-  "BFA", // Burkina Faso  
+  "BFA", // Burkina Faso
   "CIV", // Côte d'Ivoire
   "CPV", // Cape Verde
   "GHA", // Ghana
@@ -67,10 +67,10 @@ export const SUPPORTED_COUNTRIES = [
 
 // WASCAL region bounding box (West Africa)
 export const WASCAL_BOUNDS = {
-  WEST: -25.0,  // Western boundary
-  EAST: 16.0,   // Eastern boundary  
-  SOUTH: 3.0,   // Southern boundary
-  NORTH: 25.0,  // Northern boundary
+  WEST: -25.0, // Western boundary
+  EAST: 16.0, // Eastern boundary
+  SOUTH: 3.0, // Southern boundary
+  NORTH: 25.0, // Northern boundary
 } as const;
 
 // Couleurs des graphiques
