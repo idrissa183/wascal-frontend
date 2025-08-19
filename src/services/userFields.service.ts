@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from '../constants';
+import { authService } from './auth.service';
 
 export interface UserField {
   id: number;
@@ -30,18 +31,18 @@ class UserFieldsService {
     this.baseUrl = `${getApiBaseUrl()}/api/v1/geographic`;
   }
 
-  private async getAuthHeaders(): Promise<HeadersInit> {
-    const token = localStorage.getItem('token');
+  private getAuthHeaders(): HeadersInit {
+    const authHeaders = authService.getAuthHeaders();
     return {
       'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...authHeaders,
     };
   }
 
   async createUserField(data: CreateUserFieldRequest): Promise<UserField> {
     const response = await fetch(`${this.baseUrl}/user-fields`, {
       method: 'POST',
-      headers: await this.getAuthHeaders(),
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });
 
@@ -55,7 +56,7 @@ class UserFieldsService {
   async getUserFields(skip: number = 0, limit: number = 100): Promise<UserField[]> {
     const response = await fetch(`${this.baseUrl}/user-fields?skip=${skip}&limit=${limit}`, {
       method: 'GET',
-      headers: await this.getAuthHeaders(),
+      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -68,7 +69,7 @@ class UserFieldsService {
   async getUserField(id: number): Promise<UserField> {
     const response = await fetch(`${this.baseUrl}/user-fields/${id}`, {
       method: 'GET',
-      headers: await this.getAuthHeaders(),
+      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
@@ -81,7 +82,7 @@ class UserFieldsService {
   async updateUserField(id: number, data: UpdateUserFieldRequest): Promise<UserField> {
     const response = await fetch(`${this.baseUrl}/user-fields/${id}`, {
       method: 'PUT',
-      headers: await this.getAuthHeaders(),
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
     });
 
@@ -95,7 +96,7 @@ class UserFieldsService {
   async deleteUserField(id: number): Promise<void> {
     const response = await fetch(`${this.baseUrl}/user-fields/${id}`, {
       method: 'DELETE',
-      headers: await this.getAuthHeaders(),
+      headers: this.getAuthHeaders(),
     });
 
     if (!response.ok) {
