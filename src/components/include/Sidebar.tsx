@@ -33,9 +33,9 @@ import {
   type Country,
   type Region,
   type Province,
-  type HierarchyCountry,
-  type HierarchyRegion,
-  type HierarchyProvince,
+  type SearchResultCountry,
+  type SearchResultRegion,
+  type SearchResultProvince,
 } from "../../services/geographic.service";
 import type { User } from "../../types/auth";
 import { getCountryName } from "../../utils/geophaphic";
@@ -134,13 +134,14 @@ interface RegionWithProvinces extends Region {
   isExpanded?: boolean;
 }
 
-type HierarchyProvinceNode = HierarchyProvince;
+type HierarchyProvinceNode = SearchResultProvince;
 
-type HierarchyRegionNode = HierarchyRegion & {
+type HierarchyRegionNode = SearchResultRegion & {
   isExpanded?: boolean;
+  provinces: SearchResultProvince[];
 };
 
-type HierarchyCountryNode = Omit<HierarchyCountry, "regions"> & {
+type HierarchyCountryNode = SearchResultCountry & {
   isExpanded?: boolean;
   regions: HierarchyRegionNode[];
 };
@@ -1450,11 +1451,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             if (type === "region") {
               return {
                 ...country,
-                regions: country.regions?.map((region) =>
-                  region.id === id
-                    ? { ...region, isExpanded: !region.isExpanded }
-                    : region
-                ),
+                regions: country.regions?.map((region) => {
+                  const regionNode = region as HierarchyRegionNode;
+                  return region.id === id
+                    ? { ...regionNode, isExpanded: !regionNode.isExpanded }
+                    : regionNode;
+                }),
               };
             }
             return country;
@@ -1519,7 +1521,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                             }
                             className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                           >
-                            {region.isExpanded ? (
+                            {(region as HierarchyRegionNode).isExpanded ? (
                               <ChevronDownIcon className="w-3 h-3 text-gray-400" />
                             ) : (
                               <ChevronRightIcon className="w-3 h-3 text-gray-400" />
@@ -1545,7 +1547,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                           </div>
                         </label>
                       </div>
-                      {region.isExpanded &&
+                      {(region as HierarchyRegionNode).isExpanded &&
                         region.provinces &&
                         region.provinces.length > 0 && (
                           <div className="ml-4 space-y-1">
@@ -1671,21 +1673,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ) : hasSearchTerm && searchResults ? (
               searchResults.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-xs text-gray-600 dark:text-gray-400 px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded">
-                    {countNodes(searchResults)} result(s) for "
-                    {searchTerms.geographic}"
-                  </div>
                   {renderSearchNodes(searchResults)}
                 </div>
-              ) : (
-                <div className="text-xs text-gray-500 dark:text-gray-400 py-2 text-center">
-                  No results found for "{searchTerms.geographic}"
-                </div>
-              )
+              ) : null
             ) : (
               // Render hierarchical tree view when no search
               <div className="space-y-1">
-                {(() => {
+                {displayCountries.length > 0 && (() => {
                   const countryIds = displayCountries.map((c) =>
                     c.id.toString()
                   );
@@ -1770,7 +1764,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       {hierarchyCountry?.isExpanded &&
                         hierarchyCountry?.regions && (
                           <div className="ml-4 space-y-1">
-                            {(() => {
+                            {hierarchyCountry.regions.length > 0 && (() => {
                               const regionIds = hierarchyCountry.regions.map(
                                 (r) => r.id.toString()
                               );
@@ -1808,7 +1802,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                     }
                                     className="p-0.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                                   >
-                                    {region.isExpanded ? (
+                                    {(region as unknown as HierarchyRegionNode).isExpanded ? (
                                       <ChevronDownIcon className="w-3 h-3 text-gray-400" />
                                     ) : (
                                       <ChevronRightIcon className="w-3 h-3 text-gray-400" />
@@ -1846,9 +1840,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                 </div>
 
                                 {/* Provinces Level */}
-                                {region.isExpanded && region.provinces && (
+                                {(region as unknown as HierarchyRegionNode).isExpanded && region.provinces && (
                                   <div className="ml-4 space-y-1">
-                                    {(() => {
+                                    {region.provinces.length > 0 && (() => {
                                       const provinceIds = region.provinces.map(
                                         (p) => p.id.toString()
                                       );
