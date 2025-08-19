@@ -71,19 +71,46 @@ export interface Department {
 
 export interface HierarchyProvince {
   id: number;
-  name: string;
+  country_id: number;
+  region_id: number;
+  shape_name: string;
 }
 
 export interface HierarchyRegion {
   id: number;
-  name: string;
+  country_id: number;
+  region_id: number;
+  shape_name: string;
   provinces: HierarchyProvince[];
 }
 
 export interface HierarchyCountry {
   id: number;
-  name: string;
+  country_id: number;
+  region_id: number | null;
+  shape_name: string;
+  shape_name_fr?: string;
+  shape_name_en?: string;
+  shape_iso?: string;
+  shape_iso_2?: string;
   regions: HierarchyRegion[];
+}
+
+export interface SearchResultProvince {
+  id: number;
+  name: string;
+}
+
+export interface SearchResultRegion {
+  id: number;
+  name: string;
+  provinces: SearchResultProvince[];
+}
+
+export interface SearchResultCountry {
+  id: number;
+  name: string;
+  regions: SearchResultRegion[];
 }
 
 class GeographicService {
@@ -451,12 +478,12 @@ class GeographicService {
   async searchHierarchy(
     query: string,
     language: "en" | "fr"
-  ): Promise<HierarchyCountry[]> {
+  ): Promise<SearchResultCountry[]> {
     if (!query || query.length < 2) {
       return [];
     }
     const results = await this.searchGeographic(query, language);
-    const countryMap = new Map<number, HierarchyCountry>();
+    const countryMap = new Map<number, SearchResultCountry>();
     const regionCountryMap = new Map<number, number>();
 
     results.countries.forEach((c) => {
@@ -507,7 +534,7 @@ class GeographicService {
   async searchHierarchyFromBackend(
     query: string,
     language: "en" | "fr"
-  ): Promise<HierarchyCountry[]> {
+  ): Promise<SearchResultCountry[]> {
     if (!query || query.length < 2) {
       return [];
     }
@@ -524,22 +551,35 @@ class GeographicService {
 
     try {
       const searchParams = new URLSearchParams({
-        query: query,
-        language: language
+        search: query
       });
 
       const result = await this.makeRequest<HierarchyCountry[]>(
         `${this.baseURL}/hierarchy-search?${searchParams}`
       );
 
-      // Mettre en cache le résultat
+      // Transformer les données pour correspondre à l'interface attendue par le Sidebar
+      const transformedResult = result.map((country) => ({
+        id: country.id,
+        name: getCountryName(country as any, language), // Utiliser la logique de nommage existante
+        regions: country.regions.map((region) => ({
+          id: region.id,
+          name: region.shape_name,
+          provinces: region.provinces.map((province) => ({
+            id: province.id,
+            name: province.shape_name,
+          })),
+        })),
+      }));
+
+      // Mettre en cache le résultat transformé
       this.searchCache.set(cacheKey, {
-        data: result,
+        data: transformedResult,
         timestamp: now,
       });
 
-      console.log(`💾 Cached hierarchy search result for query: ${query}`);
-      return result;
+      console.log(`💾 Cached hierarchy search result for query: ${query}`, transformedResult);
+      return transformedResult;
     } catch (error) {
       console.error("❌ Hierarchy search error:", error);
       // En cas d'erreur avec l'endpoint backend, utiliser le fallback client-side
