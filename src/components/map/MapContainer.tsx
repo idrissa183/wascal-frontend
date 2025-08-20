@@ -58,7 +58,7 @@ import { FaLocationDot } from "react-icons/fa6";
 import { renderToStaticMarkup } from "react-dom/server";
 import { LuRectangleHorizontal } from "react-icons/lu";
 import { PiPolygonBold } from "react-icons/pi";
-import { Save } from "lucide-react";
+import { Save, MapPin } from "lucide-react";
 import Overlay from "ol/Overlay";
 import { getArea } from "ol/sphere";
 import { singleClick } from "ol/events/condition";
@@ -130,14 +130,13 @@ export default function MapContainer({
   ]);
   const [zoom, setZoom] = useState<number>(MAP_DEFAULTS.ZOOM);
   const locationIconUrl = `data:image/svg+xml,${encodeURIComponent(
-    renderToStaticMarkup(<FaLocationDot />)
+    renderToStaticMarkup(<MapPin />)
   )}`;
   const pointStyle = new Style({
     image: new Icon({
       src: locationIconUrl,
       anchor: [0.5, 1],
-      height: 48,
-      width: 48,
+      scale: 2,
     }),
   });
 

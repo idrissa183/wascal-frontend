@@ -1,12 +1,12 @@
 import { useRef, useCallback, createElement } from "react";
 import type { Feature } from "ol";
 import { Point, Polygon, Circle as CircleGeom, Geometry } from "ol/geom";
-import { Style, Fill, Stroke, Circle as CircleStyle } from "ol/style";
+import { Style, Fill, Stroke, Circle as CircleStyle, Icon } from "ol/style";
 import Overlay from "ol/Overlay";
 import { toLonLat } from "ol/proj";
 import { unByKey } from "ol/Observable";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Save, X, Edit2 } from "lucide-react";
+import { Save, X, Edit2, MapPin } from "lucide-react";
 import { getArea, getLength } from "ol/sphere";
 import type {
   FeatureType,
@@ -21,6 +21,9 @@ export const useMapFeatures = (
 ) => {
   const drawnFeaturesRef = useRef<Map<string, DrawnFeature>>(new Map());
   const selectedFeatureRef = useRef<string | null>(null);
+  const locationIconUrl = `data:image/svg+xml,${encodeURIComponent(
+    renderToStaticMarkup(createElement(MapPin))
+  )}`;
 
   // Styles pour les différents états
   const createFeatureStyle = useCallback(
@@ -42,13 +45,10 @@ export const useMapFeatures = (
 
       if (geometryType === "point") {
         return new Style({
-          image: new CircleStyle({
-            radius: isSelected ? 10 : isEditing ? 8 : 6,
-            fill: new Fill({ color: baseColor }),
-            stroke: new Stroke({
-              color: "#ffffff",
-              width: isSelected ? 3 : 2,
-            }),
+          image: new Icon({
+            src: locationIconUrl,
+            anchor: [0.5, 1],
+            scale: isSelected ? 1.2 : isEditing ? 1.1 : 1,
           }),
         });
       }
