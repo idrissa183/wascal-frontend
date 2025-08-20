@@ -61,7 +61,6 @@ import { Save } from "lucide-react";
 import Overlay from "ol/Overlay";
 import { getArea } from "ol/sphere";
 
-
 interface MapContainerProps {
   onSelectionChange?: (selection: any) => void;
   onLayerChange?: (layers: string[]) => void;
@@ -539,8 +538,11 @@ export default function MapContainer({
         source: vectorSourceRef.current,
         condition: (event) => {
           // Only allow modification for non-rectangle features or use custom rectangle logic
-          const feature = map.forEachFeatureAtPixel(event.pixel, (feature) => feature);
-          if (feature && feature.get('geometryType') === 'rectangle') {
+          const feature = map.forEachFeatureAtPixel(
+            event.pixel,
+            (feature) => feature
+          );
+          if (feature && feature.get("geometryType") === "rectangle") {
             return false; // Disable default modify for rectangles
           }
           return true;
@@ -555,7 +557,7 @@ export default function MapContainer({
           }),
         }),
       });
-      
+
       return modify;
     };
 
@@ -568,21 +570,29 @@ export default function MapContainer({
 
         handleDownEvent(event: any): boolean {
           const pixel = event.pixel;
-          
+
           // Check if clicking on a handle first
-          const handleFeature = this.getMap()?.forEachFeatureAtPixel(pixel, (feature) => {
-            if (feature.get('handleType') === 'rectangle-corner') {
-              return feature;
+          const handleFeature = this.getMap()?.forEachFeatureAtPixel(
+            pixel,
+            (feature) => {
+              if (feature.get("handleType") === "rectangle-corner") {
+                return feature;
+              }
+              return null;
             }
-            return null;
-          });
+          );
 
           if (handleFeature) {
-            const parentFeature = handleFeature.get('parentFeature');
-            const cornerIndex = handleFeature.get('cornerIndex');
+            const parentFeature = handleFeature.get("parentFeature");
+            const cornerIndex = handleFeature.get("cornerIndex");
             const geometry = parentFeature.getGeometry() as Polygon;
-            
-            const cornerNames = ['bottom-left', 'bottom-right', 'top-right', 'top-left'];
+
+            const cornerNames = [
+              "bottom-left",
+              "bottom-right",
+              "top-right",
+              "top-left",
+            ];
             this.draggedCorner = cornerNames[cornerIndex];
             this.originalExtent = [...geometry.getExtent()];
             this.activeFeature = parentFeature;
@@ -590,59 +600,64 @@ export default function MapContainer({
           }
 
           // Check if clicking on a rectangle to show handles
-          const rectangleFeature = this.getMap()?.forEachFeatureAtPixel(pixel, (feature) => {
-            if (feature.get('geometryType') === 'rectangle') {
-              return feature;
+          const rectangleFeature = this.getMap()?.forEachFeatureAtPixel(
+            pixel,
+            (feature) => {
+              if (feature.get("geometryType") === "rectangle") {
+                return feature;
+              }
+              return null;
             }
-            return null;
-          });
+          );
 
           if (rectangleFeature) {
             showRectangleHandles(rectangleFeature);
           } else {
             hideRectangleHandles();
           }
-          
+
           return false;
         }
 
         handleDragEvent(event: any): void {
           if (this.draggedCorner && this.originalExtent && this.activeFeature) {
-            const currentCoord = this.getMap()?.getCoordinateFromPixel(event.pixel);
+            const currentCoord = this.getMap()?.getCoordinateFromPixel(
+              event.pixel
+            );
             if (!currentCoord) return;
-            
+
             const geometry = this.activeFeature.getGeometry() as Polygon;
             let newExtent = [...this.originalExtent];
-            
+
             // Update extent based on dragged corner
             switch (this.draggedCorner) {
-              case 'bottom-left':
+              case "bottom-left":
                 newExtent[0] = currentCoord[0]; // left
                 newExtent[1] = currentCoord[1]; // bottom
                 break;
-              case 'bottom-right':
+              case "bottom-right":
                 newExtent[2] = currentCoord[0]; // right
                 newExtent[1] = currentCoord[1]; // bottom
                 break;
-              case 'top-right':
+              case "top-right":
                 newExtent[2] = currentCoord[0]; // right
                 newExtent[3] = currentCoord[1]; // top
                 break;
-              case 'top-left':
+              case "top-left":
                 newExtent[0] = currentCoord[0]; // left
                 newExtent[3] = currentCoord[1]; // top
                 break;
             }
-            
+
             // Create new rectangle coordinates
             const newCoords = [
               [newExtent[0], newExtent[1]], // bottom-left
               [newExtent[2], newExtent[1]], // bottom-right
               [newExtent[2], newExtent[3]], // top-right
               [newExtent[0], newExtent[3]], // top-left
-              [newExtent[0], newExtent[1]]  // close
+              [newExtent[0], newExtent[1]], // close
             ];
-            
+
             geometry.setCoordinates([newCoords]);
             updateSaveIconPosition(this.activeFeature);
             showRectangleHandles(this.activeFeature); // Update handles position
@@ -664,12 +679,12 @@ export default function MapContainer({
     const modify = createRectangleEditor();
     const select = new Select();
     const translate = new Translate({ features: select.getFeatures() });
-    
+
     // Add listeners to update save icon position during modifications
     let currentModifyHandler: any = null;
     let currentTranslateHandler: any = null;
-    
-    modify.on('modifystart', (event) => {
+
+    modify.on("modifystart", (event) => {
       const modifiedFeatures = event.features.getArray();
       if (modifiedFeatures.length > 0) {
         const feature = modifiedFeatures[0];
@@ -678,81 +693,89 @@ export default function MapContainer({
           // Add real-time rectangle shape maintenance during modification
           const rectangleHandler = () => {
             // Only apply rectangle constraints to features marked as rectangles
-            if (feature.get('geometryType') === 'rectangle' && geometry instanceof Polygon) {
+            if (
+              feature.get("geometryType") === "rectangle" &&
+              geometry instanceof Polygon
+            ) {
               const coordinates = geometry.getCoordinates()[0];
-              if (coordinates.length === 5) { // Rectangle
+              if (coordinates.length === 5) {
+                // Rectangle
                 const correctedCoords = maintainRectangleShape(coordinates);
                 geometry.setCoordinates([correctedCoords]);
               }
             }
             updateSaveIconPosition(feature);
           };
-          
+
           currentModifyHandler = rectangleHandler;
-          geometry.on('change', currentModifyHandler);
+          geometry.on("change", currentModifyHandler);
         }
       }
     });
-    
-    modify.on('modifyend', (event) => {
+
+    modify.on("modifyend", (event) => {
       const modifiedFeatures = event.features.getArray();
       if (modifiedFeatures.length > 0) {
         const feature = modifiedFeatures[0];
         const geometry = feature.getGeometry();
-        
+
         // Ensure rectangles maintain their rectangular shape
-        if (feature.get('geometryType') === 'rectangle' && geometry instanceof Polygon) {
+        if (
+          feature.get("geometryType") === "rectangle" &&
+          geometry instanceof Polygon
+        ) {
           const coordinates = geometry.getCoordinates()[0];
-          if (coordinates.length === 5) { // Rectangle
+          if (coordinates.length === 5) {
+            // Rectangle
             const correctedCoords = maintainRectangleShape(coordinates);
             geometry.setCoordinates([correctedCoords]);
           }
         }
-        
+
         if (geometry && currentModifyHandler) {
-          geometry.un('change', currentModifyHandler);
+          geometry.un("change", currentModifyHandler);
           currentModifyHandler = null;
         }
         updateSaveIconPosition(feature);
       }
     });
-    
-    translate.on('translatestart', (event) => {
+
+    translate.on("translatestart", (event) => {
       const translatedFeatures = event.features.getArray();
       if (translatedFeatures.length > 0) {
         const feature = translatedFeatures[0];
         const geometry = feature.getGeometry();
         if (geometry) {
           currentTranslateHandler = () => updateSaveIconPosition(feature);
-          geometry.on('change', currentTranslateHandler);
+          geometry.on("change", currentTranslateHandler);
         }
       }
     });
-    
-    translate.on('translating', (event) => {
+
+    translate.on("translating", (event) => {
       const translatedFeatures = event.features.getArray();
       if (translatedFeatures.length > 0) {
         updateSaveIconPosition(translatedFeatures[0]);
       }
     });
-    
-    translate.on('translateend', (event) => {
+
+    translate.on("translateend", (event) => {
       const translatedFeatures = event.features.getArray();
       if (translatedFeatures.length > 0) {
         const feature = translatedFeatures[0];
         const geometry = feature.getGeometry();
         if (geometry && currentTranslateHandler) {
-          geometry.un('change', currentTranslateHandler);
+          geometry.un("change", currentTranslateHandler);
           currentTranslateHandler = null;
         }
         updateSaveIconPosition(feature);
       }
     });
-    
+
     // Initialize custom rectangle interaction
     const rectangleInteraction = createCustomRectangleInteraction();
     rectangleInteractionRef.current = rectangleInteraction;
-    
+
     map.addInteraction(select);
     map.addInteraction(translate);
     map.addInteraction(modify);
@@ -783,6 +806,17 @@ export default function MapContainer({
 
     mapInstanceRef.current = map;
     setMapLoaded(true);
+
+    vectorSourceRef.current.on("removefeature", (event) => {
+      if (userFieldOverlayRef.current) {
+        const associatedFeature = (userFieldOverlayRef.current as any)
+          .associatedFeature;
+        if (associatedFeature === event.feature) {
+          mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
+          userFieldOverlayRef.current = null;
+        }
+      }
+    });
 
     //   // Ajouter quelques points d'exemple
     //   addSampleData();
@@ -831,8 +865,7 @@ export default function MapContainer({
     }
 
     if (userFieldOverlayRef.current) {
-      mapInstanceRef.current.removeOverlay(userFieldOverlayRef.current);
-      userFieldOverlayRef.current = null;
+      removeSaveIconOverlay();
     }
 
     if (tool === activeTool || tool === "none") {
@@ -903,17 +936,23 @@ export default function MapContainer({
             area = Math.PI * radius * radius;
             position = geometry.getCenter();
           }
-          
+
           // Use AreaDisplay component for consistent formatting
           overlayElement.innerHTML = `<div class="px-3 py-2 bg-blue-600 text-white rounded-lg shadow-lg border border-blue-700">
             <div class="flex items-center space-x-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M16 4h2a2 2 0 012 2v2M16 20h2a2 2 0 002-2v-2"/>
               </svg>
-              <span class="text-sm font-medium">${area >= 1000000 ? (area / 1000000).toFixed(2) + ' km²' : area >= 10000 ? (area / 10000).toFixed(2) + ' ha' : area.toFixed(0) + ' m²'}</span>
+              <span class="text-sm font-medium">${
+                area >= 1000000
+                  ? (area / 1000000).toFixed(2) + " km²"
+                  : area >= 10000
+                  ? (area / 10000).toFixed(2) + " ha"
+                  : area.toFixed(0) + " m²"
+              }</span>
             </div>
           </div>`;
-          
+
           setCurrentDrawingArea(area);
           if (position) {
             overlay.setPosition(position);
@@ -925,18 +964,17 @@ export default function MapContainer({
         draw.once("drawend", () => {
           updateArea();
           geometry.un("change", updateArea);
-          mapInstanceRef.current?.removeOverlay(overlay);
-          userFieldOverlayRef.current = null;
+          removeSaveIconOverlay();
         });
       });
 
       draw.on("drawend", (event) => {
         const feature = event.feature;
         const geometry = feature.getGeometry();
-        
+
         // Mark rectangle features for special handling
         if (tool === "rectangle") {
-          feature.set('geometryType', 'rectangle');
+          feature.set("geometryType", "rectangle");
         }
 
         if (tool === "point") {
@@ -992,55 +1030,55 @@ export default function MapContainer({
   // Helper function to maintain rectangle shape during modification
   const maintainRectangleShape = (coordinates: number[][]) => {
     if (coordinates.length !== 5) return coordinates;
-    
+
     // Get the four corners (excluding the closing point)
     const corners = coordinates.slice(0, 4);
-    
+
     // Find which corner was moved by comparing with the original rectangle
     // For now, we'll reconstruct a proper rectangle from the modified coordinates
-    const minX = Math.min(...corners.map(c => c[0]));
-    const maxX = Math.max(...corners.map(c => c[0]));
-    const minY = Math.min(...corners.map(c => c[1]));
-    const maxY = Math.max(...corners.map(c => c[1]));
-    
+    const minX = Math.min(...corners.map((c) => c[0]));
+    const maxX = Math.max(...corners.map((c) => c[0]));
+    const minY = Math.min(...corners.map((c) => c[1]));
+    const maxY = Math.max(...corners.map((c) => c[1]));
+
     // Return a proper rectangle with 90-degree angles
     return [
       [minX, minY], // bottom-left
       [maxX, minY], // bottom-right
       [maxX, maxY], // top-right
       [minX, maxY], // top-left
-      [minX, minY]  // close the ring
+      [minX, minY], // close the ring
     ];
   };
 
   // Helper functions for rectangle handles
   const showRectangleHandles = (feature: any) => {
-    if (!feature || feature.get('geometryType') !== 'rectangle') return;
-    
+    if (!feature || feature.get("geometryType") !== "rectangle") return;
+
     const geometry = feature.getGeometry() as Polygon;
     const extent = geometry.getExtent();
-    
+
     rectangleHandlesSourceRef.current?.clear();
-    
+
     // Create handle points at corners
     const corners = [
       [extent[0], extent[1]], // bottom-left
       [extent[2], extent[1]], // bottom-right
       [extent[2], extent[3]], // top-right
-      [extent[0], extent[3]]  // top-left
+      [extent[0], extent[3]], // top-left
     ];
-    
+
     corners.forEach((corner, index) => {
       const handleFeature = new Feature({
         geometry: new Point(corner),
       });
-      handleFeature.set('handleType', 'rectangle-corner');
-      handleFeature.set('cornerIndex', index);
-      handleFeature.set('parentFeature', feature);
+      handleFeature.set("handleType", "rectangle-corner");
+      handleFeature.set("cornerIndex", index);
+      handleFeature.set("parentFeature", feature);
       rectangleHandlesSourceRef.current?.addFeature(handleFeature);
     });
   };
-  
+
   const hideRectangleHandles = () => {
     rectangleHandlesSourceRef.current?.clear();
   };
@@ -1048,14 +1086,15 @@ export default function MapContainer({
   // Helper function to update save icon position
   const updateSaveIconPosition = (feature: any) => {
     if (!userFieldOverlayRef.current) return;
-    
+
     // Check if this feature is the one associated with the save icon
-    const associatedFeature = (userFieldOverlayRef.current as any).associatedFeature;
+    const associatedFeature = (userFieldOverlayRef.current as any)
+      .associatedFeature;
     if (associatedFeature && associatedFeature !== feature) return;
-    
+
     const geometry = feature.getGeometry();
     if (!geometry) return;
-    
+
     let overlayCoord;
     if (geometry instanceof Point) {
       overlayCoord = geometry.getCoordinates();
@@ -1067,10 +1106,29 @@ export default function MapContainer({
       const radius = geometry.getRadius();
       overlayCoord = [center[0], center[1] - radius];
     }
-    
+
     if (overlayCoord) {
       userFieldOverlayRef.current.setPosition(overlayCoord);
     }
+  };
+
+  // Helper to remove save icon overlay and detach listeners
+  const removeSaveIconOverlay = () => {
+    if (!userFieldOverlayRef.current) return;
+
+    const overlay = userFieldOverlayRef.current as any;
+    const associatedFeature = overlay.associatedFeature;
+    const geometryListener = overlay.geometryChangeListener;
+
+    if (associatedFeature && geometryListener) {
+      const geometry = associatedFeature.getGeometry();
+      if (geometry) {
+        geometry.un("change", geometryListener);
+      }
+    }
+
+    mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
+    userFieldOverlayRef.current = null;
   };
 
   const handleUserFieldDrawEnd = (
@@ -1131,19 +1189,18 @@ export default function MapContainer({
 
     // Create overlay with save icon
     if (userFieldOverlayRef.current) {
-      mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
-      userFieldOverlayRef.current = null;
+      removeSaveIconOverlay();
     }
 
-    const overlayElement = document.createElement('button');
+    const overlayElement = document.createElement("button");
     overlayElement.className =
-      'p-2 bg-white rounded-full border border-gray-300 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors';
-    overlayElement.title = 'Enregistrer';
+      "p-2 bg-white rounded-full border border-gray-300 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors";
+    overlayElement.title = "Enregistrer";
     overlayElement.innerHTML = renderToStaticMarkup(
       <Save className="w-4 h-4 text-blue-600" />
     );
 
-    overlayElement.addEventListener('click', () => {
+    overlayElement.addEventListener("click", () => {
       setPendingGeometry(geoJsonGeometry);
       setPendingGeometryType(type);
       setShowUserFieldEditor(true);
@@ -1152,7 +1209,7 @@ export default function MapContainer({
 
     const overlay = new Overlay({
       element: overlayElement,
-      positioning: 'top-center',
+      positioning: "top-center",
       offset: [0, 10],
       stopEvent: true,
     });
@@ -1177,14 +1234,20 @@ export default function MapContainer({
 
     mapInstanceRef.current?.addOverlay(overlay);
     userFieldOverlayRef.current = overlay;
-    
+
     // Store reference to the feature that has the save icon
     const lastFeature = vectorSourceRef.current?.getFeatures().slice(-1)[0];
     if (lastFeature) {
       (overlay as any).associatedFeature = lastFeature;
+      const geom = lastFeature.getGeometry();
+      if (geom) {
+        const listener = () => updateSaveIconPosition(lastFeature);
+        geom.on("change", listener);
+        (overlay as any).geometryChangeListener = listener;
+      }
     }
-    
-    console.log('✅ Save overlay added for drawn feature');
+
+    console.log("✅ Save overlay added for drawn feature");
 
     // // Set pending geometry and show form
     // console.log("📝 Setting pending geometry and opening form:", {
@@ -1195,9 +1258,7 @@ export default function MapContainer({
     // setPendingGeometryType(type);
     // setShowUserFieldForm(true);
     // console.log("✅ Form should be open now");
-
   };
-
 
   const handleUserFieldVisibilityChange = (
     fieldId: number,
@@ -1275,10 +1336,9 @@ export default function MapContainer({
   const handleCut = () => {
     // Remove save icon overlay when cutting all features
     if (userFieldOverlayRef.current) {
-      mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
-      userFieldOverlayRef.current = null;
+      removeSaveIconOverlay();
     }
-    
+
     // Clear all features
     vectorSourceRef.current?.clear();
   };
@@ -1287,16 +1347,16 @@ export default function MapContainer({
     const features = vectorSourceRef.current?.getFeatures();
     if (features && features.length > 0) {
       const lastFeature = features[features.length - 1];
-      
+
       // Check if the feature being removed is associated with the save icon
       if (userFieldOverlayRef.current) {
-        const associatedFeature = (userFieldOverlayRef.current as any).associatedFeature;
+        const associatedFeature = (userFieldOverlayRef.current as any)
+          .associatedFeature;
         if (associatedFeature === lastFeature) {
-          mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
-          userFieldOverlayRef.current = null;
+          removeSaveIconOverlay();
         }
       }
-      
+
       vectorSourceRef.current?.removeFeature(lastFeature);
     }
   };
@@ -1685,8 +1745,7 @@ export default function MapContainer({
               if (!visible) {
                 setEditingUserField(null);
                 if (userFieldOverlayRef.current) {
-                  mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
-                  userFieldOverlayRef.current = null;
+                  removeSaveIconOverlay();
                 }
               }
             }}
@@ -1700,16 +1759,14 @@ export default function MapContainer({
                   setShowUserFieldEditor(false);
                   setEditingUserField(null);
                   if (userFieldOverlayRef.current) {
-                    mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
-                    userFieldOverlayRef.current = null;
+                    removeSaveIconOverlay();
                   }
                 }}
                 onCancel={() => {
                   setShowUserFieldEditor(false);
                   setEditingUserField(null);
                   if (userFieldOverlayRef.current) {
-                    mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
-                    userFieldOverlayRef.current = null;
+                    removeSaveIconOverlay();
                   }
                 }}
               />
