@@ -17,15 +17,17 @@ import { UserFieldForm } from "./UserFieldForm";
 import type { UserField } from "../../services/userFields.service";
 
 interface UserFieldsPanelProps {
-  isOpen: boolean;
-  onToggle: () => void;
+  variant?: "floating" | "sidebar";
+  isOpen?: boolean;
+  onToggle?: () => void;
   onFieldVisibilityChange?: (fieldId: number, visible: boolean) => void;
   visibleFields?: Set<number>;
   onEdit?: (field: UserField) => void;
 }
 
 export function UserFieldsPanel({
-  isOpen,
+  variant = "floating",
+  isOpen = true,
   onToggle,
   onFieldVisibilityChange,
   visibleFields = new Set(),
@@ -103,22 +105,29 @@ export function UserFieldsPanel({
     return `${area.toFixed(2)} km²`;
   };
 
-  if (!isOpen) return null;
+  if (variant !== "sidebar" && !isOpen) return null;
+
+  const containerClasses =
+    variant === "sidebar"
+      ? "h-full flex flex-col"
+      : "absolute top-4 left-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-40 w-80 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col";
 
   return (
     <>
-      <div className="absolute top-4 left-4 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-40 w-80 max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+      <div className={containerClasses}>
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Mes Champs
             </h3>
-            <button
-              onClick={onToggle}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            >
-              ×
-            </button>
+            {onToggle && (
+              <button
+                onClick={onToggle}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+              >
+                ×
+              </button>
+            )}
           </div>
 
           <div className="mt-3">

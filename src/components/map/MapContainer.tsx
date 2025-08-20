@@ -470,79 +470,79 @@ export default function MapContainer({
     });
 
     // --- SOLUTION FINALE POUR RECTANGLES PARFAITS ---
-    
+
     // Variable pour éviter les boucles infinies
     let isFixingRectangle = false;
-    
+
     // Fonction pour détecter et corriger un rectangle déformé
-    const fixRectangleGeometry = (feature: Feature, debugInfo = '') => {
+    const fixRectangleGeometry = (feature: Feature, debugInfo = "") => {
       console.log(`🔍 fixRectangleGeometry called ${debugInfo}:`, {
         isFixing: isFixingRectangle,
         hasFeature: !!feature,
-        featureId: feature?.getId()
+        featureId: feature?.getId(),
       });
-      
+
       if (isFixingRectangle || !feature) return;
-      
+
       // Détecter si c'est un rectangle même sans la propriété isRectangle
       const geometry = feature.getGeometry() as Polygon;
       console.log(`📐 Geometry check:`, {
         hasGeometry: !!geometry,
         type: geometry?.getType(),
-        isPolygon: geometry?.getType() === 'Polygon'
+        isPolygon: geometry?.getType() === "Polygon",
       });
-      
-      if (!geometry || geometry.getType() !== 'Polygon') return;
-      
+
+      if (!geometry || geometry.getType() !== "Polygon") return;
+
       const coords = geometry.getCoordinates()[0];
       console.log(`📊 Coords check:`, {
         coordsLength: coords?.length,
-        expectedLength: 5
+        expectedLength: 5,
       });
-      
+
       if (coords.length !== 5) return; // Un rectangle doit avoir 5 points (fermé)
-      
+
       // Vérifier si c'est probablement un rectangle (4 coins + fermeture)
-      const xCoords = coords.slice(0, -1).map(c => c[0]);
-      const yCoords = coords.slice(0, -1).map(c => c[1]);
+      const xCoords = coords.slice(0, -1).map((c) => c[0]);
+      const yCoords = coords.slice(0, -1).map((c) => c[1]);
       const uniqueXs = [...new Set(xCoords)];
       const uniqueYs = [...new Set(yCoords)];
-      
+
       console.log(`🧮 Rectangle analysis:`, {
         uniqueXsCount: uniqueXs.length,
         uniqueYsCount: uniqueYs.length,
-        isRectangleProperty: feature.get("isRectangle")
+        isRectangleProperty: feature.get("isRectangle"),
       });
-      
+
       // Si c'est un rectangle, il ne devrait y avoir que 2 valeurs X et 2 valeurs Y uniques
       const isLikelyRectangle = uniqueXs.length === 2 && uniqueYs.length === 2;
-      
+
       if (!feature.get("isRectangle") && !isLikelyRectangle) {
         console.log("❌ Not a rectangle - skipping correction");
         return;
       }
-      
+
       isFixingRectangle = true;
-      
+
       // Calculer l'extent et construire un rectangle parfait
       const minX = Math.min(...xCoords);
       const maxX = Math.max(...xCoords);
       const minY = Math.min(...yCoords);
       const maxY = Math.max(...yCoords);
-      
+
       const perfectRect = [
         [
-          [minX, minY],    // coin bas-gauche
-          [maxX, minY],    // coin bas-droit
-          [maxX, maxY],    // coin haut-droit
-          [minX, maxY],    // coin haut-gauche
-          [minX, minY]     // retour au début
-        ]
+          [minX, minY], // coin bas-gauche
+          [maxX, minY], // coin bas-droit
+          [maxX, maxY], // coin haut-droit
+          [minX, maxY], // coin haut-gauche
+          [minX, minY], // retour au début
+        ],
       ];
-      
+
       geometry.setCoordinates(perfectRect);
       console.log("✅ Rectangle corrected successfully!");
-      
+
       isFixingRectangle = false;
     };
 
@@ -564,7 +564,7 @@ export default function MapContainer({
       const feature = event.features.getArray()[0];
       if (feature) {
         fixRectangleGeometry(feature, "after modifyend");
-        
+
         // Mettre à jour les overlays
         const featureId = feature.getId() as string;
         if (featureId) {
@@ -579,16 +579,17 @@ export default function MapContainer({
       console.log("🔄 CHANGE FEATURE - Feature info:", {
         id: feature?.getId(),
         geometryType: feature?.getGeometry()?.getType(),
-        coords: feature?.getGeometry()?.getType() === 'Polygon' ? 
-          (feature.getGeometry() as Polygon)?.getCoordinates()[0]?.length : 'N/A'
+        coords:
+          feature?.getGeometry()?.getType() === "Polygon"
+            ? (feature.getGeometry() as Polygon)?.getCoordinates()[0]?.length
+            : "N/A",
       });
-      
+
       if (feature) {
         fixRectangleGeometry(feature, "from changefeature");
       }
     });
 
-    
     // --- FIN SOLUTION FINALE ---
 
     const translate = new Translate({
@@ -653,7 +654,6 @@ export default function MapContainer({
       })
     );
 
-    
     mapInstanceRef.current = map;
     setMapLoaded(true);
   };
@@ -770,10 +770,11 @@ export default function MapContainer({
         }
 
         const featureId = mapFeatures.addFeature(feature, tool as FeatureType);
-        
+
         // Re-marquer comme rectangle après l'ajout par mapFeatures
         if (activeTool === "rectangle") {
-          const addedFeature = vectorSourceRef.current.getFeatureById(featureId);
+          const addedFeature =
+            vectorSourceRef.current.getFeatureById(featureId);
           if (addedFeature) {
             addedFeature.set("isRectangle", true);
           }
@@ -995,7 +996,13 @@ export default function MapContainer({
           <MapIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
         <button
-          onClick={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
+          onClick={() => {
+            const newValue = !showUserFieldsPanel;
+            setShowUserFieldsPanel(newValue);
+            if (!newValue) {
+              setShowUserFieldEditor(false);
+            }
+          }}
           className={`p-2 sm:p-2.5 rounded-lg shadow-lg border transition-colors ${
             showUserFieldsPanel
               ? "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
@@ -1220,7 +1227,7 @@ export default function MapContainer({
       )}
 
       {showUserFieldsPanel && (
-        <div className="absolute top-0 right-0 h-full z-30">
+        <div className="absolute top-0 right-0 h-full w-full sm:w-auto">
           <TwoColumnSidebar
             isRightColumnVisible={showUserFieldEditor}
             onRightColumnToggle={(visible) => {
@@ -1244,8 +1251,15 @@ export default function MapContainer({
             }
           >
             <UserFieldsPanel
+              variant="sidebar"
               isOpen={true}
-              onToggle={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
+              onToggle={() => {
+                const newValue = !showUserFieldsPanel;
+                setShowUserFieldsPanel(newValue);
+                if (!newValue) {
+                  setShowUserFieldEditor(false);
+                }
+              }}
               onFieldVisibilityChange={handleUserFieldVisibilityChange}
               visibleFields={visibleUserFields}
               onEdit={(field) => {

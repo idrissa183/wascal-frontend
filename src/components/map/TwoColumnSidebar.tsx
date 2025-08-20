@@ -45,14 +45,14 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
   // Calculate widths based on state
   const getLeftWidth = () => {
     if (isLeftCollapsed) return "w-12";
-    if (isRightColumnVisible && !isRightCollapsed) return "w-80";
-    return "w-96";
+    if (isRightColumnVisible && !isRightCollapsed) return "w-full sm:w-80";
+    return "w-full sm:w-96";
   };
 
   const getRightWidth = () => {
     if (!isRightColumnVisible) return "w-0";
     if (isRightCollapsed) return "w-12";
-    return "w-80";
+    return "w-full sm:w-80";
   };
 
   return (
