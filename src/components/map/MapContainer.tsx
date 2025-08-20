@@ -301,14 +301,14 @@ export default function MapContainer({
     }
   }, [selectedEntities]);
 
-  // Create SVG icon data URL for map pin
-  const createMapPinIcon = (color: string = "#3b82f6", size: number = 32) => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" width="${size}" height="${size}">
-      <path fill="${color}" stroke="white" stroke-width="2" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-      <path fill="${color}" stroke="white" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z"/>
-    </svg>`;
-    return `data:image/svg+xml;base64,${btoa(svg)}`;
-  };
+  // // Create SVG icon data URL for map pin
+  // const createMapPinIcon = (color: string = "#3b82f6", size: number = 32) => {
+  //   const svg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" width="${size}" height="${size}">
+  //     <path fill="${color}" stroke="white" stroke-width="2" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+  //     <path fill="${color}" stroke="white" stroke-width="2" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25s-7.5-4.108-7.5-11.25a7.5 7.5 0 1 1 15 0Z"/>
+  //   </svg>`;
+  //   return `data:image/svg+xml;base64,${btoa(svg)}`;
+  // };
 
   // Effect to handle user fields display
   useEffect(() => {
@@ -363,16 +363,8 @@ export default function MapContainer({
 
           // Set style based on geometry type
           const getFieldStyle = (geometryType: string) => {
-            if (geometryType === "point") {
-              return new Style({
-                image: new Icon({
-                  src: createMapPinIcon("#3b82f6", 32),
-                  anchor: [0.5, 1], // Anchor at bottom center of the pin
-                  anchorXUnits: "fraction",
-                  anchorYUnits: "fraction",
-                  scale: 1,
-                }),
-              });
+            if (geometryType.toLowerCase() === "point") {
+              return pointStyle;
             }
             return new Style({
               fill: new Fill({ color: "rgba(59, 130, 246, 0.3)" }),
