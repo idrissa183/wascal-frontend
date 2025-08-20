@@ -265,7 +265,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
           </div>
 
           {/* Category */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Catégorie
             </label>
@@ -280,10 +280,10 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
               <option value="infrastructure">Infrastructure</option>
               <option value="research">Recherche</option>
             </select>
-          </div>
+          </div> */}
 
           {/* Visibility */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Visibilité
             </label>
@@ -296,7 +296,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
               <option value="private">Privé</option>
               <option value="shared">Partagé</option>
             </select>
-          </div>
+          </div> */}
 
           {/* Actions */}
           <div className="flex items-center space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
