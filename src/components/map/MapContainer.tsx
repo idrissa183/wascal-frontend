@@ -481,95 +481,96 @@ export default function MapContainer({
       pixelTolerance: 10,
     });
 
-    // --- DÉBUT DES MODIFICATIONS POUR LA MISE À L'ÉCHELLE CONTRÔLÉE DES RECTANGLES ---
-    let changeListenerKey: EventsKey | undefined;
 
-    modify.on("modifystart", (event) => {
-      const feature = event.features.getArray()[0];
-      if (feature && feature.get("isRectangle")) {
-        const geometry = feature.getGeometry() as Polygon;
-        const clickCoordinate = event.mapBrowserEvent.coordinate;
-        const coordinates = geometry.getCoordinates()[0];
+    // // --- DÉBUT DES MODIFICATIONS POUR LA MISE À L'ÉCHELLE CONTRÔLÉE DES RECTANGLES ---
+    // let changeListenerKey: EventsKey | undefined;
 
-        let closestVertexIndex = -1;
-        let minDistance = Infinity;
+    // modify.on("modifystart", (event) => {
+    //   const feature = event.features.getArray()[0];
+    //   if (feature && feature.get("isRectangle")) {
+    //     const geometry = feature.getGeometry() as Polygon;
+    //     const clickCoordinate = event.mapBrowserEvent.coordinate;
+    //     const coordinates = geometry.getCoordinates()[0];
 
-        coordinates.slice(0, 4).forEach((coord, index) => {
-          const dx = coord[0] - clickCoordinate[0];
-          const dy = coord[1] - clickCoordinate[1];
-          const distance = dx * dx + dy * dy;
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestVertexIndex = index;
-          }
-        });
+    //     let closestVertexIndex = -1;
+    //     let minDistance = Infinity;
 
-        const anchorVertexIndex = (closestVertexIndex + 2) % 4;
-        const anchorCoordinate = coordinates[anchorVertexIndex];
+    //     coordinates.slice(0, 4).forEach((coord, index) => {
+    //       const dx = coord[0] - clickCoordinate[0];
+    //       const dy = coord[1] - clickCoordinate[1];
+    //       const distance = dx * dx + dy * dy;
+    //       if (distance < minDistance) {
+    //         minDistance = distance;
+    //         closestVertexIndex = index;
+    //       }
+    //     });
 
-        changeListenerKey = geometry.on("change", (evt) => {
-          const changingGeometry = evt.target as Polygon;
-          const currentCoords = changingGeometry.getCoordinates()[0];
-          const movingVertex = currentCoords[closestVertexIndex];
+    //     const anchorVertexIndex = (closestVertexIndex + 2) % 4;
+    //     const anchorCoordinate = coordinates[anchorVertexIndex];
 
-          const minX = Math.min(anchorCoordinate[0], movingVertex[0]);
-          const minY = Math.min(anchorCoordinate[1], movingVertex[1]);
-          const maxX = Math.max(anchorCoordinate[0], movingVertex[0]);
-          const maxY = Math.max(anchorCoordinate[1], movingVertex[1]);
+    //     changeListenerKey = geometry.on("change", (evt) => {
+    //       const changingGeometry = evt.target as Polygon;
+    //       const currentCoords = changingGeometry.getCoordinates()[0];
+    //       const movingVertex = currentCoords[closestVertexIndex];
 
-          const newRectangleCoords = [
-            [
-              [minX, minY],
-              [maxX, minY],
-              [maxX, maxY],
-              [minX, maxY],
-              [minX, minY],
-            ],
-          ];
+    //       const minX = Math.min(anchorCoordinate[0], movingVertex[0]);
+    //       const minY = Math.min(anchorCoordinate[1], movingVertex[1]);
+    //       const maxX = Math.max(anchorCoordinate[0], movingVertex[0]);
+    //       const maxY = Math.max(anchorCoordinate[1], movingVertex[1]);
 
-          if (changeListenerKey) {
-            // Utiliser une fonction anonyme pour la récursivité au lieu de `arguments.callee`
-            const currentListener = (e: any) => {
-              const changingGeom = e.target as Polygon;
-              const currentCoords = changingGeom.getCoordinates()[0];
-              const movingVertex = currentCoords[closestVertexIndex];
-              const minX = Math.min(anchorCoordinate[0], movingVertex[0]);
-              const minY = Math.min(anchorCoordinate[1], movingVertex[1]);
-              const maxX = Math.max(anchorCoordinate[0], movingVertex[0]);
-              const maxY = Math.max(anchorCoordinate[1], movingVertex[1]);
-              const newRectangleCoords = [
-                [
-                  [minX, minY],
-                  [maxX, minY],
-                  [maxX, maxY],
-                  [minX, maxY],
-                  [minX, minY],
-                ],
-              ];
-              unByKey(changeListenerKey as EventsKey);
-              changingGeom.setCoordinates(newRectangleCoords);
-              changeListenerKey = changingGeom.on("change", currentListener);
-            };
-            unByKey(changeListenerKey);
-            changingGeometry.setCoordinates(newRectangleCoords);
-            changeListenerKey = changingGeometry.on("change", currentListener);
-          }
-        });
-      }
-    });
+    //       const newRectangleCoords = [
+    //         [
+    //           [minX, minY],
+    //           [maxX, minY],
+    //           [maxX, maxY],
+    //           [minX, maxY],
+    //           [minX, minY],
+    //         ],
+    //       ];
 
-    modify.on("modifyend", (event) => {
-      if (changeListenerKey) {
-        unByKey(changeListenerKey);
-        changeListenerKey = undefined;
-      }
-      const feature = event.features.getArray()[0];
-      const featureId = feature?.getId() as string;
-      if (featureId) {
-        mapFeatures.updateOverlayPositions(featureId);
-      }
-    });
-    // --- FIN DES MODIFICATIONS ---
+    //       if (changeListenerKey) {
+    //         // Utiliser une fonction anonyme pour la récursivité au lieu de `arguments.callee`
+    //         const currentListener = (e: any) => {
+    //           const changingGeom = e.target as Polygon;
+    //           const currentCoords = changingGeom.getCoordinates()[0];
+    //           const movingVertex = currentCoords[closestVertexIndex];
+    //           const minX = Math.min(anchorCoordinate[0], movingVertex[0]);
+    //           const minY = Math.min(anchorCoordinate[1], movingVertex[1]);
+    //           const maxX = Math.max(anchorCoordinate[0], movingVertex[0]);
+    //           const maxY = Math.max(anchorCoordinate[1], movingVertex[1]);
+    //           const newRectangleCoords = [
+    //             [
+    //               [minX, minY],
+    //               [maxX, minY],
+    //               [maxX, maxY],
+    //               [minX, maxY],
+    //               [minX, minY],
+    //             ],
+    //           ];
+    //           unByKey(changeListenerKey as EventsKey);
+    //           changingGeom.setCoordinates(newRectangleCoords);
+    //           changeListenerKey = changingGeom.on("change", currentListener);
+    //         };
+    //         unByKey(changeListenerKey);
+    //         changingGeometry.setCoordinates(newRectangleCoords);
+    //         changeListenerKey = changingGeometry.on("change", currentListener);
+    //       }
+    //     });
+    //   }
+    // });
+
+    // modify.on("modifyend", (event) => {
+    //   if (changeListenerKey) {
+    //     unByKey(changeListenerKey);
+    //     changeListenerKey = undefined;
+    //   }
+    //   const feature = event.features.getArray()[0];
+    //   const featureId = feature?.getId() as string;
+    //   if (featureId) {
+    //     mapFeatures.updateOverlayPositions(featureId);
+    //   }
+    // });
+    // // --- FIN DES MODIFICATIONS ---
 
     const translate = new Translate({
       features: select.getFeatures(),
