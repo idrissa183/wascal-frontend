@@ -469,6 +469,84 @@ export default function MapContainer({
       style: null,
     });
 
+    // --- SOLUTION FINALE POUR RECTANGLES PARFAITS ---
+    
+    // Variable pour éviter les boucles infinies
+    let isFixingRectangle = false;
+    
+    // Fonction pour détecter et corriger un rectangle déformé
+    const fixRectangleGeometry = (feature: Feature, debugInfo = '') => {
+      console.log(`🔍 fixRectangleGeometry called ${debugInfo}:`, {
+        isFixing: isFixingRectangle,
+        hasFeature: !!feature,
+        featureId: feature?.getId()
+      });
+      
+      if (isFixingRectangle || !feature) return;
+      
+      // Détecter si c'est un rectangle même sans la propriété isRectangle
+      const geometry = feature.getGeometry() as Polygon;
+      console.log(`📐 Geometry check:`, {
+        hasGeometry: !!geometry,
+        type: geometry?.getType(),
+        isPolygon: geometry?.getType() === 'Polygon'
+      });
+      
+      if (!geometry || geometry.getType() !== 'Polygon') return;
+      
+      const coords = geometry.getCoordinates()[0];
+      console.log(`📊 Coords check:`, {
+        coordsLength: coords?.length,
+        expectedLength: 5
+      });
+      
+      if (coords.length !== 5) return; // Un rectangle doit avoir 5 points (fermé)
+      
+      // Vérifier si c'est probablement un rectangle (4 coins + fermeture)
+      const xCoords = coords.slice(0, -1).map(c => c[0]);
+      const yCoords = coords.slice(0, -1).map(c => c[1]);
+      const uniqueXs = [...new Set(xCoords)];
+      const uniqueYs = [...new Set(yCoords)];
+      
+      console.log(`🧮 Rectangle analysis:`, {
+        uniqueXsCount: uniqueXs.length,
+        uniqueYsCount: uniqueYs.length,
+        isRectangleProperty: feature.get("isRectangle")
+      });
+      
+      // Si c'est un rectangle, il ne devrait y avoir que 2 valeurs X et 2 valeurs Y uniques
+      const isLikelyRectangle = uniqueXs.length === 2 && uniqueYs.length === 2;
+      
+      if (!feature.get("isRectangle") && !isLikelyRectangle) {
+        console.log("❌ Not a rectangle - skipping correction");
+        return;
+      }
+      
+      isFixingRectangle = true;
+      
+      // Calculer l'extent et construire un rectangle parfait
+      const minX = Math.min(...xCoords);
+      const maxX = Math.max(...xCoords);
+      const minY = Math.min(...yCoords);
+      const maxY = Math.max(...yCoords);
+      
+      const perfectRect = [
+        [
+          [minX, minY],    // coin bas-gauche
+          [maxX, minY],    // coin bas-droit
+          [maxX, maxY],    // coin haut-droit
+          [minX, maxY],    // coin haut-gauche
+          [minX, minY]     // retour au début
+        ]
+      ];
+      
+      geometry.setCoordinates(perfectRect);
+      console.log("✅ Rectangle corrected successfully!");
+      
+      isFixingRectangle = false;
+    };
+
+    // Modify standard
     const modify = new Modify({
       source: vectorSourceRef.current,
       style: new Style({
@@ -481,75 +559,37 @@ export default function MapContainer({
       pixelTolerance: 10,
     });
 
-    // --- DÉBUT DES MODIFICATIONS POUR LA MISE À L'ÉCHELLE CONTRÔLÉE DES RECTANGLES ---
-    let changeListenerKey: EventsKey | undefined;
-
-    modify.on("modifystart", (event) => {
-      const feature = event.features.getArray()[0];
-      if (feature && feature.get("isRectangle")) {
-        const geometry = feature.getGeometry() as Polygon;
-        const clickCoordinate = event.mapBrowserEvent.coordinate;
-        const coordinates = geometry.getCoordinates()[0];
-
-        let closestVertexIndex = -1;
-        let minDistance = Infinity;
-
-        coordinates.slice(0, 4).forEach((coord, index) => {
-          const dx = coord[0] - clickCoordinate[0];
-          const dy = coord[1] - clickCoordinate[1];
-          const distance = dx * dx + dy * dy;
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestVertexIndex = index;
-          }
-        });
-
-        const anchorVertexIndex = (closestVertexIndex + 2) % 4;
-        const anchorCoordinate = coordinates[anchorVertexIndex];
-
-        const updateRectangle = (evt: any) => {
-          const geom = evt.target as Polygon;
-          const currentCoords = geom.getCoordinates()[0];
-          const movingVertex = currentCoords[closestVertexIndex];
-
-          const minX = Math.min(anchorCoordinate[0], movingVertex[0]);
-          const minY = Math.min(anchorCoordinate[1], movingVertex[1]);
-          const maxX = Math.max(anchorCoordinate[0], movingVertex[0]);
-          const maxY = Math.max(anchorCoordinate[1], movingVertex[1]);
-
-          const newRectangleCoords = [
-            [
-              [minX, minY],
-              [maxX, minY],
-              [maxX, maxY],
-              [minX, maxY],
-              [minX, minY],
-            ],
-          ];
-
-          if (changeListenerKey) {
-            unByKey(changeListenerKey);
-          }
-          geom.setCoordinates(newRectangleCoords);
-          changeListenerKey = geom.on("change", updateRectangle);
-        };
-
-        changeListenerKey = geometry.on("change", updateRectangle);
-      }
-    });
-
+    // Écouter les événements de modification pour corriger les rectangles
     modify.on("modifyend", (event) => {
-      if (changeListenerKey) {
-        unByKey(changeListenerKey);
-        changeListenerKey = undefined;
-      }
       const feature = event.features.getArray()[0];
-      const featureId = feature?.getId() as string;
-      if (featureId) {
-        mapFeatures.updateOverlayPositions(featureId);
+      if (feature) {
+        fixRectangleGeometry(feature, "after modifyend");
+        
+        // Mettre à jour les overlays
+        const featureId = feature.getId() as string;
+        if (featureId) {
+          mapFeatures.updateOverlayPositions(featureId);
+        }
       }
     });
-    // --- FIN DES MODIFICATIONS ---
+
+    // Intercepter TOUS les changements de géométrie pour corriger les rectangles
+    vectorSourceRef.current.on("changefeature", (event) => {
+      const feature = event.feature;
+      console.log("🔄 CHANGE FEATURE - Feature info:", {
+        id: feature?.getId(),
+        geometryType: feature?.getGeometry()?.getType(),
+        coords: feature?.getGeometry()?.getType() === 'Polygon' ? 
+          (feature.getGeometry() as Polygon)?.getCoordinates()[0]?.length : 'N/A'
+      });
+      
+      if (feature) {
+        fixRectangleGeometry(feature, "from changefeature");
+      }
+    });
+
+    
+    // --- FIN SOLUTION FINALE ---
 
     const translate = new Translate({
       features: select.getFeatures(),
@@ -613,6 +653,7 @@ export default function MapContainer({
       })
     );
 
+    
     mapInstanceRef.current = map;
     setMapLoaded(true);
   };
@@ -729,6 +770,14 @@ export default function MapContainer({
         }
 
         const featureId = mapFeatures.addFeature(feature, tool as FeatureType);
+        
+        // Re-marquer comme rectangle après l'ajout par mapFeatures
+        if (activeTool === "rectangle") {
+          const addedFeature = vectorSourceRef.current.getFeatureById(featureId);
+          if (addedFeature) {
+            addedFeature.set("isRectangle", true);
+          }
+        }
 
         if (onSelectionChange) {
           let coordinates: unknown = undefined;
