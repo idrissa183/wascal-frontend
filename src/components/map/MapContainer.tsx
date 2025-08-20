@@ -670,12 +670,33 @@ export default function MapContainer({
 
     // Interactions for editing features
     const modify = createRectangleEditor();
-const select = new Select({
-      style: (feature: any): Style =>
-        feature instanceof Feature
-          ? (feature.getStyle() as Style) || pointStyle
-          : pointStyle,
-    });    const translate = new Translate({ features: select.getFeatures() });
+    const select = new Select({
+      style: (feature: any) => {
+        if (feature instanceof Feature) {
+          const existingStyle = feature.getStyle();
+          // Return existing style if it's a proper Style object
+          if (existingStyle instanceof Style) {
+            return existingStyle;
+          }
+          // Return appropriate style based on geometry type
+          const geom = feature.getGeometry();
+          if (geom instanceof Point) {
+            return pointStyle;
+          }
+        }
+        // Default fallback style for polygons, rectangles, etc.
+        return new Style({
+          fill: new Fill({
+            color: "rgba(255, 255, 255, 0.2)",
+          }),
+          stroke: new Stroke({
+            color: "#ffcc33",
+            width: 3,
+          }),
+        });
+      },
+    });
+    const translate = new Translate({ features: select.getFeatures() });
 
     // Add listeners to update save icon position during modifications
     let currentModifyHandler: any = null;
@@ -814,42 +835,6 @@ const select = new Select({
         }
       }
     });
-
-    //   // Ajouter quelques points d'exemple
-    //   addSampleData();
-    // };
-
-    // const addSampleData = () => {
-    //   if (!vectorSourceRef.current) return;
-
-    //   // Ajouter quelques stations météo d'exemple
-    //   const stations = [
-    //     { name: "Ouagadougou", coords: [-1.5197, 12.3714] },
-    //     { name: "Bobo-Dioulasso", coords: [-4.2945, 11.1777] },
-    //     { name: "Koudougou", coords: [-2.3667, 12.2533] },
-    //     { name: "Banfora", coords: [-4.75, 10.6333] },
-    //   ];
-
-    //   stations.forEach((station) => {
-    //     const point = new Point(fromLonLat(station.coords));
-    //     const feature = new Feature({
-    //       geometry: point,
-    //       name: station.name,
-    //       type: "station",
-    //     });
-
-    //     feature.setStyle(
-    //       new Style({
-    //         image: new CircleStyle({
-    //           radius: 6,
-    //           fill: new Fill({ color: "#3b82f6" }),
-    //           stroke: new Stroke({ color: "#1e40af", width: 2 }),
-    //         }),
-    //       })
-    //     );
-
-    //     vectorSourceRef.current?.addFeature(feature);
-    //   });
   };
 
   const handleToolChange = (tool: SelectionTool) => {
@@ -1192,11 +1177,25 @@ const select = new Select({
 
     const overlayElement = document.createElement("button");
     overlayElement.className =
-      "p-2 bg-white rounded-full border border-gray-300 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors";
+      "p-3 bg-red-500 text-white rounded-full border-2 border-blue-600 shadow-xl cursor-pointer hover:bg-red-600 transition-colors z-50";
     overlayElement.title = "Enregistrer";
-    overlayElement.innerHTML = renderToStaticMarkup(
-      <Save className="w-4 h-4 text-blue-600" />
-    );
+    overlayElement.style.minWidth = "40px";
+    overlayElement.style.minHeight = "40px";
+    overlayElement.style.display = "flex";
+    overlayElement.style.alignItems = "center";
+    overlayElement.style.justifyContent = "center";
+
+    // Try both Save icon and simple text to debug
+    try {
+      overlayElement.innerHTML = renderToStaticMarkup(
+        <Save className="w-5 h-5 text-white" />
+      );
+    } catch (error) {
+      console.error("Error rendering Save icon:", error);
+      overlayElement.innerHTML = "💾"; // Fallback emoji
+    }
+
+    console.log("Created overlay element:", overlayElement);
 
     overlayElement.addEventListener("click", () => {
       setPendingGeometry(geoJsonGeometry);
@@ -1208,30 +1207,52 @@ const select = new Select({
     const overlay = new Overlay({
       element: overlayElement,
       positioning: "top-center",
-      offset: [0, 10],
+      offset: [0, 15],
       stopEvent: true,
+      insertFirst: false, // Ensure it appears on top
     });
 
     let overlayCoord;
+    console.log("Geometry type:", geometry?.constructor.name);
+
     if (geometry instanceof Point) {
       overlayCoord = geometry.getCoordinates();
+      console.log("Point coordinates:", overlayCoord);
     } else if (geometry instanceof Polygon) {
       // Get the bottom center of the polygon's extent
       const extent = geometry.getExtent();
       overlayCoord = [(extent[0] + extent[2]) / 2, extent[1]]; // center X, bottom Y
+      console.log("Polygon extent:", extent, "Position:", overlayCoord);
     } else if (geometry instanceof CircleGeom) {
       // Get the bottom center of the circle
       const center = geometry.getCenter();
       const radius = geometry.getRadius();
       overlayCoord = [center[0], center[1] - radius]; // center X, bottom Y
+      console.log(
+        "Circle center:",
+        center,
+        "radius:",
+        radius,
+        "Position:",
+        overlayCoord
+      );
     }
 
     if (overlayCoord) {
       overlay.setPosition(overlayCoord);
+      console.log("Setting overlay position to:", overlayCoord);
+    } else {
+      console.error("No overlay coordinates calculated!");
+      return;
     }
 
-    mapInstanceRef.current?.addOverlay(overlay);
-    userFieldOverlayRef.current = overlay;
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.addOverlay(overlay);
+      userFieldOverlayRef.current = overlay;
+      console.log("Overlay added to map successfully");
+    } else {
+      console.error("Map instance not found!");
+    }
 
     // Store reference to the feature that has the save icon
     const lastFeature = vectorSourceRef.current?.getFeatures().slice(-1)[0];
@@ -1246,6 +1267,9 @@ const select = new Select({
     }
 
     console.log("✅ Save button overlay added below the figure");
+    console.log("Overlay position:", overlayCoord);
+    console.log("Overlay element:", overlayElement);
+    console.log("Map instance:", mapInstanceRef.current);
 
     // // Set pending geometry and show form
     // console.log("📝 Setting pending geometry and opening form:", {
@@ -1791,7 +1815,6 @@ const select = new Select({
       )}
 
       {/* Legacy User Field Form - Replaced by UserFieldEditor in TwoColumnSidebar */}
-
 
       {/* Coordonnées dynamiques en bas au milieu */}
       <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 z-20">
