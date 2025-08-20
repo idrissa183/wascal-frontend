@@ -5,7 +5,9 @@ import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import { MAP_DEFAULTS, WASCAL_BOUNDS } from "../../constants";
 import { GeographicSelections } from "./GeographicSelections";
 import { UserFieldsPanel } from "./UserFieldsPanel";
-import { UserFieldForm } from "./UserFieldForm";
+import { TwoColumnSidebar } from "./TwoColumnSidebar";
+import { UserFieldEditor } from "./UserFieldEditor";
+import { AreaDisplay } from "./AreaDisplay";
 import {
   MagnifyingGlassIcon,
   PlusIcon,
@@ -108,11 +110,13 @@ export default function MapContainer({
 
   // États pour les champs utilisateur
   const [showUserFieldsPanel, setShowUserFieldsPanel] = useState(false);
-  const [showUserFieldForm, setShowUserFieldForm] = useState(false);
   const [pendingGeometry, setPendingGeometry] = useState<any>(null);
   const [pendingGeometryType, setPendingGeometryType] = useState<
     "point" | "polygon" | "circle" | "rectangle" | null
   >(null);
+  const [showUserFieldEditor, setShowUserFieldEditor] = useState(false);
+  const [editingUserField, setEditingUserField] = useState<any>(null);
+  const [currentDrawingArea, setCurrentDrawingArea] = useState<number>(0);
   const [visibleUserFields, setVisibleUserFields] = useState<Set<number>>(
     new Set()
   );
@@ -651,7 +655,6 @@ export default function MapContainer({
 
       draw.on("drawstart", (event) => {
         const overlayElement = document.createElement("div");
-        overlayElement.className = "measure-overlay";
         const overlay = new Overlay({
           element: overlayElement,
           positioning: "bottom-center",
@@ -675,7 +678,18 @@ export default function MapContainer({
             area = Math.PI * radius * radius;
             position = geometry.getCenter();
           }
-          overlayElement.innerHTML = `${(area / 1e6).toFixed(2)} km²`;
+          
+          // Use AreaDisplay component for consistent formatting
+          overlayElement.innerHTML = `<div class="px-3 py-2 bg-blue-600 text-white rounded-lg shadow-lg border border-blue-700">
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M16 4h2a2 2 0 012 2v2M16 20h2a2 2 0 002-2v-2"/>
+              </svg>
+              <span class="text-sm font-medium">${area >= 1000000 ? (area / 1000000).toFixed(2) + ' km²' : area >= 10000 ? (area / 10000).toFixed(2) + ' ha' : area.toFixed(0) + ' m²'}</span>
+            </div>
+          </div>`;
+          
+          setCurrentDrawingArea(area);
           if (position) {
             overlay.setPosition(position);
           }
@@ -817,7 +831,8 @@ export default function MapContainer({
     overlayElement.addEventListener('click', () => {
       setPendingGeometry(geoJsonGeometry);
       setPendingGeometryType(type);
-      setShowUserFieldForm(true);
+      setShowUserFieldEditor(true);
+      setEditingUserField(null);
     });
 
     const overlay = new Overlay({
@@ -855,27 +870,6 @@ export default function MapContainer({
 
   };
 
-  const handleUserFieldFormClose = () => {
-    console.log("🔄 Closing user field form");
-    setShowUserFieldForm(false);
-    setPendingGeometry(null);
-    setPendingGeometryType(null);
-
-    if (userFieldOverlayRef.current) {
-      mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
-      userFieldOverlayRef.current = null;
-    }
-
-    // Clear the current active tool
-    setActiveTool("none");
-
-    // Clear the drawn feature from the vector source
-    const features = vectorSourceRef.current?.getFeatures();
-    if (features && features.length > 0) {
-      vectorSourceRef.current?.removeFeature(features[features.length - 1]);
-      console.log("🗑️ Removed drawn feature from vector source");
-    }
-  };
 
   const handleUserFieldVisibilityChange = (
     fieldId: number,
@@ -1335,29 +1329,63 @@ export default function MapContainer({
         </div>
       )}
 
-      {/* User Fields Panel */}
-      <UserFieldsPanel
-        isOpen={showUserFieldsPanel}
-        onToggle={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
-        onFieldVisibilityChange={handleUserFieldVisibilityChange}
-        visibleFields={visibleUserFields}
-      />
+      {/* Two Column Sidebar with User Fields */}
+      {showUserFieldsPanel && (
+        <div className="absolute top-0 right-0 h-full z-30">
+          <TwoColumnSidebar
+            isRightColumnVisible={showUserFieldEditor}
+            onRightColumnToggle={(visible) => {
+              setShowUserFieldEditor(visible);
+              if (!visible) {
+                setEditingUserField(null);
+                if (userFieldOverlayRef.current) {
+                  mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
+                  userFieldOverlayRef.current = null;
+                }
+              }
+            }}
+            rightColumnContent={
+              <UserFieldEditor
+                pendingGeometry={pendingGeometry}
+                pendingGeometryType={pendingGeometryType || undefined}
+                editingField={editingUserField}
+                onSave={(data) => {
+                  console.log("Field saved:", data);
+                  setShowUserFieldEditor(false);
+                  setEditingUserField(null);
+                  if (userFieldOverlayRef.current) {
+                    mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
+                    userFieldOverlayRef.current = null;
+                  }
+                }}
+                onCancel={() => {
+                  setShowUserFieldEditor(false);
+                  setEditingUserField(null);
+                  if (userFieldOverlayRef.current) {
+                    mapInstanceRef.current?.removeOverlay(userFieldOverlayRef.current);
+                    userFieldOverlayRef.current = null;
+                  }
+                }}
+              />
+            }
+          >
+            <UserFieldsPanel
+              isOpen={true}
+              onToggle={() => setShowUserFieldsPanel(!showUserFieldsPanel)}
+              onFieldVisibilityChange={handleUserFieldVisibilityChange}
+              visibleFields={visibleUserFields}
+              onEdit={(field) => {
+                setEditingUserField(field);
+                setShowUserFieldEditor(true);
+                setPendingGeometry(null);
+                setPendingGeometryType(null);
+              }}
+            />
+          </TwoColumnSidebar>
+        </div>
+      )}
 
-      {/* User Field Form */}
-      <UserFieldForm
-        isOpen={showUserFieldForm}
-        onClose={handleUserFieldFormClose}
-        geometry={pendingGeometry}
-        geometryType={pendingGeometryType || "polygon"}
-        onSuccess={(savedField) => {
-          // Auto-enable visibility for the new field
-          if (savedField && savedField.id) {
-            const newVisibleFields = new Set(visibleUserFields);
-            newVisibleFields.add(savedField.id);
-            setVisibleUserFields(newVisibleFields);
-          }
-        }}
-      />
+      {/* Legacy User Field Form - Replaced by UserFieldEditor in TwoColumnSidebar */}
 
       {/* Drawing indicator for user fields */}
       {showUserFieldsPanel && activeTool !== "none" && (

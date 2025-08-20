@@ -21,6 +21,7 @@ interface UserFieldsPanelProps {
   onToggle: () => void;
   onFieldVisibilityChange?: (fieldId: number, visible: boolean) => void;
   visibleFields?: Set<number>;
+  onEdit?: (field: UserField) => void;
 }
 
 export function UserFieldsPanel({
@@ -28,6 +29,7 @@ export function UserFieldsPanel({
   onToggle,
   onFieldVisibilityChange,
   visibleFields = new Set(),
+  onEdit,
 }: UserFieldsPanelProps) {
   const {
     userFields,
@@ -63,8 +65,12 @@ export function UserFieldsPanel({
   };
 
   const handleEdit = (field: UserField) => {
-    setEditingField(field);
-    setShowForm(true);
+    if (onEdit) {
+      onEdit(field);
+    } else {
+      setEditingField(field);
+      setShowForm(true);
+    }
     setActiveDropdown(null);
   };
 
