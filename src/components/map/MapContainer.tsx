@@ -62,6 +62,8 @@ import { Save, MapPin } from "lucide-react";
 import Overlay from "ol/Overlay";
 import { getArea } from "ol/sphere";
 import { singleClick } from "ol/events/condition";
+import { unByKey } from "ol/Observable"; // <-- NOUVEL IMPORT
+import type { EventsKey } from "ol/events"; // <-- NOUVEL IMPORT
 
 interface MapContainerProps {
   onSelectionChange?: (selection: any) => void;
@@ -97,19 +99,15 @@ export default function MapContainer({
   const { selectedEntities, isLoadingGeometry } = useGeographicStore();
   const { userFields } = useUserFieldsStore();
 
-  // Ref for geographic layers
   const geographicSourceRef = useRef<VectorSource>(new VectorSource());
-  // Ref for user fields layers
   const userFieldsSourceRef = useRef<VectorSource>(new VectorSource());
 
-  // États pour les contrôles de la carte
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeTool, setActiveTool] = useState<SelectionTool>("none");
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [showToolbar, setShowToolbar] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  // États pour les champs utilisateur
   const [showUserFieldsPanel, setShowUserFieldsPanel] = useState(false);
   const [pendingGeometry, setPendingGeometry] = useState<any>(null);
   const [pendingGeometryType, setPendingGeometryType] = useState<
@@ -123,7 +121,6 @@ export default function MapContainer({
     new Set()
   );
 
-  // États pour les coordonnées dynamiques
   const [mouseCoordinates, setMouseCoordinates] = useState<[number, number]>([
     MAP_DEFAULTS.CENTER[0],
     MAP_DEFAULTS.CENTER[1],
@@ -140,7 +137,6 @@ export default function MapContainer({
     }),
   });
 
-  // États pour les couches
   const [layers, setLayers] = useState<LayerControl[]>([
     {
       id: "osm",
@@ -182,13 +178,11 @@ export default function MapContainer({
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Hook pour la gestion professionnelle des figures dessinées
   const mapFeatures = useMapFeatures(
     mapInstanceRef.current,
     vectorSourceRef.current,
     {
       onSave: (feature, type, geoJson) => {
-        // Convertir FeatureType vers le type attendu par setPendingGeometryType
         const geometryType = type as
           | "point"
           | "polygon"
@@ -210,8 +204,8 @@ export default function MapContainer({
       onDeselect: () => {
         console.log("Aucune figure sélectionnée");
       },
-      showEditControls: false, // On peut activer si besoin
-      showInfoDisplay: true, // Afficher les informations sur la figure
+      showEditControls: false,
+      showInfoDisplay: true,
       enableSnapping: true,
     }
   );
@@ -228,29 +222,16 @@ export default function MapContainer({
     };
   }, []);
 
-  // Effect to handle geographic selections
   useEffect(() => {
     if (!geographicSourceRef.current) return;
-
-    // Clear existing features
     geographicSourceRef.current.clear();
-
-    // Add features for selected entities that have geometry loaded
     selectedEntities.forEach((entity) => {
       if (entity.geometry && !entity.isLoading && !entity.error) {
         try {
-          console.log(
-            `🗺️ Processing geometry for ${entity.type} ${entity.id}:`,
-            entity.geometry
-          );
-          // Parse GeoJSON geometry
           const geometryData = entity.geometry;
-
-          // Create OpenLayers geometry from GeoJSON
           let olGeometry: Geometry;
 
           if (geometryData.type === "Polygon") {
-            // Handle Polygon: coordinates is [LinearRing, ...holes]
             const rings = geometryData.coordinates.map(
               (ring: [number, number][]) =>
                 ring.map((coord: [number, number]) =>
@@ -259,7 +240,6 @@ export default function MapContainer({
             );
             olGeometry = new Polygon(rings);
           } else if (geometryData.type === "MultiPolygon") {
-            // Handle MultiPolygon: coordinates is [Polygon, Polygon, ...]
             const polygons: any[][][] = [];
             geometryData.coordinates.forEach((polygonCoords: any) => {
               const rings = polygonCoords.map((ring: [number, number][]) =>
@@ -271,7 +251,6 @@ export default function MapContainer({
             });
             olGeometry = new MultiPolygon(polygons);
           } else if (geometryData.type === "Point") {
-            // Handle Point geometry
             const coord = fromLonLat([
               geometryData.coordinates[0],
               geometryData.coordinates[1],
@@ -279,7 +258,6 @@ export default function MapContainer({
             olGeometry = new Point(coord);
           } else {
             console.warn(`Unsupported geometry type: ${geometryData.type}`);
-            // Fallback to center point for unsupported types
             olGeometry = new Point(fromLonLat([0, 0]));
           }
 
@@ -290,16 +268,13 @@ export default function MapContainer({
             entityId: entity.id,
           });
 
-          // Set style based on entity type
           const getEntityStyle = (type: string) => {
             const colors = {
               country: { fill: "rgba(59, 130, 246, 0.2)", stroke: "#3b82f6" },
               region: { fill: "rgba(16, 185, 129, 0.2)", stroke: "#10b981" },
               province: { fill: "rgba(245, 158, 11, 0.2)", stroke: "#f59e0b" },
             };
-
             const color = colors[type as keyof typeof colors] || colors.region;
-
             return new Style({
               fill: new Fill({ color: color.fill }),
               stroke: new Stroke({ color: color.stroke, width: 2 }),
@@ -308,20 +283,15 @@ export default function MapContainer({
 
           feature.setStyle(getEntityStyle(entity.type));
           geographicSourceRef.current?.addFeature(feature);
-          console.log(
-            `✅ Successfully added feature to map for ${entity.type} ${entity.id}`
-          );
         } catch (error) {
           console.error(
-            `❌ Error adding feature for ${entity.type} ${entity.id}:`,
+            `Error adding feature for ${entity.type} ${entity.id}:`,
             error
           );
-          console.error(`📍 Geometry data:`, entity.geometry);
         }
       }
     });
 
-    // Auto-zoom to fit all geographic features if any exist
     if (
       geographicSourceRef.current?.getFeatures().length > 0 &&
       mapInstanceRef.current
@@ -335,21 +305,15 @@ export default function MapContainer({
     }
   }, [selectedEntities]);
 
-  // Effect to handle user fields display
   useEffect(() => {
     if (!userFieldsSourceRef.current) return;
-
-    // Clear existing features
     userFieldsSourceRef.current.clear();
-
-    // Add features for visible user fields
     userFields.forEach((field) => {
       if (visibleUserFields.has(field.id) && field.geometry) {
         try {
           const geoJson = field.geometry;
           let olGeometry: Geometry;
 
-          // Convert GeoJSON to OpenLayers geometry
           if (geoJson.type === "Point") {
             const coord = fromLonLat([
               geoJson.coordinates[0],
@@ -364,12 +328,11 @@ export default function MapContainer({
             );
             olGeometry = new Polygon(rings);
           } else if (geoJson.type === "Circle") {
-            // Handle circle geometry - assuming it has center and radius
             const center = fromLonLat([
               geoJson.coordinates[0],
               geoJson.coordinates[1],
             ]);
-            const radius = geoJson.radius || 1000; // default 1km radius
+            const radius = geoJson.radius || 1000;
             olGeometry = new CircleGeom(center, radius);
           } else {
             console.warn(
@@ -386,7 +349,6 @@ export default function MapContainer({
             geometryType: field.geometry_type,
           });
 
-          // Set style based on geometry type
           const getFieldStyle = (geometryType: string) => {
             if (geometryType.toLowerCase() === "point") {
               return pointStyle;
@@ -409,14 +371,7 @@ export default function MapContainer({
   const initializeMap = () => {
     if (!mapRef.current) return;
 
-    console.log("Initializing OpenLayers map...");
-
-    // Créer les couches de base
-    const osmLayer = new TileLayer({
-      source: new OSM(),
-      visible: true,
-    });
-
+    const osmLayer = new TileLayer({ source: new OSM(), visible: true });
     const satelliteLayer = new TileLayer({
       source: new XYZ({
         url: "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
@@ -425,7 +380,6 @@ export default function MapContainer({
       visible: false,
     });
 
-    // Couche vectorielle pour les dessins - utilise maintenant le style du hook
     const vectorLayer = new VectorLayer({
       source: vectorSourceRef.current,
       style: (feature) => {
@@ -438,12 +392,10 @@ export default function MapContainer({
             drawnFeature.isEditing
           );
         }
-        // Style par défaut pour les features non gérées par le hook
         return mapFeatures.createFeatureStyle("polygon", false, false);
       },
     });
 
-    // Contrôle de position de souris dynamique
     const mousePositionControl = new MousePosition({
       coordinateFormat: createStringXY(4),
       projection: "EPSG:4326",
@@ -451,48 +403,29 @@ export default function MapContainer({
       className: "custom-mouse-position",
     });
 
-    // Contrôle d'échelle personnalisé
     const scaleLineControl = new ScaleLine({
       units: "metric",
       className: "custom-scale-line",
       minWidth: 80,
     });
 
-    // Créer la carte sans les contrôles par défaut qui sont redondants
-    // Geographic selections layer
     const geographicLayer = new VectorLayer({
       source: geographicSourceRef.current,
       style: new Style({
-        fill: new Fill({
-          color: "rgba(16, 185, 129, 0.2)", // Green with transparency
-        }),
-        stroke: new Stroke({
-          color: "#10b981", // Green
-          width: 2,
-        }),
+        fill: new Fill({ color: "rgba(16, 185, 129, 0.2)" }),
+        stroke: new Stroke({ color: "#10b981", width: 2 }),
       }),
     });
 
-    // User fields layer
     const userFieldsLayer = new VectorLayer({
       source: userFieldsSourceRef.current,
       style: new Style({
-        fill: new Fill({
-          color: "rgba(59, 130, 246, 0.3)", // Blue with transparency
-        }),
-        stroke: new Stroke({
-          color: "#3b82f6", // Blue
-          width: 2,
-        }),
+        fill: new Fill({ color: "rgba(59, 130, 246, 0.3)" }),
+        stroke: new Stroke({ color: "#3b82f6", width: 2 }),
         image: new CircleStyle({
           radius: 8,
-          fill: new Fill({
-            color: "#3b82f6",
-          }),
-          stroke: new Stroke({
-            color: "white",
-            width: 2,
-          }),
+          fill: new Fill({ color: "#3b82f6" }),
+          stroke: new Stroke({ color: "white", width: 2 }),
         }),
       }),
     });
@@ -507,25 +440,23 @@ export default function MapContainer({
         userFieldsLayer,
       ],
       view: new View({
-        center: fromLonLat([MAP_DEFAULTS.CENTER[1], MAP_DEFAULTS.CENTER[0]]), // Longitude, Latitude
+        center: fromLonLat([MAP_DEFAULTS.CENTER[1], MAP_DEFAULTS.CENTER[0]]),
         zoom: MAP_DEFAULTS.ZOOM,
         minZoom: MAP_DEFAULTS.MIN_ZOOM,
         maxZoom: MAP_DEFAULTS.MAX_ZOOM,
       }),
       controls: defaultControls({
         attribution: false,
-        zoom: false, // On enlève les contrôles de zoom car on a nos propres boutons
+        zoom: false,
         rotate: false,
       }).extend([mousePositionControl, scaleLineControl]),
     });
 
-    // Écouter les mouvements de souris pour mettre à jour les coordonnées
     map.on("pointermove", (event) => {
       const coordinates = toLonLat(event.coordinate);
-      setMouseCoordinates([coordinates[1], coordinates[0]]); // lat, lon
+      setMouseCoordinates([coordinates[1], coordinates[0]]);
     });
 
-    // Écouter les changements de vue pour le zoom
     map.getView().on("change:resolution", () => {
       const currentZoom = map.getView().getZoom();
       if (currentZoom !== undefined) {
@@ -533,10 +464,9 @@ export default function MapContainer({
       }
     });
 
-    // Interactions modernes pour l'édition des figures
     const select = new Select({
       condition: singleClick,
-      style: null, // Utiliser le style personnalisé de la couche
+      style: null,
     });
 
     const modify = new Modify({
@@ -548,43 +478,98 @@ export default function MapContainer({
           stroke: new Stroke({ color: "#4285f4", width: 2 }),
         }),
       }),
-      // Contraindre la modification des rectangles pour préserver leur forme
       pixelTolerance: 10,
     });
 
-    // Écouter les événements de modification pour maintenir la forme rectangulaire
+    // --- DÉBUT DES MODIFICATIONS POUR LA MISE À L'ÉCHELLE CONTRÔLÉE DES RECTANGLES ---
+    let changeListenerKey: EventsKey | undefined;
+
     modify.on("modifystart", (event) => {
       const feature = event.features.getArray()[0];
       if (feature && feature.get("isRectangle")) {
-        // Marquer la géométrie comme étant un rectangle pour la modification contrainte
-        feature.set("originalExtent", feature.getGeometry()?.getExtent());
+        const geometry = feature.getGeometry() as Polygon;
+        const clickCoordinate = event.mapBrowserEvent.coordinate;
+        const coordinates = geometry.getCoordinates()[0];
+
+        let closestVertexIndex = -1;
+        let minDistance = Infinity;
+
+        coordinates.slice(0, 4).forEach((coord, index) => {
+          const dx = coord[0] - clickCoordinate[0];
+          const dy = coord[1] - clickCoordinate[1];
+          const distance = dx * dx + dy * dy;
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestVertexIndex = index;
+          }
+        });
+
+        const anchorVertexIndex = (closestVertexIndex + 2) % 4;
+        const anchorCoordinate = coordinates[anchorVertexIndex];
+
+        changeListenerKey = geometry.on("change", (evt) => {
+          const changingGeometry = evt.target as Polygon;
+          const currentCoords = changingGeometry.getCoordinates()[0];
+          const movingVertex = currentCoords[closestVertexIndex];
+
+          const minX = Math.min(anchorCoordinate[0], movingVertex[0]);
+          const minY = Math.min(anchorCoordinate[1], movingVertex[1]);
+          const maxX = Math.max(anchorCoordinate[0], movingVertex[0]);
+          const maxY = Math.max(anchorCoordinate[1], movingVertex[1]);
+
+          const newRectangleCoords = [
+            [
+              [minX, minY],
+              [maxX, minY],
+              [maxX, maxY],
+              [minX, maxY],
+              [minX, minY],
+            ],
+          ];
+
+          if (changeListenerKey) {
+            // Utiliser une fonction anonyme pour la récursivité au lieu de `arguments.callee`
+            const currentListener = (e: any) => {
+              const changingGeom = e.target as Polygon;
+              const currentCoords = changingGeom.getCoordinates()[0];
+              const movingVertex = currentCoords[closestVertexIndex];
+              const minX = Math.min(anchorCoordinate[0], movingVertex[0]);
+              const minY = Math.min(anchorCoordinate[1], movingVertex[1]);
+              const maxX = Math.max(anchorCoordinate[0], movingVertex[0]);
+              const maxY = Math.max(anchorCoordinate[1], movingVertex[1]);
+              const newRectangleCoords = [
+                [
+                  [minX, minY],
+                  [maxX, minY],
+                  [maxX, maxY],
+                  [minX, maxY],
+                  [minX, minY],
+                ],
+              ];
+              unByKey(changeListenerKey as EventsKey);
+              changingGeom.setCoordinates(newRectangleCoords);
+              changeListenerKey = changingGeom.on("change", currentListener);
+            };
+            unByKey(changeListenerKey);
+            changingGeometry.setCoordinates(newRectangleCoords);
+            changeListenerKey = changingGeometry.on("change", currentListener);
+          }
+        });
       }
     });
 
     modify.on("modifyend", (event) => {
+      if (changeListenerKey) {
+        unByKey(changeListenerKey);
+        changeListenerKey = undefined;
+      }
       const feature = event.features.getArray()[0];
-      if (feature && feature.get("isRectangle")) {
-        const geometry = feature.getGeometry();
-        if (geometry && geometry instanceof Polygon) {
-          // Récupérer l'extent de la géométrie modifiée
-          const modifiedExtent = geometry.getExtent();
-          
-          // Créer un nouveau rectangle parfait basé sur l'extent modifié
-          const rectangleCoords = [
-            [
-              [modifiedExtent[0], modifiedExtent[1]], // bottom-left
-              [modifiedExtent[2], modifiedExtent[1]], // bottom-right
-              [modifiedExtent[2], modifiedExtent[3]], // top-right
-              [modifiedExtent[0], modifiedExtent[3]], // top-left
-              [modifiedExtent[0], modifiedExtent[1]], // close the ring
-            ],
-          ];
-          
-          // Mettre à jour la géométrie avec le rectangle parfait
-          geometry.setCoordinates(rectangleCoords);
-        }
+      const featureId = feature?.getId() as string;
+      if (featureId) {
+        mapFeatures.updateOverlayPositions(featureId);
       }
     });
+    // --- FIN DES MODIFICATIONS ---
 
     const translate = new Translate({
       features: select.getFeatures(),
@@ -594,7 +579,6 @@ export default function MapContainer({
       source: vectorSourceRef.current,
     });
 
-    // Gestionnaires d'événements pour les interactions
     select.on("select", (event) => {
       if (event.selected.length > 0) {
         const feature = event.selected[0];
@@ -607,14 +591,6 @@ export default function MapContainer({
       }
     });
 
-    modify.on("modifyend", (event) => {
-      const feature = event.features.getArray()[0];
-      const featureId = feature.getId() as string;
-      if (featureId) {
-        mapFeatures.updateOverlayPositions(featureId);
-      }
-    });
-
     translate.on("translateend", (event) => {
       const feature = event.features.getArray()[0];
       const featureId = feature.getId() as string;
@@ -623,7 +599,6 @@ export default function MapContainer({
       }
     });
 
-    // Clic sur la carte pour désélectionner
     map.on("singleclick", (event) => {
       const feature = map.forEachFeatureAtPixel(
         event.pixel,
@@ -634,18 +609,15 @@ export default function MapContainer({
       }
     });
 
-    // Ajouter les interactions à la carte
     map.addInteraction(select);
     map.addInteraction(modify);
     map.addInteraction(translate);
     map.addInteraction(snap);
-    // Stocker les références des interactions
     modifyRef.current = modify;
     selectRef.current = select;
     translateRef.current = translate;
     snapRef.current = snap;
 
-    // Mettre à jour les références des couches
     setLayers((prev) =>
       prev.map((layer) => {
         switch (layer.id) {
@@ -668,13 +640,11 @@ export default function MapContainer({
   const handleToolChange = (tool: SelectionTool) => {
     if (!mapInstanceRef.current) return;
 
-    // Supprimer l'interaction de dessin précédente
     if (drawRef.current) {
       mapInstanceRef.current.removeInteraction(drawRef.current);
       drawRef.current = null;
     }
 
-    // Désélectionner toutes les figures
     mapFeatures.deselectAllFeatures();
 
     if (tool === activeTool || tool === "none") {
@@ -706,7 +676,6 @@ export default function MapContainer({
         return;
     }
 
-    // Créer une nouvelle interaction de dessin
     if (geometryType) {
       const draw = new Draw({
         ...drawOptions,
@@ -720,13 +689,10 @@ export default function MapContainer({
           positioning: "bottom-center",
           offset: [0, -7],
         });
-        // userFieldOverlayRef.current = overlay;
         mapInstanceRef.current?.addOverlay(overlay);
-
         const geometry = event.feature.getGeometry();
-        if (!geometry) {
-          return;
-        }
+        if (!geometry) return;
+
         const updateArea = () => {
           let area = 0;
           let position: number[] | undefined;
@@ -738,35 +704,22 @@ export default function MapContainer({
             area = Math.PI * radius * radius;
             position = geometry.getCenter();
           }
-
-          // Use AreaDisplay component for consistent formatting
-          overlayElement.innerHTML = `<div class="px-3 py-2 bg-blue-600 text-white rounded-lg shadow-lg border border-blue-700">
-            <div class="flex items-center space-x-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M16 4h2a2 2 0 012 2v2M16 20h2a2 2 0 002-2v-2"/>
-              </svg>
-              <span class="text-sm font-medium">${
-                area >= 1000000
-                  ? (area / 1000000).toFixed(2) + " km²"
-                  : area >= 10000
-                  ? (area / 10000).toFixed(2) + " ha"
-                  : area.toFixed(0) + " m²"
-              }</span>
-            </div>
-          </div>`;
-
+          overlayElement.innerHTML = `<div class="px-3 py-2 bg-blue-600 text-white rounded-lg shadow-lg border border-blue-700"><div class="flex items-center space-x-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M16 4h2a2 2 0 012 2v2M16 20h2a2 2 0 002-2v-2"/></svg><span class="text-sm font-medium">${
+            area >= 1000000
+              ? (area / 1000000).toFixed(2) + " km²"
+              : area >= 10000
+              ? (area / 10000).toFixed(2) + " ha"
+              : area.toFixed(0) + " m²"
+          }</span></div></div>`;
           setCurrentDrawingArea(area);
           if (position) {
             overlay.setPosition(position);
           }
         };
-
         geometry.on("change", updateArea);
-
         draw.once("drawend", () => {
           updateArea();
           geometry.un("change", updateArea);
-          // L'overlay d'area sera automatiquement supprimé
           if (overlay) {
             mapInstanceRef.current?.removeOverlay(overlay);
           }
@@ -776,33 +729,27 @@ export default function MapContainer({
       draw.on("drawend", (event) => {
         const feature = event.feature;
         const geometry = feature.getGeometry();
-
         if (!geometry) return;
 
-        // Marquer les rectangles pour les contraintes de modification
         if (activeTool === "rectangle") {
           feature.set("isRectangle", true);
-          
-          // S'assurer que le rectangle est parfaitement rectangulaire
           if (geometry instanceof Polygon) {
             const extent = geometry.getExtent();
             const rectangleCoords = [
               [
-                [extent[0], extent[1]], // bottom-left
-                [extent[2], extent[1]], // bottom-right
-                [extent[2], extent[3]], // top-right
-                [extent[0], extent[3]], // top-left
-                [extent[0], extent[1]], // close the ring
+                [extent[0], extent[1]],
+                [extent[2], extent[1]],
+                [extent[2], extent[3]],
+                [extent[0], extent[3]],
+                [extent[0], extent[1]],
               ],
             ];
             geometry.setCoordinates(rectangleCoords);
           }
         }
 
-        // Ajouter la nouvelle figure au système de gestion professionnelle
         const featureId = mapFeatures.addFeature(feature, tool as FeatureType);
 
-        // Callback pour l'onChange si défini
         if (onSelectionChange) {
           let coordinates: unknown = undefined;
           if (geometry instanceof Point || geometry instanceof Polygon) {
@@ -813,7 +760,6 @@ export default function MapContainer({
               radius: geometry.getRadius(),
             };
           }
-
           onSelectionChange({
             type: tool,
             geometry: geometry as Geometry,
@@ -821,18 +767,14 @@ export default function MapContainer({
           });
         }
 
-        // Nettoyer l'outil de dessin
         mapInstanceRef.current?.removeInteraction(draw);
         drawRef.current = null;
         setActiveTool("none");
-
-        console.log(`${tool} dessiné avec succès, featureId: ${featureId}`);
       });
 
       mapInstanceRef.current.addInteraction(draw);
       drawRef.current = draw;
     }
-
     setActiveTool(tool);
   };
 
@@ -860,62 +802,49 @@ export default function MapContainer({
   };
 
   const handleZoomIn = () => {
-    if (mapInstanceRef.current) {
-      const view = mapInstanceRef.current.getView();
-      const currentZoom = view.getZoom() || 7;
-      view.setZoom(currentZoom + 1);
-    }
+    mapInstanceRef.current?.getView().animate({
+      zoom: mapInstanceRef.current.getView().getZoom()! + 1,
+      duration: 250,
+    });
   };
 
   const handleZoomOut = () => {
-    if (mapInstanceRef.current) {
-      const view = mapInstanceRef.current.getView();
-      const currentZoom = view.getZoom() || 7;
-      view.setZoom(currentZoom - 1);
-    }
+    mapInstanceRef.current?.getView().animate({
+      zoom: mapInstanceRef.current.getView().getZoom()! - 1,
+      duration: 250,
+    });
   };
 
   const handleLayerToggle = (layerId: string) => {
-    const updatedLayers = layers.map((layer) => {
-      if (layer.id === layerId) {
-        const newVisible = !layer.visible;
-
-        // Mettre à jour la visibilité de la couche OpenLayers
-        if (layer.layer) {
-          layer.layer.setVisible(newVisible);
+    setLayers((prevLayers) =>
+      prevLayers.map((layer) => {
+        if (layer.id === layerId) {
+          const newVisible = !layer.visible;
+          layer.layer?.setVisible(newVisible);
+          return { ...layer, visible: newVisible };
         }
-
-        return { ...layer, visible: newVisible };
-      }
-      return layer;
-    });
-
-    setLayers(updatedLayers);
-    onLayerChange?.(updatedLayers.filter((l) => l.visible).map((l) => l.id));
+        return layer;
+      })
+    );
   };
 
   const handleOpacityChange = (layerId: string, opacity: number) => {
-    const updatedLayers = layers.map((layer) => {
-      if (layer.id === layerId) {
-        // Mettre à jour l'opacité de la couche OpenLayers
-        if (layer.layer) {
-          layer.layer.setOpacity(opacity / 100);
+    setLayers((prevLayers) =>
+      prevLayers.map((layer) => {
+        if (layer.id === layerId) {
+          layer.layer?.setOpacity(opacity / 100);
+          return { ...layer, opacity };
         }
-
-        return { ...layer, opacity };
-      }
-      return layer;
-    });
-    setLayers(updatedLayers);
+        return layer;
+      })
+    );
   };
 
   const handleCut = () => {
-    // Effacer toutes les figures avec le nouveau système
     mapFeatures.clearAllFeatures();
   };
 
   const handleUndo = () => {
-    // Supprimer la dernière figure avec le nouveau système
     const allFeatures = mapFeatures.getAllFeatures();
     if (allFeatures.length > 0) {
       const lastFeature = allFeatures[allFeatures.length - 1];
@@ -926,49 +855,40 @@ export default function MapContainer({
 
   const exportMap = () => {
     if (!mapInstanceRef.current) return;
-
     mapInstanceRef.current.once("rendercomplete", () => {
       const mapCanvas = document.createElement("canvas");
-      const size = mapInstanceRef.current!.getSize();
-      if (size) {
-        mapCanvas.width = size[0];
-        mapCanvas.height = size[1];
-        const mapContext = mapCanvas.getContext("2d");
-        if (mapContext) {
-          Array.prototype.forEach.call(
-            document.querySelectorAll(".ol-layer canvas"),
-            (canvas: HTMLCanvasElement) => {
-              if (canvas.width > 0) {
-                const opacity = canvas.parentElement?.style.opacity;
-                mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
-                const transform = canvas.style.transform;
-                const matrixValues = transform
-                  .match(/^matrix\(([^(]*)\)$/)?.[1]
-                  .split(",")
-                  .map(Number);
-                if (matrixValues && matrixValues.length === 6) {
-                  mapContext.setTransform(
-                    matrixValues[0],
-                    matrixValues[1],
-                    matrixValues[2],
-                    matrixValues[3],
-                    matrixValues[4],
-                    matrixValues[5]
-                  );
-                }
-                mapContext.drawImage(canvas, 0, 0);
-              }
-            }
-          );
-          mapContext.globalAlpha = 1;
-
-          // Télécharger l'image
-          const link = document.createElement("a");
-          link.download = "map.png";
-          link.href = mapCanvas.toDataURL();
-          link.click();
+      const size = mapInstanceRef.current!.getSize()!;
+      mapCanvas.width = size[0];
+      mapCanvas.height = size[1];
+      const mapContext = mapCanvas.getContext("2d")!;
+      Array.prototype.forEach.call(
+        document.querySelectorAll(".ol-layer canvas"),
+        (canvas: HTMLCanvasElement) => {
+          if (canvas.width > 0) {
+            const opacity = canvas.parentElement!.style.opacity;
+            mapContext.globalAlpha = opacity === "" ? 1 : Number(opacity);
+            const transform = canvas.style.transform;
+            const matrix = transform
+              .match(/^matrix\(([^)]*)\)$/)?.[1]
+              .split(", ")
+              .map(Number)!;
+            mapContext.setTransform(
+              matrix[0],
+              matrix[1],
+              matrix[2],
+              matrix[3],
+              matrix[4],
+              matrix[5]
+            );
+            mapContext.drawImage(canvas, 0, 0);
+          }
         }
-      }
+      );
+      mapContext.globalAlpha = 1;
+      const link = document.createElement("a");
+      link.download = "map.png";
+      link.href = mapCanvas.toDataURL();
+      link.click();
     });
     mapInstanceRef.current.renderSync();
   };
@@ -985,25 +905,20 @@ export default function MapContainer({
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-
     try {
-      // Utiliser Nominatim pour la géolocalisation
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           searchQuery
         )}&limit=1`
       );
       const results = await response.json();
-
       if (results.length > 0) {
-        const result = results[0];
-        const coords = [parseFloat(result.lon), parseFloat(result.lat)];
-
-        if (mapInstanceRef.current) {
-          const view = mapInstanceRef.current.getView();
-          view.setCenter(fromLonLat(coords));
-          view.setZoom(12);
-        }
+        const { lon, lat } = results[0];
+        mapInstanceRef.current?.getView().animate({
+          center: fromLonLat([parseFloat(lon), parseFloat(lat)]),
+          zoom: 12,
+          duration: 1000,
+        });
       }
     } catch (error) {
       console.error("Search error:", error);
@@ -1015,7 +930,6 @@ export default function MapContainer({
       className={`relative w-full h-full bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden map-container ${className}`}
       style={{ minHeight: "400px" }}
     >
-      {/* Barre de recherche */}
       <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-20">
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -1032,7 +946,6 @@ export default function MapContainer({
         </div>
       </div>
 
-      {/* Contrôles essentiels en haut à droite */}
       <div className="responsive-map-controls">
         <button
           onClick={handleFullscreen}
@@ -1065,7 +978,6 @@ export default function MapContainer({
         </button>
       </div>
 
-      {/* Barre d'outils de sélection */}
       {showToolbar && (
         <div className="absolute top-16 sm:top-20 left-2 sm:left-4 z-20">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 p-2">
@@ -1148,7 +1060,6 @@ export default function MapContainer({
         </div>
       )}
 
-      {/* Conteneur de la carte */}
       <div ref={mapRef} className="w-full h-full absolute inset-0">
         {!mapLoaded && (
           <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800">
@@ -1162,7 +1073,6 @@ export default function MapContainer({
         )}
       </div>
 
-      {/* Panneau de contrôle des couches */}
       {showLayerPanel && (
         <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 w-72 sm:w-80">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
@@ -1240,7 +1150,6 @@ export default function MapContainer({
         </div>
       )}
 
-      {/* Bouton pour réafficher le panneau de couches */}
       {!showLayerPanel && (
         <button
           onClick={() => setShowLayerPanel(true)}
@@ -1251,7 +1160,6 @@ export default function MapContainer({
         </button>
       )}
 
-      {/* Contrôles supplémentaires */}
       <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 z-20 flex space-x-1 sm:space-x-2">
         <button
           onClick={exportMap}
@@ -1269,10 +1177,8 @@ export default function MapContainer({
         </button>
       </div>
 
-      {/* Geographic Selections Panel */}
       <GeographicSelections />
 
-      {/* Geographic loading indicator */}
       {isLoadingGeometry && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 px-4 py-2 flex items-center space-x-2">
@@ -1284,17 +1190,13 @@ export default function MapContainer({
         </div>
       )}
 
-      {/* Two Column Sidebar with User Fields */}
       {showUserFieldsPanel && (
         <div className="absolute top-0 right-0 h-full z-30">
           <TwoColumnSidebar
             isRightColumnVisible={showUserFieldEditor}
             onRightColumnToggle={(visible) => {
               setShowUserFieldEditor(visible);
-              if (!visible) {
-                setEditingUserField(null);
-                // Les overlays sont maintenant gérés automatiquement par le hook
-              }
+              if (!visible) setEditingUserField(null);
             }}
             rightColumnContent={
               <UserFieldEditor
@@ -1302,15 +1204,12 @@ export default function MapContainer({
                 pendingGeometryType={pendingGeometryType || undefined}
                 editingField={editingUserField}
                 onSave={(data) => {
-                  console.log("Field saved:", data);
                   setShowUserFieldEditor(false);
                   setEditingUserField(null);
-                  // Les overlays sont maintenant gérés automatiquement par le hook
                 }}
                 onCancel={() => {
                   setShowUserFieldEditor(false);
                   setEditingUserField(null);
-                  // Les overlays sont maintenant gérés automatiquement par le hook
                 }}
               />
             }
@@ -1331,9 +1230,6 @@ export default function MapContainer({
         </div>
       )}
 
-      {/* Legacy User Field Form - Replaced by UserFieldEditor in TwoColumnSidebar */}
-
-      {/* Coordonnées dynamiques en bas au milieu */}
       <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 z-20">
         <div className="bg-black bg-opacity-75 text-white px-2 sm:px-3 py-1 rounded text-xs">
           Lat: {mouseCoordinates[0].toFixed(4)}° | Lon:{" "}
