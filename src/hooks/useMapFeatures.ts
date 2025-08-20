@@ -6,7 +6,7 @@ import Overlay from "ol/Overlay";
 import { toLonLat } from "ol/proj";
 import { unByKey } from "ol/Observable";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Save, X, Edit2, MapPin } from "lucide-react";
+import { Save, Edit2, MapPin } from "lucide-react";
 import { getArea, getLength } from "ol/sphere";
 import type {
   FeatureType,
@@ -261,19 +261,19 @@ export const useMapFeatures = (
         }
       );
 
-      // Overlay de suppression
-      const deleteOverlay = createOverlay(
-        renderToStaticMarkup(
-          createElement(X, { className: "w-4 h-4 text-white" })
-        ),
-        "p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg border-2 border-white z-50",
-        "Supprimer cette figure",
-        () => {
-          if (options.onDelete) {
-            options.onDelete(feature, type);
-          }
-        }
-      );
+      // // Overlay de suppression
+      // const deleteOverlay = createOverlay(
+      //   renderToStaticMarkup(
+      //     createElement(X, { className: "w-4 h-4 text-white" })
+      //   ),
+      //   "p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg border-2 border-white z-50",
+      //   "Supprimer cette figure",
+      //   () => {
+      //     if (options.onDelete) {
+      //       options.onDelete(feature, type);
+      //     }
+      //   }
+      // );
 
       // Overlay d'édition (optionnel)
       let editOverlay;
@@ -334,7 +334,7 @@ export const useMapFeatures = (
 
       return {
         save: saveOverlay,
-        delete: deleteOverlay,
+        // delete: deleteOverlay,
         edit: editOverlay,
         info: infoOverlay,
       };
@@ -361,15 +361,15 @@ export const useMapFeatures = (
 
       // Positions relatives pour chaque overlay
       const positions = {
-        save: calculateOverlayPosition(geometry, [-40, -40]),
-        delete: calculateOverlayPosition(geometry, [40, -40]),
+        save: calculateOverlayPosition(geometry, [0, -40]),
+        // delete: calculateOverlayPosition(geometry, [40, -40]),
         edit: calculateOverlayPosition(geometry, [0, -60]),
         info: calculateOverlayPosition(geometry, [0, 40]),
       };
 
       // Mettre à jour les positions
       drawnFeature.overlays.save.setPosition(positions.save);
-      drawnFeature.overlays.delete.setPosition(positions.delete);
+      // drawnFeature.overlays.delete.setPosition(positions.delete);
 
       if (drawnFeature.overlays.edit) {
         drawnFeature.overlays.edit.setPosition(positions.edit);
@@ -388,7 +388,7 @@ export const useMapFeatures = (
     if (!drawnFeature) return;
 
     drawnFeature.overlays.save.setPosition(undefined);
-    drawnFeature.overlays.delete.setPosition(undefined);
+    // drawnFeature.overlays.delete.setPosition(undefined);
 
     if (drawnFeature.overlays.edit) {
       drawnFeature.overlays.edit.setPosition(undefined);
@@ -463,7 +463,7 @@ export const useMapFeatures = (
       // Ajouter les overlays à la carte
       if (mapInstance) {
         mapInstance.addOverlay(overlays.save);
-        mapInstance.addOverlay(overlays.delete);
+        // mapInstance.addOverlay(overlays.delete);
 
         if (overlays.edit) {
           mapInstance.addOverlay(overlays.edit);
@@ -536,7 +536,7 @@ export const useMapFeatures = (
       if (drawnFeature && mapInstance) {
         // Supprimer les overlays
         mapInstance.removeOverlay(drawnFeature.overlays.save);
-        mapInstance.removeOverlay(drawnFeature.overlays.delete);
+        // mapInstance.removeOverlay(drawnFeature.overlays.delete);
 
         if (drawnFeature.overlays.edit) {
           mapInstance.removeOverlay(drawnFeature.overlays.edit);

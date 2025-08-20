@@ -9,7 +9,7 @@ export interface DrawnFeature {
   feature: Feature;
   overlays: {
     save: Overlay;
-    delete: Overlay;
+    // delete: Overlay;
     edit?: Overlay;
     info?: Overlay;
   };
