@@ -199,6 +199,7 @@ export function UserFieldsPanel({
 
                     <div className="relative">
                       <button
+                        aria-label="Fermer le panneau"
                         onClick={() =>
                           setActiveDropdown(
                             activeDropdown === field.id ? null : field.id

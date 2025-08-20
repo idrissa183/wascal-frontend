@@ -1,79 +1,80 @@
-import React, { useState, useEffect } from 'react';
-import { X, Save, AlertCircle } from 'lucide-react';
-import { useUserFieldsStore } from '../../stores/useUserFieldsStore';
-import type { UserField } from '../../services/userFields.service';
+import React, { useState, useEffect } from "react";
+import { X, Save, AlertCircle } from "lucide-react";
+import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
+import type { UserField } from "../../services/userFields.service";
 
 interface UserFieldFormProps {
   isOpen: boolean;
   onClose: () => void;
   editField?: UserField | null;
   geometry?: any;
-  geometryType?: 'point' | 'polygon' | 'circle' | 'rectangle';
+  geometryType?: "point" | "polygon" | "circle" | "rectangle";
   onSuccess?: (savedField: UserField) => void;
 }
 
-export function UserFieldForm({ 
-  isOpen, 
-  onClose, 
-  editField = null, 
-  geometry = null, 
-  geometryType = 'polygon',
-  onSuccess
+export function UserFieldForm({
+  isOpen,
+  onClose,
+  editField = null,
+  geometry = null,
+  geometryType = "polygon",
+  onSuccess,
 }: UserFieldFormProps) {
-  const { createUserField, updateUserField, loading, error, clearError } = useUserFieldsStore();
-  const [name, setName] = useState('');
-  const [formError, setFormError] = useState('');
+  const { createUserField, updateUserField, loading, error, clearError } =
+    useUserFieldsStore();
+  const [name, setName] = useState("");
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (editField) {
       setName(editField.name);
     } else {
-      setName('');
+      setName("");
     }
-    setFormError('');
+    setFormError("");
     clearError();
   }, [editField, isOpen, clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError('');
-    
+    setFormError("");
+
     if (!name.trim()) {
-      setFormError('Le nom du champ est requis');
+      setFormError("Le nom du champ est requis");
       return;
     }
 
     if (!editField && !geometry) {
-      setFormError('La géométrie est requise');
+      setFormError("La géométrie est requise");
       return;
     }
 
     try {
       let savedField;
       if (editField) {
-        savedField = await updateUserField(editField.id, { 
+        savedField = await updateUserField(editField.id, {
           name: name.trim(),
-          ...(geometry && { geometry, geometry_type: geometryType })
+          ...(geometry && { geometry, geometry_type: geometryType }),
         });
       } else {
         savedField = await createUserField({
           name: name.trim(),
           geometry,
-          geometry_type: geometryType
+          geometry_type: geometryType,
         });
       }
-      
-      console.log('✅ User field saved successfully:', savedField);
-      
+
+      console.log("✅ User field saved successfully:", savedField);
+
       // Call the success callback if provided
       if (onSuccess && savedField) {
         onSuccess(savedField);
       }
-      
+
       onClose();
-      setName('');
+      setName("");
     } catch (err) {
-      console.error('❌ Error saving user field:', err);
+      console.error("❌ Error saving user field:", err);
     }
   };
 
@@ -84,9 +85,10 @@ export function UserFieldForm({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {editField ? 'Modifier le champ' : 'Nouveau champ'}
+            {editField ? "Modifier le champ" : "Nouveau champ"}
           </h3>
           <button
+            aria-label="Fermer"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
@@ -105,7 +107,10 @@ export function UserFieldForm({
           )}
 
           <div className="mb-4">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+            >
               Nom du champ *
             </label>
             <input
@@ -125,10 +130,10 @@ export function UserFieldForm({
                 Type de géométrie
               </label>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                {geometryType === 'point' && 'Point'}
-                {geometryType === 'polygon' && 'Polygone'}
-                {geometryType === 'circle' && 'Cercle'}
-                {geometryType === 'rectangle' && 'Rectangle'}
+                {geometryType === "point" && "Point"}
+                {geometryType === "polygon" && "Polygone"}
+                {geometryType === "circle" && "Cercle"}
+                {geometryType === "rectangle" && "Rectangle"}
               </div>
             </div>
           )}
@@ -148,7 +153,7 @@ export function UserFieldForm({
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-md transition-colors"
             >
               <Save className="w-4 h-4" />
-              {loading ? 'Enregistrement...' : (editField ? 'Modifier' : 'Créer')}
+              {loading ? "Enregistrement..." : editField ? "Modifier" : "Créer"}
             </button>
           </div>
         </form>

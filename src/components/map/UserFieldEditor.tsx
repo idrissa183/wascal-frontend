@@ -180,6 +180,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
           {onCancel && (
             <button
               type="button"
+              aria-label="Annuler"
               onClick={onCancel}
               className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
             >
