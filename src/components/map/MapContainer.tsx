@@ -669,8 +669,12 @@ export default function MapContainer({
 
     // Interactions for editing features
     const modify = createRectangleEditor();
-    const select = new Select();
-    const translate = new Translate({ features: select.getFeatures() });
+const select = new Select({
+      style: (feature: any): Style =>
+        feature instanceof Feature
+          ? (feature.getStyle() as Style) || pointStyle
+          : pointStyle,
+    });    const translate = new Translate({ features: select.getFeatures() });
 
     // Add listeners to update save icon position during modifications
     let currentModifyHandler: any = null;
