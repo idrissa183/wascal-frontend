@@ -118,6 +118,8 @@ export default function MapContainer({
   const [showUserFieldEditor, setShowUserFieldEditor] = useState(false);
   const [editingUserField, setEditingUserField] = useState<any>(null);
   const [currentDrawingArea, setCurrentDrawingArea] = useState<number>(0);
+    const [showSaveButton, setShowSaveButton] = useState(false);
+
   const [visibleUserFields, setVisibleUserFields] = useState<Set<number>>(
     new Set()
   );
@@ -651,7 +653,7 @@ export default function MapContainer({
             ];
 
             geometry.setCoordinates([newCoords]);
-            updateSaveIconPosition(this.activeFeature);
+            // updateSaveIconPosition(this.activeFeature);
             showRectangleHandles(this.activeFeature); // Update handles position
           }
         }
@@ -961,6 +963,8 @@ const select = new Select({
           updateArea();
           geometry.un("change", updateArea);
           removeSaveIconOverlay();
+          // Show save button instead of icon on figure
+          setShowSaveButton(true);
         });
       });
 
@@ -1183,67 +1187,11 @@ const select = new Select({
       }
     }
 
-    // Create overlay with save icon
-    if (userFieldOverlayRef.current) {
-      removeSaveIconOverlay();
-    }
-
-    const overlayElement = document.createElement("button");
-    overlayElement.className =
-      "p-2 bg-white rounded-full border border-gray-300 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors";
-    overlayElement.title = "Enregistrer";
-    overlayElement.innerHTML = renderToStaticMarkup(
-      <Save className="w-4 h-4 text-blue-600" />
-    );
-
-    overlayElement.addEventListener("click", () => {
-      setPendingGeometry(geoJsonGeometry);
-      setPendingGeometryType(type);
-      setShowUserFieldEditor(true);
-      setEditingUserField(null);
-    });
-
-    const overlay = new Overlay({
-      element: overlayElement,
-      positioning: "top-center",
-      offset: [0, 10],
-      stopEvent: true,
-    });
-
-    let overlayCoord;
-    if (geometry instanceof Point) {
-      overlayCoord = geometry.getCoordinates();
-    } else if (geometry instanceof Polygon) {
-      // Get the bottom center of the polygon's extent
-      const extent = geometry.getExtent();
-      overlayCoord = [(extent[0] + extent[2]) / 2, extent[1]]; // center X, bottom Y
-    } else if (geometry instanceof CircleGeom) {
-      // Get the bottom center of the circle
-      const center = geometry.getCenter();
-      const radius = geometry.getRadius();
-      overlayCoord = [center[0], center[1] - radius]; // center X, bottom Y
-    }
-
-    if (overlayCoord) {
-      overlay.setPosition(overlayCoord);
-    }
-
-    mapInstanceRef.current?.addOverlay(overlay);
-    userFieldOverlayRef.current = overlay;
-
-    // Store reference to the feature that has the save icon
-    const lastFeature = vectorSourceRef.current?.getFeatures().slice(-1)[0];
-    if (lastFeature) {
-      (overlay as any).associatedFeature = lastFeature;
-      const geom = lastFeature.getGeometry();
-      if (geom) {
-        const listener = () => updateSaveIconPosition(lastFeature);
-        geom.on("change", listener);
-        (overlay as any).geometryChangeListener = listener;
-      }
-    }
-
-    console.log("✅ Save overlay added for drawn feature");
+    // Store geometry for save button (no overlay on figure anymore)
+    setPendingGeometry(geoJsonGeometry);
+    setPendingGeometryType(type);
+    
+    console.log("✅ Geometry stored for save button:", { geoJsonGeometry, type });
 
     // // Set pending geometry and show form
     // console.log("📝 Setting pending geometry and opening form:", {
@@ -1335,6 +1283,11 @@ const select = new Select({
       removeSaveIconOverlay();
     }
 
+    // Hide save button and clear pending data
+    setShowSaveButton(false);
+    setPendingGeometry(null);
+    setPendingGeometryType(null);
+
     // Clear all features
     vectorSourceRef.current?.clear();
   };
@@ -1351,6 +1304,13 @@ const select = new Select({
         if (associatedFeature === lastFeature) {
           removeSaveIconOverlay();
         }
+      }
+
+      // Hide save button and clear pending data when undoing the last drawn feature
+      if (features.length === 1) {
+        setShowSaveButton(false);
+        setPendingGeometry(null);
+        setPendingGeometryType(null);
       }
 
       vectorSourceRef.current?.removeFeature(lastFeature);
@@ -1740,6 +1700,7 @@ const select = new Select({
               setShowUserFieldEditor(visible);
               if (!visible) {
                 setEditingUserField(null);
+                // Don't clear save button when closing editor, user might want to save later
                 if (userFieldOverlayRef.current) {
                   removeSaveIconOverlay();
                 }
@@ -1754,6 +1715,9 @@ const select = new Select({
                   console.log("Field saved:", data);
                   setShowUserFieldEditor(false);
                   setEditingUserField(null);
+                  setShowSaveButton(false);
+                  setPendingGeometry(null);
+                  setPendingGeometryType(null);
                   if (userFieldOverlayRef.current) {
                     removeSaveIconOverlay();
                   }
@@ -1761,6 +1725,7 @@ const select = new Select({
                 onCancel={() => {
                   setShowUserFieldEditor(false);
                   setEditingUserField(null);
+                  // Don't clear save button and pending data on cancel, user might want to save later
                   if (userFieldOverlayRef.current) {
                     removeSaveIconOverlay();
                   }
@@ -1786,23 +1751,22 @@ const select = new Select({
 
       {/* Legacy User Field Form - Replaced by UserFieldEditor in TwoColumnSidebar */}
 
-      {/* Drawing indicator for user fields */}
-      {showUserFieldsPanel && activeTool !== "none" && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-blue-600 text-white rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2">
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm">
-              Dessinez votre{" "}
-              {activeTool === "point"
-                ? "point"
-                : activeTool === "rectangle"
-                ? "rectangle"
-                : activeTool === "circle"
-                ? "cercle"
-                : "polygone"}{" "}
-              pour créer un champ...
-            </span>
-          </div>
+      
+      {/* Save button for user fields */}
+      {showSaveButton && (
+        <div className="absolute bottom-14 left-1/2 transform -translate-x-1/2 z-30">
+          <button
+            className="p-2 bg-white rounded-full border border-gray-300 shadow-lg cursor-pointer hover:bg-gray-50 transition-colors"
+            title="Enregistrer"
+            onClick={() => {
+              // Open editor with current pending geometry
+              setShowUserFieldEditor(true);
+              setEditingUserField(null);
+              setShowSaveButton(false);
+            }}
+          >
+            <Save className="w-4 h-4 text-blue-600" />
+          </button>
         </div>
       )}
 
