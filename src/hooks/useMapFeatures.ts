@@ -111,8 +111,6 @@ export const useMapFeatures = (
       metadata.perimeter = getLength(geometry);
       const center = toLonLat(geometry.getInteriorPoint().getCoordinates());
       metadata.center = [center[1], center[0]];
-      // const extent = geometry.getExtent();
-      // metadata.center = [(extent[1] + extent[3]) / 2, (extent[0] + extent[2]) / 2];
     } else if (geometry instanceof CircleGeom) {
       const center = toLonLat(geometry.getCenter());
       const radius = geometry.getRadius();
@@ -120,9 +118,6 @@ export const useMapFeatures = (
       metadata.radius = radius;
       metadata.area = Math.PI * Math.pow(radius, 2);
       metadata.perimeter = 2 * Math.PI * radius;
-      // metadata.center = [center[1], center[0]];
-      // metadata.radius = geometry.getRadius();
-      // metadata.area = Math.PI * Math.pow(geometry.getRadius(), 2);
     }
 
     return metadata;
@@ -261,20 +256,6 @@ export const useMapFeatures = (
         }
       );
 
-      // // Overlay de suppression
-      // const deleteOverlay = createOverlay(
-      //   renderToStaticMarkup(
-      //     createElement(X, { className: "w-4 h-4 text-white" })
-      //   ),
-      //   "p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg border-2 border-white z-50",
-      //   "Supprimer cette figure",
-      //   () => {
-      //     if (options.onDelete) {
-      //       options.onDelete(feature, type);
-      //     }
-      //   }
-      // );
-
       // Overlay d'édition (optionnel)
       let editOverlay;
       if (options.showEditControls) {
@@ -300,27 +281,11 @@ export const useMapFeatures = (
           const metadata = calculateMetadata(geometry);
           const infoText = formatMetadataInfo(metadata);
 
-          // const metadata = calculateMetadata(geometry);
-          // let infoText = "";
-
-          // if (metadata.area) {
-          //   const area = metadata.area;
-          //   infoText =
-          //     area >= 1000000
-          //       ? `${(area / 1000000).toFixed(2)} km²`
-          //       : area >= 10000
-          //       ? `${(area / 10000).toFixed(2)} ha`
-          //       : `${area.toFixed(0)} m²`;
-          // }
-
           if (infoText) {
             const infoElement = document.createElement("div");
             infoElement.className =
               "px-3 py-1.5 bg-black bg-opacity-75 text-white text-xs rounded-lg shadow-lg border border-gray-600";
             infoElement.innerHTML = infoText;
-            // infoElement.className =
-            //   "px-3 py-1.5 bg-black bg-opacity-75 text-white text-xs rounded-lg shadow-lg border border-gray-600";
-            // infoElement.textContent = infoText;
 
             infoOverlay = new Overlay({
               element: infoElement,
@@ -334,13 +299,11 @@ export const useMapFeatures = (
 
       return {
         save: saveOverlay,
-        // delete: deleteOverlay,
         edit: editOverlay,
         info: infoOverlay,
       };
     },
 
-    // [createOverlay, calculateMetadata, options, convertToGeoJSON]
     [
       createOverlay,
       calculateMetadata,
@@ -362,14 +325,12 @@ export const useMapFeatures = (
       // Positions relatives pour chaque overlay
       const positions = {
         save: calculateOverlayPosition(geometry, [0, -40]),
-        // delete: calculateOverlayPosition(geometry, [40, -40]),
         edit: calculateOverlayPosition(geometry, [0, -60]),
         info: calculateOverlayPosition(geometry, [0, 40]),
       };
 
       // Mettre à jour les positions
       drawnFeature.overlays.save.setPosition(positions.save);
-      // drawnFeature.overlays.delete.setPosition(positions.delete);
 
       if (drawnFeature.overlays.edit) {
         drawnFeature.overlays.edit.setPosition(positions.edit);
@@ -388,7 +349,6 @@ export const useMapFeatures = (
     if (!drawnFeature) return;
 
     drawnFeature.overlays.save.setPosition(undefined);
-    // drawnFeature.overlays.delete.setPosition(undefined);
 
     if (drawnFeature.overlays.edit) {
       drawnFeature.overlays.edit.setPosition(undefined);
@@ -463,7 +423,6 @@ export const useMapFeatures = (
       // Ajouter les overlays à la carte
       if (mapInstance) {
         mapInstance.addOverlay(overlays.save);
-        // mapInstance.addOverlay(overlays.delete);
 
         if (overlays.edit) {
           mapInstance.addOverlay(overlays.edit);
@@ -536,7 +495,6 @@ export const useMapFeatures = (
       if (drawnFeature && mapInstance) {
         // Supprimer les overlays
         mapInstance.removeOverlay(drawnFeature.overlays.save);
-        // mapInstance.removeOverlay(drawnFeature.overlays.delete);
 
         if (drawnFeature.overlays.edit) {
           mapInstance.removeOverlay(drawnFeature.overlays.edit);

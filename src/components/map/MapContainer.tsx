@@ -548,6 +548,42 @@ export default function MapContainer({
           stroke: new Stroke({ color: "#4285f4", width: 2 }),
         }),
       }),
+      // Contraindre la modification des rectangles pour préserver leur forme
+      pixelTolerance: 10,
+    });
+
+    // Écouter les événements de modification pour maintenir la forme rectangulaire
+    modify.on("modifystart", (event) => {
+      const feature = event.features.getArray()[0];
+      if (feature && feature.get("isRectangle")) {
+        // Marquer la géométrie comme étant un rectangle pour la modification contrainte
+        feature.set("originalExtent", feature.getGeometry()?.getExtent());
+      }
+    });
+
+    modify.on("modifyend", (event) => {
+      const feature = event.features.getArray()[0];
+      if (feature && feature.get("isRectangle")) {
+        const geometry = feature.getGeometry();
+        if (geometry && geometry instanceof Polygon) {
+          // Récupérer l'extent de la géométrie modifiée
+          const modifiedExtent = geometry.getExtent();
+          
+          // Créer un nouveau rectangle parfait basé sur l'extent modifié
+          const rectangleCoords = [
+            [
+              [modifiedExtent[0], modifiedExtent[1]], // bottom-left
+              [modifiedExtent[2], modifiedExtent[1]], // bottom-right
+              [modifiedExtent[2], modifiedExtent[3]], // top-right
+              [modifiedExtent[0], modifiedExtent[3]], // top-left
+              [modifiedExtent[0], modifiedExtent[1]], // close the ring
+            ],
+          ];
+          
+          // Mettre à jour la géométrie avec le rectangle parfait
+          geometry.setCoordinates(rectangleCoords);
+        }
+      }
     });
 
     const translate = new Translate({
@@ -742,6 +778,26 @@ export default function MapContainer({
         const geometry = feature.getGeometry();
 
         if (!geometry) return;
+
+        // Marquer les rectangles pour les contraintes de modification
+        if (activeTool === "rectangle") {
+          feature.set("isRectangle", true);
+          
+          // S'assurer que le rectangle est parfaitement rectangulaire
+          if (geometry instanceof Polygon) {
+            const extent = geometry.getExtent();
+            const rectangleCoords = [
+              [
+                [extent[0], extent[1]], // bottom-left
+                [extent[2], extent[1]], // bottom-right
+                [extent[2], extent[3]], // top-right
+                [extent[0], extent[3]], // top-left
+                [extent[0], extent[1]], // close the ring
+              ],
+            ];
+            geometry.setCoordinates(rectangleCoords);
+          }
+        }
 
         // Ajouter la nouvelle figure au système de gestion professionnelle
         const featureId = mapFeatures.addFeature(feature, tool as FeatureType);
