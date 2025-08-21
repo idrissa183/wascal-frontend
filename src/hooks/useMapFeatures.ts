@@ -21,9 +21,17 @@ export const useMapFeatures = (
 ) => {
   const drawnFeaturesRef = useRef<Map<string, DrawnFeature>>(new Map());
   const selectedFeatureRef = useRef<string | null>(null);
-  const locationIconUrl = `data:image/svg+xml,${encodeURIComponent(
-    renderToStaticMarkup(createElement(MapPin))
-  )}`;
+  
+  // Créer une icône MapPin colorée dynamiquement
+  const createColoredMapPinIcon = useCallback((color: string) => {
+    const svgMapPin = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+        <circle cx="12" cy="10" r="3" fill="${color}"/>
+      </svg>
+    `;
+    return `data:image/svg+xml,${encodeURIComponent(svgMapPin)}`;
+  }, []);
 
   // Styles pour les différents états
   const createFeatureStyle = useCallback(
@@ -46,7 +54,7 @@ export const useMapFeatures = (
       if (geometryType === "point") {
         return new Style({
           image: new Icon({
-            src: locationIconUrl,
+            src: createColoredMapPinIcon(baseColor),
             anchor: [0.5, 1],
             scale: isSelected ? 2.4 : isEditing ? 2.2 : 2,
           }),

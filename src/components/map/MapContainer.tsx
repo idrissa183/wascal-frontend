@@ -62,8 +62,8 @@ import { Save, MapPin } from "lucide-react";
 import Overlay from "ol/Overlay";
 import { getArea } from "ol/sphere";
 import { singleClick } from "ol/events/condition";
-import { unByKey } from "ol/Observable"; // <-- NOUVEL IMPORT
-import type { EventsKey } from "ol/events"; // <-- NOUVEL IMPORT
+import { unByKey } from "ol/Observable"; 
+import type { EventsKey } from "ol/events";
 
 interface MapContainerProps {
   onSelectionChange?: (selection: any) => void;
@@ -126,12 +126,20 @@ export default function MapContainer({
     MAP_DEFAULTS.CENTER[1],
   ]);
   const [zoom, setZoom] = useState<number>(MAP_DEFAULTS.ZOOM);
-  const locationIconUrl = `data:image/svg+xml,${encodeURIComponent(
-    renderToStaticMarkup(<MapPin />)
-  )}`;
+  // Créer une icône MapPin colorée avec la couleur des champs utilisateur
+  const createColoredMapPinIcon = (color: string = "#4285f4") => {
+    const svgMapPin = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/>
+        <circle cx="12" cy="10" r="3" fill="${color}"/>
+      </svg>
+    `;
+    return `data:image/svg+xml,${encodeURIComponent(svgMapPin)}`;
+  };
+
   const pointStyle = new Style({
     image: new Icon({
-      src: locationIconUrl,
+      src: createColoredMapPinIcon("#4285f4"),
       anchor: [0.5, 1],
       scale: 2,
     }),
