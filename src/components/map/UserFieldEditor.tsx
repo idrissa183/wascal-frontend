@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  TrashIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { MapPin, Square, Circle, Save } from "lucide-react";
 import { PiPolygonBold } from "react-icons/pi";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
@@ -30,10 +27,11 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
     category: "general",
     visibility: "public",
   });
-  
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { createUserField, updateUserField, deleteUserField } = useUserFieldsStore();
+  const { createUserField, updateUserField, deleteUserField } =
+    useUserFieldsStore();
 
   // Initialize form data when editing
   useEffect(() => {
@@ -86,56 +84,66 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
 
   const calculateArea = (geometry: any, type: string) => {
     if (!geometry) return null;
-    
+
     // This is a simplified calculation - you might want to use a proper geometry library
     if (type === "circle" && geometry.radius) {
       const area = Math.PI * Math.pow(geometry.radius, 2);
       return (area / 1000000).toFixed(2); // Convert to km²
     }
-    
+
     // For other geometries, you'd need to implement proper area calculation
     return null;
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.name.trim()) {
       newErrors.name = "Le nom est requis";
     }
-    
+
     if (formData.name.length > 50) {
       newErrors.name = "Le nom ne peut pas dépasser 50 caractères";
     }
-    
+
     if (formData.description.length > 500) {
-      newErrors.description = "La description ne peut pas dépasser 500 caractères";
+      newErrors.description =
+        "La description ne peut pas dépasser 500 caractères";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const data = {
         ...formData,
-        geometry: pendingGeometry,
-        geometry_type: pendingGeometryType as "circle" | "polygon" | "point" | "rectangle",
+        // Utiliser pendingGeometry si disponible, sinon garder l'ancienne géométrie lors d'une modification
+        ...(pendingGeometry ? { geometry: pendingGeometry } : {}),
+        ...(pendingGeometryType
+          ? {
+              geometry_type: pendingGeometryType as
+                | "circle"
+                | "polygon"
+                | "point"
+                | "rectangle",
+            }
+          : {}),
       };
-      
+
       if (editingField) {
         await updateUserField(editingField.id, data);
       } else {
         await createUserField(data);
       }
-      
+
       if (onSave) {
         onSave(data);
       }
@@ -148,7 +156,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
 
   const handleDelete = async () => {
     if (!editingField) return;
-    
+
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce champ ?")) {
       try {
         await deleteUserField(editingField.id);
@@ -163,7 +171,10 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
 
   const geometryType = pendingGeometryType || editingField?.geometry_type;
   const GeometryIcon = getGeometryIcon(geometryType);
-  const area = calculateArea(pendingGeometry || editingField?.geometry, geometryType);
+  const area = calculateArea(
+    pendingGeometry || editingField?.geometry,
+    geometryType
+  );
 
   return (
     <div className={`bg-white dark:bg-gray-800 ${className}`}>
@@ -176,7 +187,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
               {editingField ? "Modifier le champ" : "Nouveau champ"}
             </h3>
           </div>
-          
+
           {onCancel && (
             <button
               type="button"
@@ -201,7 +212,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
                   {getGeometryLabel(geometryType)}
                 </p>
               </div>
-              
+
               {area && (
                 <div className="text-right">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -226,7 +237,9 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.name
                   ? "border-red-300 dark:border-red-600"
@@ -248,7 +261,9 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               rows={3}
               className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.description
@@ -264,40 +279,6 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
             )}
           </div>
 
-          {/* Category */}
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Catégorie
-            </label>
-            <select
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="general">Général</option>
-              <option value="agriculture">Agriculture</option>
-              <option value="environment">Environnement</option>
-              <option value="infrastructure">Infrastructure</option>
-              <option value="research">Recherche</option>
-            </select>
-          </div> */}
-
-          {/* Visibility */}
-          {/* <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Visibilité
-            </label>
-            <select
-              value={formData.visibility}
-              onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="public">Public</option>
-              <option value="private">Privé</option>
-              <option value="shared">Partagé</option>
-            </select>
-          </div> */}
-
           {/* Actions */}
           <div className="flex items-center space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <button
@@ -308,7 +289,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
               <Save className="w-4 h-4" />
               <span>{isSubmitting ? "Sauvegarde..." : "Sauvegarder"}</span>
             </button>
-            
+
             {editingField && (
               <button
                 type="button"
@@ -318,7 +299,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
                 <TrashIcon className="w-4 h-4" />
               </button>
             )}
-            
+
             {onCancel && (
               <button
                 type="button"

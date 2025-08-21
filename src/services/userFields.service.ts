@@ -4,6 +4,7 @@ import { authService } from './auth.service';
 export interface UserField {
   id: number;
   name: string;
+  description?: string;
   user_id: number;
   geometry_type: 'point' | 'polygon' | 'circle' | 'rectangle';
   geometry: any;
@@ -14,12 +15,14 @@ export interface UserField {
 
 export interface CreateUserFieldRequest {
   name: string;
+  description?: string;
   geometry_type: 'point' | 'polygon' | 'circle' | 'rectangle';
   geometry: any;
 }
 
 export interface UpdateUserFieldRequest {
   name?: string;
+  description?: string;
   geometry_type?: 'point' | 'polygon' | 'circle' | 'rectangle';
   geometry?: any;
 }
