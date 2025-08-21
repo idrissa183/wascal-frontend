@@ -48,7 +48,7 @@ export const useMapFeatures = (
           image: new Icon({
             src: locationIconUrl,
             anchor: [0.5, 1],
-            scale: isSelected ? 1.2 : isEditing ? 1.1 : 1,
+            scale: isSelected ? 2.4 : isEditing ? 2.2 : 2,
           }),
         });
       }
