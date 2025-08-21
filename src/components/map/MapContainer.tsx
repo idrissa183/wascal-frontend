@@ -95,6 +95,7 @@ export default function MapContainer({
   const selectRef = useRef<Select | null>(null);
   const translateRef = useRef<Translate | null>(null);
   const snapRef = useRef<Snap | null>(null);
+  const areaOverlayRef = useRef<Overlay | null>(null);
   const t = useTranslations();
   const { selectedEntities, isLoadingGeometry } = useGeographicStore();
   const { userFields } = useUserFieldsStore();
@@ -674,6 +675,12 @@ export default function MapContainer({
       drawRef.current = null;
     }
 
+    if (areaOverlayRef.current) {
+      mapInstanceRef.current.removeOverlay(areaOverlayRef.current);
+      areaOverlayRef.current = null;
+      setCurrentDrawingArea(0);
+    }
+
     mapFeatures.deselectAllFeatures();
 
     if (tool === activeTool || tool === "none") {
@@ -719,6 +726,7 @@ export default function MapContainer({
           offset: [0, -7],
         });
         mapInstanceRef.current?.addOverlay(overlay);
+        areaOverlayRef.current = overlay;
         const geometry = event.feature.getGeometry();
         if (!geometry) return;
 
@@ -752,10 +760,18 @@ export default function MapContainer({
           if (overlay) {
             mapInstanceRef.current?.removeOverlay(overlay);
           }
+          areaOverlayRef.current = null;
+          setCurrentDrawingArea(0);
         });
       });
 
       draw.on("drawend", (event) => {
+        if (areaOverlayRef.current) {
+          mapInstanceRef.current?.removeOverlay(areaOverlayRef.current);
+          areaOverlayRef.current = null;
+          setCurrentDrawingArea(0);
+        }
+
         const feature = event.feature;
         const geometry = feature.getGeometry();
         if (!geometry) return;
