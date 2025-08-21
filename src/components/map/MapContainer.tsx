@@ -4,7 +4,7 @@ import { useGeographicStore } from "../../stores/useGeographicStore";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import { useMapFeatures } from "../../hooks/useMapFeatures";
 import { MAP_DEFAULTS, WASCAL_BOUNDS } from "../../constants";
-import { GeographicSelections } from "./GeographicSelections";
+// import { GeographicSelections } from "./GeographicSelections";
 import { UserFieldsPanel } from "./UserFieldsPanel";
 import { TwoColumnSidebar } from "./TwoColumnSidebar";
 import { UserFieldEditor } from "./UserFieldEditor";
@@ -1213,7 +1213,7 @@ export default function MapContainer({
         </button>
       </div>
 
-      <GeographicSelections />
+      {/* <GeographicSelections /> */}
 
       {isLoadingGeometry && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
