@@ -15,6 +15,7 @@ import {
 import { PiPolygonBold } from "react-icons/pi";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import { UserFieldForm } from "./UserFieldForm";
+import { DeleteConfirm } from "../ui/DeleteConfirm";
 import type { UserField } from "../../services/userFields.service";
 import { useTranslations } from "../../hooks/useTranslations";
 import { useLanguage } from "../../hooks/useLanguage";
@@ -82,18 +83,11 @@ export function UserFieldsPanel({
   };
 
   const handleDelete = async (field: UserField) => {
-    if (
-      window.confirm(
-        t.userFieldsPanel?.confirmDelete?.replace("{0}", field.name) ||
-          `Êtes-vous sûr de vouloir supprimer "${field.name}" ?`
-      )
-    ) {
-      try {
-        await deleteUserField(field.id);
-        setActiveDropdown(null);
-      } catch (err) {
-        console.error("Error deleting field:", err);
-      }
+    try {
+      await deleteUserField(field.id);
+      setActiveDropdown(null);
+    } catch (err) {
+      console.error("Error deleting field:", err);
     }
   };
 
@@ -244,13 +238,25 @@ export function UserFieldsPanel({
                             <Edit2 className="w-4 h-4" />
                             {t.userFieldsPanel?.edit || "Modifier"}
                           </button>
-                          <button
-                            onClick={() => handleDelete(field)}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            {t.userFieldsPanel?.delete || "Supprimer"}
-                          </button>
+                          <DeleteConfirm
+                            onConfirm={() => handleDelete(field)}
+                            trigger={
+                              <button className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                <Trash2 className="w-4 h-4" />
+                                {t.userFieldsPanel?.delete || "Supprimer"}
+                              </button>
+                            }
+                            title={
+                              t.userFieldsPanel?.confirmDeleteTitle ||
+                              "Confirmer la suppression"
+                            }
+                            description={
+                              t.userFieldsPanel?.confirmDelete?.replace("{0}", field.name) ||
+                              `Êtes-vous sûr de vouloir supprimer "${field.name}" ? Cette action est irréversible.`
+                            }
+                            confirmText={t.userFieldsPanel?.delete || "Supprimer"}
+                            cancelText={t.userFieldsPanel?.cancel || "Annuler"}
+                          />
                         </div>
                       )}
                     </div>
