@@ -435,7 +435,10 @@
     "show": "Show",
     "edit": "Edit",
     "delete": "Delete",
-    "confirmDelete": "Are you sure you want to delete \"{{name}}\"?"
+    "confirmDelete": "Are you sure you want to delete \"{0}\"?",
+    "instructions": "Use the drawing tools on the left to create a new area. The form will appear automatically when the drawing is complete so you can name and save it.",
+    "noFields": "No fields created",
+    "closePanel": "Close panel"
   },
   "userFieldForm": {
     "newTitle": "New Field",
@@ -476,7 +479,6 @@
       "nameMax": "Name cannot exceed 50 characters",
       "descriptionMax": "Description cannot exceed 500 characters"
     },
-
     "editField": "Edit field",
     "newField": "New field",
     "geometryTypeLabel": "Geometry type",
@@ -490,7 +492,18 @@
       "polygon": "Polygon",
       "circle": "Circle",
       "rectangle": "Rectangle"
-    }
+    },
+    "close": "Close",
+    "fieldName": "Field name",
+    "fieldNamePlaceholder": "Enter field name",
+    "fieldNameRequired": "Field name is required",
+    "geometryRequired": "Geometry is required",
+    "point": "Point",
+    "polygon": "Polygon",
+    "circle": "Circle",
+    "rectangle": "Rectangle",
+    "edit": "Update",
+    "create": "Create"
   },
   "geographicSelections": {
     "title": "Geographic Selections",

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { X, Save, AlertCircle } from "lucide-react";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import type { UserField } from "../../services/userFields.service";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface UserFieldFormProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export function UserFieldForm({
     useUserFieldsStore();
   const [name, setName] = useState("");
   const [formError, setFormError] = useState("");
+  const t = useTranslations();
 
   useEffect(() => {
     if (editField) {
@@ -40,12 +42,12 @@ export function UserFieldForm({
     setFormError("");
 
     if (!name.trim()) {
-      setFormError("Le nom du champ est requis");
+      setFormError(t.userFieldForm?.fieldNameRequired);
       return;
     }
 
     if (!editField && !geometry) {
-      setFormError("La géométrie est requise");
+      setFormError(t.userFieldForm?.geometryRequired);
       return;
     }
 
@@ -85,10 +87,10 @@ export function UserFieldForm({
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {editField ? "Modifier le champ" : "Nouveau champ"}
+            {editField ? t.userFieldForm?.editTitle : t.userFieldForm?.newTitle}
           </h3>
           <button
-            aria-label="Fermer"
+            aria-label={t.userFieldForm?.close}
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
@@ -111,7 +113,7 @@ export function UserFieldForm({
               htmlFor="name"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              Nom du champ *
+              {t.userFieldForm?.fieldName} *
             </label>
             <input
               type="text"
@@ -119,7 +121,7 @@ export function UserFieldForm({
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Entrez le nom du champ"
+              placeholder={t.userFieldForm?.fieldNamePlaceholder}
               disabled={loading}
             />
           </div>
@@ -127,13 +129,13 @@ export function UserFieldForm({
           {!editField && geometryType && (
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Type de géométrie
+                {t.userFieldForm?.geometryType}
               </label>
               <div className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                {geometryType === "point" && "Point"}
-                {geometryType === "polygon" && "Polygone"}
-                {geometryType === "circle" && "Cercle"}
-                {geometryType === "rectangle" && "Rectangle"}
+                {geometryType === "point" && t.userFieldForm?.point}
+                {geometryType === "polygon" && t.userFieldForm?.polygon}
+                {geometryType === "circle" && t.userFieldForm?.circle}
+                {geometryType === "rectangle" && t.userFieldForm?.rectangle}
               </div>
             </div>
           )}
@@ -145,7 +147,7 @@ export function UserFieldForm({
               disabled={loading}
               className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50"
             >
-              Annuler
+              {t.userFieldForm?.cancel}
             </button>
             <button
               type="submit"
@@ -153,7 +155,11 @@ export function UserFieldForm({
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 rounded-md transition-colors"
             >
               <Save className="w-4 h-4" />
-              {loading ? "Enregistrement..." : editField ? "Modifier" : "Créer"}
+              {loading
+                ? t.userFieldForm?.saving
+                : editField
+                ? t.userFieldForm?.edit
+                : t.userFieldForm?.create}
             </button>
           </div>
         </form>

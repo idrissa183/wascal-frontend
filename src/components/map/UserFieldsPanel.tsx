@@ -10,11 +10,13 @@ import {
   MoreVertical,
   Calendar,
   Ruler,
+  X,
 } from "lucide-react";
 import { PiPolygonBold } from "react-icons/pi";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import { UserFieldForm } from "./UserFieldForm";
 import type { UserField } from "../../services/userFields.service";
+import { useTranslations } from "../../hooks/useTranslations";
 import { useLanguage } from "../../hooks/useLanguage";
 
 interface UserFieldsPanelProps {
@@ -43,6 +45,7 @@ export function UserFieldsPanel({
     isDrawing,
     clearError,
   } = useUserFieldsStore();
+  const t = useTranslations();
   const { language } = useLanguage();
 
   const [showForm, setShowForm] = useState(false);
@@ -80,7 +83,10 @@ export function UserFieldsPanel({
 
   const handleDelete = async (field: UserField) => {
     if (
-      window.confirm(`Êtes-vous sûr de vouloir supprimer "${field.name}" ?`)
+      window.confirm(
+        t.userFieldsPanel?.confirmDelete?.replace("{0}", field.name) ||
+          `Êtes-vous sûr de vouloir supprimer "${field.name}" ?`
+      )
     ) {
       try {
         await deleteUserField(field.id);
@@ -120,27 +126,23 @@ export function UserFieldsPanel({
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Mes Champs
+              {t.userFieldsPanel?.title || "Mes Champs"}
             </h3>
             {onToggle && (
               <button
                 onClick={onToggle}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
               >
-                ×
+                <X />
               </button>
             )}
           </div>
 
           <div className="mt-3">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Utilisez les outils de dessin à gauche pour créer une nouvelle
-              zone. Le formulaire apparaîtra automatiquement à la fin du dessin
-              pour vous permettre de la nommer et de l'enregistrer.
+              {t.userFieldsPanel?.instructions ||
+                "Utilisez les outils de dessin à gauche pour créer une nouvelle zone. Le formulaire apparaîtra automatiquement à la fin du dessin pour vous permettre de la nommer et de l'enregistrer."}
             </p>
-            {/* <p className="text-sm text-gray-600 dark:text-gray-400">
-              Utilisez les outils de dessin à gauche pour créer une nouvelle zone, puis revenez ici pour la nommer et l'enregistrer.
-            </p> */}
           </div>
         </div>
 
@@ -149,7 +151,7 @@ export function UserFieldsPanel({
             <div className="p-4 text-center">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                Chargement...
+                {t.userFieldsPanel?.loading || "Chargement..."}
               </p>
             </div>
           )}
@@ -161,7 +163,7 @@ export function UserFieldsPanel({
                 onClick={clearError}
                 className="text-xs text-red-600 dark:text-red-400 hover:underline mt-1"
               >
-                Fermer
+                {t.userFieldsPanel?.close || "Fermer"}
               </button>
             </div>
           )}
@@ -169,11 +171,8 @@ export function UserFieldsPanel({
           {!loading && userFields.length === 0 && (
             <div className="p-4 text-center">
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">
-                Aucun champ créé
+                {t.userFieldsPanel?.noFields || "Aucun champ créé"}
               </p>
-              {/* <p className="text-xs text-gray-500 dark:text-gray-500">
-                Utilisez les outils ci-dessus pour dessiner votre première zone
-              </p> */}
             </div>
           )}
 
@@ -210,7 +209,9 @@ export function UserFieldsPanel({
 
                     <div className="relative">
                       <button
-                        aria-label="Fermer le panneau"
+                        aria-label={
+                          t.userFieldsPanel?.closePanel || "Fermer le panneau"
+                        }
                         onClick={() =>
                           setActiveDropdown(
                             activeDropdown === field.id ? null : field.id
@@ -232,21 +233,23 @@ export function UserFieldsPanel({
                             ) : (
                               <Eye className="w-4 h-4" />
                             )}
-                            {isVisible ? "Masquer" : "Afficher"}
+                            {isVisible
+                              ? t.userFieldsPanel?.hide || "Masquer"
+                              : t.userFieldsPanel?.show || "Afficher"}
                           </button>
                           <button
                             onClick={() => handleEdit(field)}
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
                             <Edit2 className="w-4 h-4" />
-                            Modifier
+                            {t.userFieldsPanel?.edit || "Modifier"}
                           </button>
                           <button
                             onClick={() => handleDelete(field)}
                             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
-                            Supprimer
+                            {t.userFieldsPanel?.delete || "Supprimer"}
                           </button>
                         </div>
                       )}

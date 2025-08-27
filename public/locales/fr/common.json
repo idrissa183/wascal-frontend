@@ -436,7 +436,10 @@
     "show": "Afficher",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ?"
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer \"{0}\" ?",
+    "instructions": "Utilisez les outils de dessin à gauche pour créer une nouvelle zone. Le formulaire apparaîtra automatiquement à la fin du dessin pour vous permettre de la nommer et de l'enregistrer.",
+    "noFields": "Aucun champ créé",
+    "closePanel": "Fermer le panneau"
   },
   "userFieldForm": {
     "newTitle": "Nouveau champ",
@@ -490,7 +493,18 @@
       "polygon": "Polygone",
       "circle": "Cercle",
       "rectangle": "Rectangle"
-    }
+    },
+    "close": "Fermer",
+    "fieldName": "Nom du champ",
+    "fieldNamePlaceholder": "Entrez le nom du champ",
+    "fieldNameRequired": "Le nom du champ est requis",
+    "geometryRequired": "La géométrie est requise",
+    "point": "Point",
+    "polygon": "Polygone",
+    "circle": "Cercle",
+    "rectangle": "Rectangle",
+    "edit": "Modifier",
+    "create": "Créer"
   },
   "geographicSelections": {
     "title": "Sélections géographiques",
