@@ -75,6 +75,7 @@
   "english": "English",
   "dashboard": "Dashboard",
   "map": "Interactive Map",
+  "map_description": "Interactive map for environmental monitoring",
   "location": "My locations",
   "analytics": "Analytics",
   "weather": "Weather",
@@ -326,6 +327,45 @@
   "map_page":{
     "search_placeholder": "Search a place..."
   },
+  "mapContainer": {
+    "fullscreen": "Fullscreen",
+    "defaultView": "Default view",
+    "myFields": "My Fields",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "selectPoint": "Point selection",
+    "selectRectangle": "Rectangle selection",
+    "selectPolygon": "Polygon selection",
+    "selectCircle": "Circle selection",
+    "clearDrawings": "Clear drawings",
+    "undoLast": "Undo last drawing",
+    "dataLayers": "Data Layers",
+    "opacity": "Opacity",
+    "exportMap": "Export map",
+    "toggleToolbar": "Toggle toolbar",
+    "loadingMap": "Loading map...",
+    "loadingGeographicData": "Loading geographic data...",
+    "showLayerPanel": "Show layer panel",
+    "hideLayerPanel": "Hide layer panel",
+    "searchPlaceholder": "Search for a location...",
+    "pointSelection": "Point selection",
+    "rectangleSelection": "Rectangle selection",
+    "polygonSelection": "Polygon selection",
+    "circleSelection": "Circle selection",
+    "undoDrawing": "Undo last drawing",
+    "latitude": "Lat",
+    "longitude": "Lon",
+    "zoom": "Zoom",
+
+    "layers": {
+      "osm": "OpenStreetMap",
+      "satellite": "Satellite",
+      "ndvi": "NDVI",
+      "temperature": "Temperature",
+      "precipitation": "Precipitation",
+      "boundaries": "Boundaries"
+    }
+  },
   "pages": {
     "vegetation": {
       "title": "Vegetation Data",
@@ -384,6 +424,74 @@
     "map": "Map",
     "helpText": "If you think this is a mistake, please contact our support team.",
     "goBack": "Go back to previous page"
+  },
+  "userFieldsPanel": {
+    "title": "My Fields",
+    "description": "Use the drawing tools on the left to create a new area. The form will appear automatically at the end of the drawing to allow you to name and save it.",
+    "loading": "Loading...",
+    "close": "Close",
+    "empty": "No fields created",
+    "hide": "Hide",
+    "show": "Show",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete \"{{name}}\"?"
+  },
+  "userFieldForm": {
+    "newTitle": "New Field",
+    "editTitle": "Edit Field",
+    "fieldNameLabel": "Field name *",
+    "fieldNamePlaceholder": "Enter field name",
+    "geometryType": "Geometry type",
+    "types": {
+      "point": "Point",
+      "polygon": "Polygon",
+      "circle": "Circle",
+      "rectangle": "Rectangle"
+    },
+    "cancel": "Cancel",
+    "create": "Create",
+    "update": "Update",
+    "saving": "Saving...",
+    "errors": {
+      "nameRequired": "Field name is required",
+      "geometryRequired": "Geometry is required"
+    }
+  },
+  "userFieldEditor": {
+    "newTitle": "New Field",
+    "editTitle": "Edit Field",
+    "geometryType": "Geometry type",
+    "area": "Area",
+    "nameLabel": "Name *",
+    "namePlaceholder": "Field name",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Optional description",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "confirmDelete": "Are you sure you want to delete this field?",
+    "errors": {
+      "nameRequired": "Name is required",
+      "nameMax": "Name cannot exceed 50 characters",
+      "descriptionMax": "Description cannot exceed 500 characters"
+    }
+  },
+  "geographicSelections": {
+    "title": "Geographic Selections",
+    "clearAll": "Clear all",
+    "visibleOnMap": "Visible on map",
+    "loaded": "Loaded successfully",
+    "remove": "Remove from map"
+  },
+  "twoColumnSidebar": {
+    "controls": "Controls",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "openEditor": "Open editor",
+    "closeEditor": "Close editor",
+    "fieldEditor": "Field editor",
+    "editor": "Editor"
   }
   
 }

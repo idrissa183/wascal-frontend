@@ -12,7 +12,7 @@ const MapPage: React.FC = () => {
           {t.map}
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          {t.map_description || "Interactive map for environmental monitoring"}
+          {t.map_description}
         </p>
       </div>
       

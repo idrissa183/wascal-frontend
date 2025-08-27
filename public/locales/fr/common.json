@@ -75,6 +75,7 @@
   "english": "English",
   "dashboard": "Tableau de bord",
   "map": "Carte interactive",
+  "map_description": "Carte interactive pour la surveillance environnementale",
   "location": "Mes localisations",
   "analytics": "Analyses",
   "reports": "Rapports",
@@ -325,6 +326,47 @@
   "map_page":{
     "search_placeholder": "Rechercher un lieu..."
   },
+  "mapContainer": {
+    "fullscreen": "Plein écran",
+    "defaultView": "Vue par défaut",
+    "myFields": "Mes Champs",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "selectPoint": "Sélection par point",
+    "selectRectangle": "Sélection rectangulaire",
+    "selectPolygon": "Sélection polygonale",
+    "selectCircle": "Sélection circulaire",
+    "clearDrawings": "Effacer les dessins",
+    "undoLast": "Annuler le dernier dessin",
+    "dataLayers": "Couches de données",
+    "opacity": "Opacité",
+    "exportMap": "Exporter la carte",
+    "toggleToolbar": "Basculer la barre d'outils",
+    "loadingMap": "Chargement de la carte...",
+    "loadingGeographicData": "Chargement des données géographiques...",
+    "showLayerPanel": "Afficher le panneau des couches",
+    "hideLayerPanel": "Masquer le panneau des couches",
+
+    "searchPlaceholder": "Rechercher une localisation...",
+    "pointSelection": "Sélection par point",
+    "rectangleSelection": "Sélection rectangulaire",
+    "polygonSelection": "Sélection polygonale",
+    "circleSelection": "Sélection circulaire",
+    "undoDrawing": "Annuler le dernier dessin",
+    "latitude": "Lat",
+    "longitude": "Lon",
+    "zoom": "Zoom",
+
+
+    "layers": {
+      "osm": "OpenStreetMap",
+      "satellite": "Satellite",
+      "ndvi": "NDVI",
+      "temperature": "Température",
+      "precipitation": "Précipitations",
+      "boundaries": "Frontières"
+    }
+  },
   "pages": {
     "vegetation": {
       "title": "Données de Végétation",
@@ -383,5 +425,73 @@
     "map": "Carte",
     "helpText": "Si vous pensez qu'il s'agit d'une erreur, veuillez contacter notre équipe de support.",
     "goBack": "Retourner à la page précédente"
+  },
+  "userFieldsPanel": {
+    "title": "Mes Champs",
+    "description": "Utilisez les outils de dessin à gauche pour créer une nouvelle zone. Le formulaire apparaîtra automatiquement à la fin du dessin pour vous permettre de la nommer et de l'enregistrer.",
+    "loading": "Chargement...",
+    "close": "Fermer",
+    "empty": "Aucun champ créé",
+    "hide": "Masquer",
+    "show": "Afficher",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ?"
+  },
+  "userFieldForm": {
+    "newTitle": "Nouveau champ",
+    "editTitle": "Modifier le champ",
+    "fieldNameLabel": "Nom du champ *",
+    "fieldNamePlaceholder": "Entrez le nom du champ",
+    "geometryType": "Type de géométrie",
+    "types": {
+      "point": "Point",
+      "polygon": "Polygone",
+      "circle": "Cercle",
+      "rectangle": "Rectangle"
+    },
+    "cancel": "Annuler",
+    "create": "Créer",
+    "update": "Modifier",
+    "saving": "Enregistrement...",
+    "errors": {
+      "nameRequired": "Le nom du champ est requis",
+      "geometryRequired": "La géométrie est requise"
+    }
+  },
+  "userFieldEditor": {
+    "newTitle": "Nouveau champ",
+    "editTitle": "Modifier le champ",
+    "geometryType": "Type de géométrie",
+    "area": "Superficie",
+    "nameLabel": "Nom *",
+    "namePlaceholder": "Nom du champ",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Description optionnelle",
+    "save": "Sauvegarder",
+    "saving": "Sauvegarde...",
+    "cancel": "Annuler",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce champ ?",
+    "errors": {
+      "nameRequired": "Le nom est requis",
+      "nameMax": "Le nom ne peut pas dépasser 50 caractères",
+      "descriptionMax": "La description ne peut pas dépasser 500 caractères"
+    }
+  },
+  "geographicSelections": {
+    "title": "Sélections géographiques",
+    "clearAll": "Tout effacer",
+    "visibleOnMap": "Visible sur la carte",
+    "loaded": "Chargé avec succès",
+    "remove": "Retirer de la carte"
+  },
+  "twoColumnSidebar": {
+    "controls": "Contrôles",
+    "expand": "Étendre",
+    "collapse": "Réduire",
+    "openEditor": "Ouvrir l'éditeur",
+    "closeEditor": "Fermer l'éditeur",
+    "fieldEditor": "Éditeur de champs",
+    "editor": "Éditeur"
   }
 }

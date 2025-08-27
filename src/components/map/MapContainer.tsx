@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "../../hooks/useTranslations";
+import { DEFAULT_LAYERS, type LayerConfig } from "../../config/mapLayers";
 import { useGeographicStore } from "../../stores/useGeographicStore";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import { useMapFeatures } from "../../hooks/useMapFeatures";
@@ -73,12 +74,16 @@ interface MapContainerProps {
 
 type SelectionTool = "none" | "point" | "rectangle" | "polygon" | "circle";
 
-interface LayerControl {
-  id: string;
-  name: string;
-  visible: boolean;
-  opacity: number;
-  type: "raster" | "vector";
+// interface LayerControl {
+//   id: string;
+//   name: string;
+//   visible: boolean;
+//   opacity: number;
+//   type: "raster" | "vector";
+//   layer?: TileLayer<any> | VectorLayer<any>;
+// }
+
+interface LayerControl extends LayerConfig {
   layer?: TileLayer<any> | VectorLayer<any>;
 }
 
@@ -146,44 +151,45 @@ export default function MapContainer({
     }),
   });
 
-  const [layers, setLayers] = useState<LayerControl[]>([
-    {
-      id: "osm",
-      name: "OpenStreetMap",
-      visible: true,
-      opacity: 100,
-      type: "raster",
-    },
-    {
-      id: "satellite",
-      name: "Satellite",
-      visible: false,
-      opacity: 100,
-      type: "raster",
-    },
-    { id: "ndvi", name: "NDVI", visible: false, opacity: 70, type: "raster" },
-    {
-      id: "temperature",
-      name: "Température",
-      visible: false,
-      opacity: 70,
-      type: "raster",
-    },
-    {
-      id: "precipitation",
-      name: "Précipitations",
-      visible: false,
-      opacity: 70,
-      type: "raster",
-    },
-    {
-      id: "boundaries",
-      name: "Frontières",
-      visible: true,
-      opacity: 80,
-      type: "vector",
-    },
-  ]);
+  // const [layers, setLayers] = useState<LayerControl[]>([
+  //   {
+  //     id: "osm",
+  //     name: "OpenStreetMap",
+  //     visible: true,
+  //     opacity: 100,
+  //     type: "raster",
+  //   },
+  //   {
+  //     id: "satellite",
+  //     name: "Satellite",
+  //     visible: false,
+  //     opacity: 100,
+  //     type: "raster",
+  //   },
+  //   { id: "ndvi", name: "NDVI", visible: false, opacity: 70, type: "raster" },
+  //   {
+  //     id: "temperature",
+  //     name: "Température",
+  //     visible: false,
+  //     opacity: 70,
+  //     type: "raster",
+  //   },
+  //   {
+  //     id: "precipitation",
+  //     name: "Précipitations",
+  //     visible: false,
+  //     opacity: 70,
+  //     type: "raster",
+  //   },
+  //   {
+  //     id: "boundaries",
+  //     name: "Frontières",
+  //     visible: true,
+  //     opacity: 80,
+  //     type: "vector",
+  //   },
+  // ]);
+  const [layers, setLayers] = useState<LayerControl[]>(DEFAULT_LAYERS);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -1004,7 +1010,7 @@ export default function MapContainer({
         <button
           onClick={handleFullscreen}
           className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          title="Plein écran"
+          title={t.mapContainer?.fullscreen || "Plein écran"}
         >
           {isFullscreen ? (
             <ArrowsPointingInIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
@@ -1015,7 +1021,7 @@ export default function MapContainer({
         <button
           onClick={resetView}
           className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          title="Vue par défaut"
+          title={t.mapContainer?.defaultView || "Vue par défaut"}
         >
           <MapIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
@@ -1032,7 +1038,7 @@ export default function MapContainer({
               ? "bg-blue-100 dark:bg-blue-900 border-blue-300 dark:border-blue-700"
               : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
           }`}
-          title="Mes Champs"
+          title={t.mapContainer?.myFields || "Mes Champs"}
         >
           <Save className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
@@ -1045,14 +1051,14 @@ export default function MapContainer({
               <button
                 onClick={handleZoomIn}
                 className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-                title="Zoom avant"
+                title={t.mapContainer?.zoomIn || "Zoom avant"}
               >
                 <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={handleZoomOut}
                 className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-                title="Zoom arrière"
+                title={t.mapContainer?.zoomOut || "Zoom arrière"}
               >
                 <MinusIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
@@ -1064,7 +1070,7 @@ export default function MapContainer({
                     ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 }`}
-                title="Sélection par point"
+                title={t.mapContainer?.selectPoint || "Sélection par point"}
               >
                 <MapPinIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
@@ -1075,7 +1081,9 @@ export default function MapContainer({
                     ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 }`}
-                title="Sélection rectangulaire"
+                title={
+                  t.mapContainer?.selectRectangle || "Sélection rectangulaire"
+                }
               >
                 <LuRectangleHorizontal className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
@@ -1086,7 +1094,7 @@ export default function MapContainer({
                     ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 }`}
-                title="Sélection polygonale"
+                title={t.mapContainer?.selectPolygon || "Sélection polygonale"}
               >
                 <PiPolygonBold className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
@@ -1097,21 +1105,21 @@ export default function MapContainer({
                     ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                 }`}
-                title="Sélection circulaire"
+                title={t.mapContainer?.selectCircle || "Sélection circulaire"}
               >
                 <FaRegCircle className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" />
               </button>
               <button
                 onClick={handleCut}
                 className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-                title="Effacer les dessins"
+                title={t.mapContainer?.clearDrawings || "Effacer les dessins"}
               >
                 <ScissorsIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
               <button
                 onClick={handleUndo}
                 className="p-1.5 sm:p-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-                title="Annuler le dernier dessin"
+                title={t.mapContainer?.undoLast || "Annuler le dernier dessin"}
               >
                 <ArrowUturnLeftIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
@@ -1126,7 +1134,7 @@ export default function MapContainer({
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
               <p className="text-gray-500 dark:text-gray-400">
-                Chargement de la carte...
+                {t.mapContainer?.loadingMap || "Chargement de la carte..."}
               </p>
             </div>
           </div>
@@ -1139,14 +1147,21 @@ export default function MapContainer({
             <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
                 <AdjustmentsHorizontalIcon className="w-4 h-4 mr-2" />
-                Couches de données
+                {t.mapContainer?.dataLayers || "Couches de données"}
               </h4>
               <button
                 onClick={() => setShowLayerPanel(false)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                title={
+                  t.mapContainer?.hideLayerPanel ||
+                  "Masquer le panneau des couches"
+                }
               >
                 <ChevronDownIcon className="w-4 h-4" />
-                <span className="sr-only">ChevronDownBtn</span>
+                <span className="sr-only">
+                  {t.mapContainer?.hideLayerPanel ||
+                    "Masquer le panneau des couches"}
+                </span>
               </button>
             </div>
             <div className="p-3 sm:p-4 max-h-60 sm:max-h-80 overflow-y-auto">
@@ -1162,7 +1177,8 @@ export default function MapContainer({
                           className="rounded border-gray-300 text-green-600 focus:ring-green-500 mr-2"
                         />
                         <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                          {layer.name}
+                          {t.mapContainer?.layers?.[layer.nameKey] ||
+                            layer.nameKey}
                         </span>
                       </label>
                       <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -1180,7 +1196,7 @@ export default function MapContainer({
                             htmlFor="input-opacity"
                             className="text-xs text-gray-500 dark:text-gray-400 w-16"
                           >
-                            Opacité:
+                            {t.mapContainer?.opacity || "Opacité"}:
                           </label>
                           <input
                             id="input-opacity"
@@ -1210,7 +1226,7 @@ export default function MapContainer({
         </div>
       )}
 
-      {!showLayerPanel && (
+      {/* {!showLayerPanel && (
         <button
           onClick={() => setShowLayerPanel(true)}
           className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 p-2 sm:p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -1218,20 +1234,35 @@ export default function MapContainer({
           <ChevronUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
           <span className="sr-only">ChevronUpBtn</span>
         </button>
+      )} */}
+      {!showLayerPanel && (
+        <button
+          onClick={() => setShowLayerPanel(true)}
+          className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 z-30 p-2 sm:p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          title={
+            t.mapContainer?.showLayerPanel || "Afficher le panneau des couches"
+          }
+        >
+          <ChevronUpIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
+          <span className="sr-only">
+            {t.mapContainer?.showLayerPanel ||
+              "Afficher le panneau des couches"}
+          </span>
+        </button>
       )}
 
       <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 z-20 flex space-x-1 sm:space-x-2">
         <button
           onClick={exportMap}
           className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          title="Exporter la carte"
+          title={t.mapContainer?.exportMap || "Exporter la carte"}
         >
           <PhotoIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
         <button
           onClick={() => setShowToolbar(!showToolbar)}
           className="p-2 sm:p-2.5 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          title="Basculer la barre d'outils"
+          title={t.mapContainer?.toggleToolbar || "Basculer la barre d'outils"}
         >
           <CogIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
         </button>
@@ -1244,7 +1275,7 @@ export default function MapContainer({
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 px-4 py-2 flex items-center space-x-2">
             <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-sm text-gray-700 dark:text-gray-300">
-              Loading geographic data...
+              {t.mapContainer?.loadingGeographicData || "Loading geographic data..."}
             </span>
           </div>
         </div>

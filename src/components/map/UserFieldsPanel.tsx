@@ -15,6 +15,7 @@ import { PiPolygonBold } from "react-icons/pi";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
 import { UserFieldForm } from "./UserFieldForm";
 import type { UserField } from "../../services/userFields.service";
+import { useLanguage } from "../../hooks/useLanguage";
 
 interface UserFieldsPanelProps {
   variant?: "floating" | "sidebar";
@@ -42,6 +43,7 @@ export function UserFieldsPanel({
     isDrawing,
     clearError,
   } = useUserFieldsStore();
+  const { language } = useLanguage();
 
   const [showForm, setShowForm] = useState(false);
   const [editingField, setEditingField] = useState<UserField | null>(null);
@@ -96,7 +98,7 @@ export function UserFieldsPanel({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR");
+    return new Date(dateString).toLocaleDateString(language);
   };
 
   const formatArea = (area: number | undefined) => {
