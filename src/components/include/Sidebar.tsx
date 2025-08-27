@@ -39,7 +39,7 @@ import {
 } from "../../services/geographic.service";
 import type { User } from "../../types/auth";
 import { getCountryName } from "../../utils/geophaphic";
-import { CalendarClock, CalendarDaysIcon, CalendarRange } from "lucide-react";
+import { CalendarClock, CalendarDaysIcon, CalendarRange, MapPinned } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -614,6 +614,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       label: t.map,
       href: "/map",
       active: isActiveRoute("/map"),
+    },
+    {
+      icon: MapPinned,
+      label: t.location,
+      href: "#",
+      active: isActiveRoute("/location"),
     },
     // {
     //   icon: ChartBarIcon,
