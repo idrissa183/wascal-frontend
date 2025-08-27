@@ -5,6 +5,7 @@ import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
 } from "@heroicons/react/24/outline";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface TwoColumnSidebarProps {
   children: React.ReactNode;
@@ -23,11 +24,12 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
 }) => {
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
-
+  const t = useTranslations();
+  
   const handleLeftToggle = () => {
     setIsLeftCollapsed(!isLeftCollapsed);
   };
-
+  
   const handleRightToggle = () => {
     if (isRightCollapsed) {
       setIsRightCollapsed(false);
@@ -37,24 +39,24 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
       }
     }
   };
-
+  
   const handleRightCollapse = () => {
     setIsRightCollapsed(!isRightCollapsed);
   };
-
+  
   // Calculate widths based on state
   const getLeftWidth = () => {
     if (isLeftCollapsed) return "w-12";
     if (isRightColumnVisible && !isRightCollapsed) return "w-full sm:w-80";
     return "w-full sm:w-96";
   };
-
+  
   const getRightWidth = () => {
     if (!isRightColumnVisible) return "w-0";
     if (isRightCollapsed) return "w-12";
     return "w-full sm:w-80";
   };
-
+  
   return (
     <div className={`flex h-full ${className}`}>
       {/* Left Column */}
@@ -65,14 +67,18 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
         <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
           {!isLeftCollapsed && (
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Contrôles
+              {t.twoColumnSidebar?.controles}
             </h2>
           )}
           <button
             type="button"
             onClick={handleLeftToggle}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            title={isLeftCollapsed ? "Étendre" : "Réduire"}
+            title={
+              isLeftCollapsed
+                ? t.twoColumnSidebar?.expand
+                : t.twoColumnSidebar?.collapse
+            }
           >
             {isLeftCollapsed ? (
               <ChevronRightIcon className="w-4 h-4" />
@@ -87,7 +93,7 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
           {isLeftCollapsed ? (
             <div className="p-2">
               <div className="text-xs text-gray-500 transform -rotate-90 origin-center whitespace-nowrap mt-8">
-                Contrôles
+                {t.twoColumnSidebar?.controles}
               </div>
             </div>
           ) : (
@@ -108,7 +114,9 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
               }`}
             >
               <span className="text-sm font-medium">
-                {isRightColumnVisible ? "Fermer l'éditeur" : "Ouvrir l'éditeur"}
+                {isRightColumnVisible
+                  ? t.twoColumnSidebar?.close_editor
+                  : t.twoColumnSidebar?.open_editor}
               </span>
               {isRightColumnVisible ? (
                 <ChevronDoubleLeftIcon className="w-4 h-4" />
@@ -129,14 +137,18 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
           <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
             {!isRightCollapsed && (
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Éditeur de champs
+                {t.twoColumnSidebar?.field_editor}
               </h2>
             )}
             <button
               type="button"
               onClick={handleRightCollapse}
               className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-              title={isRightCollapsed ? "Étendre" : "Réduire"}
+              title={
+                isRightCollapsed
+                  ? t.twoColumnSidebar?.expand
+                  : t.twoColumnSidebar?.collapse
+              }
             >
               {isRightCollapsed ? (
                 <ChevronRightIcon className="w-4 h-4" />
@@ -151,7 +163,7 @@ export const TwoColumnSidebar: React.FC<TwoColumnSidebarProps> = ({
             {isRightCollapsed ? (
               <div className="p-2">
                 <div className="text-xs text-gray-500 transform -rotate-90 origin-center whitespace-nowrap mt-8">
-                  Éditeur
+                  {t.twoColumnSidebar?.editor}
                 </div>
               </div>
             ) : (

@@ -475,6 +475,21 @@
       "nameRequired": "Name is required",
       "nameMax": "Name cannot exceed 50 characters",
       "descriptionMax": "Description cannot exceed 500 characters"
+    },
+
+    "editField": "Edit field",
+    "newField": "New field",
+    "geometryTypeLabel": "Geometry type",
+    "areaLabel": "Area",
+    "nameRequired": "Name is required",
+    "nameTooLong": "Name cannot exceed 50 characters",
+    "descriptionTooLong": "Description cannot exceed 500 characters",
+    "deleteConfirm": "Are you sure you want to delete this field?",
+    "geometryLabels": {
+      "point": "Point",
+      "polygon": "Polygon",
+      "circle": "Circle",
+      "rectangle": "Rectangle"
     }
   },
   "geographicSelections": {
@@ -482,16 +497,20 @@
     "clearAll": "Clear all",
     "visibleOnMap": "Visible on map",
     "loaded": "Loaded successfully",
-    "remove": "Remove from map"
+    "remove": "Remove from map",
+    "removeFromMap": "Remove from map"
   },
   "twoColumnSidebar": {
-    "controls": "Controls",
+    "controles": "Controls",
     "expand": "Expand",
     "collapse": "Collapse",
     "openEditor": "Open editor",
     "closeEditor": "Close editor",
     "fieldEditor": "Field editor",
-    "editor": "Editor"
+    "field_editor": "Field editor",
+    "editor": "Editor",
+    "open_editor": "Open editor",
+    "close_editor": "Close editor"
   }
   
 }

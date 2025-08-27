@@ -476,6 +476,20 @@
       "nameRequired": "Le nom est requis",
       "nameMax": "Le nom ne peut pas dépasser 50 caractères",
       "descriptionMax": "La description ne peut pas dépasser 500 caractères"
+    },
+    "editField": "Modifier le champ",
+    "newField": "Nouveau champ",
+    "geometryTypeLabel": "Type de géométrie",
+    "areaLabel": "Superficie",
+    "nameRequired": "Le nom est requis",
+    "nameTooLong": "Le nom ne peut pas dépasser 50 caractères",
+    "descriptionTooLong": "La description ne peut pas dépasser 500 caractères",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce champ ?",
+    "geometryLabels": {
+      "point": "Point",
+      "polygon": "Polygone",
+      "circle": "Cercle",
+      "rectangle": "Rectangle"
     }
   },
   "geographicSelections": {
@@ -483,15 +497,20 @@
     "clearAll": "Tout effacer",
     "visibleOnMap": "Visible sur la carte",
     "loaded": "Chargé avec succès",
-    "remove": "Retirer de la carte"
+    "remove": "Retirer de la carte",
+    "removeFromMap": "Retirer de la carte"
+
   },
   "twoColumnSidebar": {
-    "controls": "Contrôles",
+    "controles": "Contrôles",
     "expand": "Étendre",
     "collapse": "Réduire",
     "openEditor": "Ouvrir l'éditeur",
     "closeEditor": "Fermer l'éditeur",
     "fieldEditor": "Éditeur de champs",
-    "editor": "Éditeur"
+    "editor": "Éditeur",
+    "field_editor": "Éditeur de champs",
+    "open_editor": "Ouvrir l'éditeur",
+    "close_editor": "Fermer l'éditeur"
   }
 }

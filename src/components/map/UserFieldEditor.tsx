@@ -3,6 +3,7 @@ import { TrashIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { MapPin, Square, Circle, Save } from "lucide-react";
 import { PiPolygonBold } from "react-icons/pi";
 import { useUserFieldsStore } from "../../stores/useUserFieldsStore";
+import { useTranslations } from "../../hooks/useTranslations";
 
 interface UserFieldEditorProps {
   pendingGeometry?: any;
@@ -32,6 +33,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { createUserField, updateUserField, deleteUserField } =
     useUserFieldsStore();
+  const t = useTranslations();
 
   // Initialize form data when editing
   useEffect(() => {
@@ -70,13 +72,13 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
   const getGeometryLabel = (type: string) => {
     switch (type) {
       case "point":
-        return "Point";
+        return t.userFieldEditor?.geometryLabels?.point || "Point";
       case "polygon":
-        return "Polygone";
+        return t.userFieldEditor?.geometryLabels?.polygon || "Polygone";
       case "circle":
-        return "Cercle";
+        return t.userFieldEditor?.geometryLabels?.circle || "Cercle";
       case "rectangle":
-        return "Rectangle";
+        return t.userFieldEditor?.geometryLabels?.rectangle || "Rectangle";
       default:
         return type;
     }
@@ -99,15 +101,18 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Le nom est requis";
+      newErrors.name = t.userFieldEditor?.nameRequired || "Le nom est requis";
     }
 
     if (formData.name.length > 50) {
-      newErrors.name = "Le nom ne peut pas dépasser 50 caractères";
+      newErrors.name =
+        t.userFieldEditor?.nameTooLong ||
+        "Le nom ne peut pas dépasser 50 caractères";
     }
 
     if (formData.description.length > 500) {
-      newErrors.description =
+      newErrors.description = newErrors.description =
+        t.userFieldEditor?.descriptionTooLong ||
         "La description ne peut pas dépasser 500 caractères";
     }
 
@@ -157,7 +162,12 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
   const handleDelete = async () => {
     if (!editingField) return;
 
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce champ ?")) {
+    if (
+      window.confirm(
+        t.userFieldEditor?.deleteConfirm ||
+          "Êtes-vous sûr de vouloir supprimer ce champ ?"
+      )
+    ) {
       try {
         await deleteUserField(editingField.id);
         if (onCancel) {
@@ -184,14 +194,16 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
           <div className="flex items-center space-x-2">
             {GeometryIcon && <GeometryIcon className="w-5 h-5 text-blue-600" />}
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {editingField ? "Modifier le champ" : "Nouveau champ"}
+              {editingField
+                ? t.userFieldEditor?.editField || "Modifier le champ"
+                : t.userFieldEditor?.newField || "Nouveau champ"}
             </h3>
           </div>
 
           {onCancel && (
             <button
               type="button"
-              aria-label="Annuler"
+              aria-label={t.userFieldEditor?.cancel || "Annuler"}
               onClick={onCancel}
               className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
             >
@@ -206,7 +218,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  Type de géométrie
+                  {t.userFieldEditor?.geometryTypeLabel || "Type de géométrie"}
                 </span>
                 <p className="font-medium text-gray-900 dark:text-white">
                   {getGeometryLabel(geometryType)}
@@ -216,7 +228,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
               {area && (
                 <div className="text-right">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Superficie
+                    {t.userFieldEditor?.areaLabel || "Superficie"}
                   </span>
                   <p className="font-medium text-gray-900 dark:text-white">
                     {area} km²
@@ -232,7 +244,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Nom *
+              {t.userFieldEditor?.nameLabel || "Nom *"}
             </label>
             <input
               type="text"
@@ -245,7 +257,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
                   ? "border-red-300 dark:border-red-600"
                   : "border-gray-300 dark:border-gray-600"
               } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
-              placeholder="Nom du champ"
+              placeholder={t.userFieldEditor?.namePlaceholder || "Nom du champ"}
             />
             {errors.name && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -257,7 +269,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Description
+              {t.userFieldEditor?.descriptionLabel || "Description"}
             </label>
             <textarea
               value={formData.description}
@@ -270,7 +282,10 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
                   ? "border-red-300 dark:border-red-600"
                   : "border-gray-300 dark:border-gray-600"
               } bg-white dark:bg-gray-700 text-gray-900 dark:text-white`}
-              placeholder="Description optionnelle"
+              placeholder={
+                t.userFieldEditor?.descriptionPlaceholder ||
+                "Description optionnelle"
+              }
             />
             {errors.description && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -287,7 +302,11 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
               className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md transition-colors"
             >
               <Save className="w-4 h-4" />
-              <span>{isSubmitting ? "Sauvegarde..." : "Sauvegarder"}</span>
+              <span>
+                {isSubmitting
+                  ? t.userFieldEditor?.saving || "Sauvegarde..."
+                  : t.userFieldEditor?.save || "Sauvegarder"}
+              </span>
             </button>
 
             {editingField && (
@@ -306,7 +325,7 @@ export const UserFieldEditor: React.FC<UserFieldEditorProps> = ({
                 onClick={onCancel}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                Annuler
+                {t.userFieldEditor?.cancel || "Annuler"}
               </button>
             )}
           </div>
