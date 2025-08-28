@@ -102,7 +102,7 @@ export function UserFieldsPanel({
   };
 
   const formatArea = (area: number | undefined) => {
-    if (!area) return "N/A";
+    if (!area) return t.userFieldsPanel?.notAvailable;
     if (area < 1) return `${(area * 1000000).toFixed(0)} m²`;
     return `${area.toFixed(2)} km²`;
   };
@@ -246,16 +246,20 @@ export function UserFieldsPanel({
                                 {t.userFieldsPanel?.delete || "Supprimer"}
                               </button>
                             }
-                            title={
-                              t.userFieldsPanel?.confirmDeleteTitle ||
-                              "Confirmer la suppression"
-                            }
-                            description={
-                              t.userFieldsPanel?.confirmDelete?.replace("{0}", field.name) ||
-                              `Êtes-vous sûr de vouloir supprimer "${field.name}" ? Cette action est irréversible.`
-                            }
-                            confirmText={t.userFieldsPanel?.delete || "Supprimer"}
-                            cancelText={t.userFieldsPanel?.cancel || "Annuler"}
+                            // title={
+                            //   t.userFieldsPanel?.confirmDeleteTitle ||
+                            //   "Confirmer la suppression"
+                            // }
+                            // description={
+                            //   t.userFieldsPanel?.confirmDelete?.replace("{0}", field.name) ||
+                            //   `Êtes-vous sûr de vouloir supprimer "${field.name}" ? Cette action est irréversible.`
+                            // }
+                            // confirmText={t.userFieldsPanel?.delete || "Supprimer"}
+                            // cancelText={t.userFieldsPanel?.cancel || "Annuler"}
+                            description={t.userFieldsPanel?.confirmDelete?.replace(
+                              "{0}",
+                              field.name
+                            )}
                           />
                         </div>
                       )}

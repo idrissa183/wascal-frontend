@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import type { ReactNode } from 'react';
+import { useTranslations } from '@/hooks/useTranslations';
+
 
 interface DeleteConfirmProps {
   onConfirm: () => void;
@@ -24,16 +26,19 @@ interface DeleteConfirmProps {
   disabled?: boolean;
 }
 
-export function DeleteConfirm({
-  onConfirm,
-  trigger,
-  title = "Confirmer la suppression",
-  description = "Cette action est irréversible. Êtes-vous sûr de vouloir continuer ?",
-  confirmText = "Supprimer",
-  cancelText = "Annuler",
-  isDestructive = true,
-  disabled = false
-}: DeleteConfirmProps) {
+export function DeleteConfirm(props: DeleteConfirmProps) {
+  const t = useTranslations();
+
+  const {
+    onConfirm,
+    trigger,
+    title = t.userFieldsPanel?.confirmDeleteTitle,
+    description = t.userFieldsPanel?.confirmDelete,
+    confirmText = t.userFieldsPanel?.delete,
+    cancelText = t.userFieldsPanel?.cancel,
+    isDestructive = true,
+    disabled = false,
+  } = props;
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
