@@ -4,7 +4,7 @@ import { useTranslations } from "../../hooks/useTranslations";
 import { AuthLayout } from "./AuthLayout";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 import { getApiBaseUrl } from "../../constants";
 
 export const AuthCallbackClient: React.FC = () => {

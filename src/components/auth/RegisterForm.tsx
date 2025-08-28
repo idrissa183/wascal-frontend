@@ -5,7 +5,7 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useTranslations } from "../../hooks/useTranslations";
 import { registerSchema, type RegisterFormData } from "../../lib/validation";
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 import { Input } from "../ui/Input";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";

@@ -1,5 +1,5 @@
 export { Alert } from './Alert';
-export { Button } from './Button';
+export { Button } from './button';
 export { Input } from './Input';
 export { LoadingSpinner } from './LoadingSpinner';
 export { Tooltip } from './Tooltip';

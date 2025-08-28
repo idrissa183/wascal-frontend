@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 import { useTranslations } from "../../hooks/useTranslations";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook, FaLinkedin } from "react-icons/fa";

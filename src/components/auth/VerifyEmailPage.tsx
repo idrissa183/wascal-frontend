@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AuthLayout } from "./AuthLayout";
 import { useTranslations } from "../../hooks/useTranslations";
 import { useAuthStore } from "../../stores/useAuthStore";
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import { Alert } from "../ui/Alert";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";

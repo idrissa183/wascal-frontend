@@ -1,62 +1,85 @@
-import * as AlertDialog from '@radix-ui/react-alert-dialog';
+import { AlertTriangleIcon } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import type { ReactNode } from 'react';
 
 interface DeleteConfirmProps {
   onConfirm: () => void;
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
   title?: string;
   description?: string;
   confirmText?: string;
   cancelText?: string;
+  isDestructive?: boolean;
+  disabled?: boolean;
 }
 
-export function DeleteConfirm({ 
+export function DeleteConfirm({
   onConfirm,
   trigger,
   title = "Confirmer la suppression",
-  description = "Cette action est irréversible.",
+  description = "Cette action est irréversible. Êtes-vous sûr de vouloir continuer ?",
   confirmText = "Supprimer",
-  cancelText = "Annuler"
+  cancelText = "Annuler",
+  isDestructive = true,
+  disabled = false
 }: DeleteConfirmProps) {
   return (
-    <AlertDialog.Root>
-      <AlertDialog.Trigger asChild>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
         {trigger || (
-          <button className="btn btn-error">
+          <Button 
+            variant={isDestructive ? "destructive" : "default"}
+            disabled={disabled}
+            className="transition-all duration-200 hover:scale-105"
+          >
             {confirmText}
-          </button>
+          </Button>
         )}
-      </AlertDialog.Trigger>
-
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        
-        <AlertDialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-sm translate-x-[-50%] translate-y-[-50%] gap-4 border bg-base-100 p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg">
-          <div className="flex flex-col space-y-2 text-center sm:text-left">
-            <AlertDialog.Title className="text-lg font-semibold text-base-content">
-              {title}
-            </AlertDialog.Title>
-            <AlertDialog.Description className="text-sm text-base-content/70">
-              {description}
-            </AlertDialog.Description>
+      </AlertDialogTrigger>
+      
+      <AlertDialogContent className="max-w-md">
+        <AlertDialogHeader className="text-center sm:text-left">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 sm:mx-0 sm:h-10 sm:w-10">
+            <AlertTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
           </div>
           
-          <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-            <AlertDialog.Cancel asChild>
-              <button className="btn btn-secondary mt-2 sm:mt-0">
-                {cancelText}
-              </button>
-            </AlertDialog.Cancel>
-            <AlertDialog.Action asChild>
-              <button
-                onClick={onConfirm}
-                className="btn btn-error"
-              >
-                {confirmText}
-              </button>
-            </AlertDialog.Action>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
+          <AlertDialogTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            {title}
+          </AlertDialogTitle>
+          
+          <AlertDialogDescription className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+            {description}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        
+        <AlertDialogFooter className="flex-col gap-2 sm:flex-row sm:gap-3">
+          <AlertDialogCancel className="sm:w-auto">
+            {cancelText}
+          </AlertDialogCancel>
+          
+          <AlertDialogAction
+            onClick={onConfirm}
+            className={`sm:w-auto transition-all duration-200 hover:scale-105 ${
+              isDestructive
+                ? 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700'
+                : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+            }`}
+          >
+            {confirmText}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

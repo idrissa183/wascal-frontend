@@ -15,7 +15,7 @@ import {
   type ResetPasswordFormData,
 } from "../../lib/validation";
 import { Input } from "../ui/Input";
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 import { Alert } from "../ui/Alert";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 

@@ -8,7 +8,7 @@ import {
   requestPasswordResetSchema,
   type RequestPasswordResetFormData,
 } from "../../lib/validation";
-import { Button } from "../ui/Button";
+import { Button } from "../ui/button";
 import { Input } from "../ui/Input";
 import { Alert } from "../ui/Alert";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
