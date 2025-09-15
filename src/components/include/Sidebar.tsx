@@ -2138,7 +2138,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         <div className="h-full flex flex-col">
           {/* Mobile close button */}
-          <div className="lg:hidden flex justify-end p-3 border-b border-gray-200 dark:border-gray-700">
+          {/* <div className="lg:hidden flex justify-end p-3 border-b border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
@@ -2147,7 +2147,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             >
               <XMarkIcon className="w-6 h-6" />
             </button>
-          </div>
+          </div> */}
 
           {/* Contenu principal - scrollable */}
           <div className="flex-1 overflow-y-auto px-3 py-4">

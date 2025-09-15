@@ -8,6 +8,7 @@ import {
   SunIcon,
   MoonIcon,
   ComputerDesktopIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { APP_NAME } from "../../constants";
 import { useTranslations } from "../../hooks/useTranslations";
@@ -74,8 +75,12 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
               className="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600 lg:hidden"
               aria-label="Toggle sidebar"
             >
-              <span className="sr-only">btn bars3</span>
-              <Bars3Icon className="w-6 h-6" />
+              <span className="sr-only">Toggle sidebar</span>
+              {sidebarOpen ? (
+                <XMarkIcon className="w-6 h-6" />
+              ) : (
+                <Bars3Icon className="w-6 h-6" />
+              )}
             </button>
             <a href="/" className="flex ml-2 md:mr-24 items-center">
               {/* WASCAL Logo */}
