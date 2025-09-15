@@ -82,7 +82,7 @@ export default function Navbar({ onToggleSidebar, sidebarOpen }: NavbarProps) {
               <img
                 src="/images/wascal-logo.svg"
                 alt="WASCAL Logo"
-                className="h-6 w-auto mr-2 sm:h-8 sm:mr-3 lg:h-10 lg:mr-4"
+                className="h-6 w-auto mr-2 sm:h-8 sm:mr-3 lg:h-10 lg:mr-4 flex-shrink-0"
               />
               {/* <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">EW</span>
